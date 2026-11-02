@@ -118,6 +118,16 @@
     return { left: (r.left - s.left) / scale, top: (r.top - s.top) / scale, width: r.width / scale, height: r.height / scale };
   }
 
+  // Одновременно открыто одно окно или меню: новое закрывает прежнее, несохранённые правки в нём отменяются, как крестиком.
+  // Без родителя не работают и остаются с ним только меню режима открытия, меню и палитры PropertyEditor.
+  function popupsClose() {
+    rsCloseParams();
+    lsCloseMenu();
+    lsNewClose();
+    wsClose();
+    secClose();
+  }
+
   // ---------- Правый сайдбар (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 148:15451) ----------
   // Вписан в страницу, по умолчанию открыт «Магазин». Клик по иконке переключает панель, повторный — сворачивает до тулбара.
   // «Настройки» открывают окно поверх контента: вписанная панель скрыта, но её место остаётся за ней, поэтому контент не прыгает. Закрытие окна возвращает панель.
@@ -145,7 +155,11 @@
   for (const b of document.querySelectorAll('.rp-btn[data-rp]')) {
     b.addEventListener('click', () => {
       const name = b.dataset.rp;
-      if (name === 'settings') rsParamsOpen = !rsParamsOpen;
+      if (name === 'settings') {
+        const open = !rsParamsOpen;
+        popupsClose();
+        rsParamsOpen = open;
+      }
       else if (rsParamsOpen) { rsParamsOpen = false; rsPanel = name; }
       else rsPanel = rsPanel === name ? null : name;
       rsRender();
@@ -196,6 +210,10 @@
 
   const shopCatalog = $('#rsWidgets [data-widget="catalog"]').closest('.rs-w');
   const shopProduct = $('#rsWidgets [data-widget="product"]').closest('.rs-w');
+  // Подсказка клика: видна там, где карточку можно поставить — на новой странице или в окне без карточки
+  const shopProductPin = el('span', 'pin', '<img src="assets/img/pin-cursor.svg" width="15" height="15" alt="">');
+  shopProductPin.setAttribute('aria-hidden', 'true');
+  $('.rs-w__pv', shopProduct).append(shopProductPin);
 
   function siteAddCatalog() {
     shopCatalog.hidden = true;
@@ -242,7 +260,9 @@
     siteContent.scrollTop = 0;
     siteBlankBody.classList.toggle('wg', isWindow);
     wsClose();
+    secClose();
     wsPage = page;
+    secApply(page.section);
     wsPaintFill(siteBlankSection, page.sectionFill, '', BG_DEFAULT);
     if (isWindow) wsApply(page.win ?? WS_DEFAULTS);
     else {
@@ -261,6 +281,7 @@
   }
   function siteProductRender(on) {
     siteProduct.hidden = !on;
+    shopProductPin.hidden = on || siteBlank.hidden;
     siteBlankCell.hidden = on;
     siteBlankSection.classList.toggle('has-widget', on);
     siteProduct.classList.remove('is-active');
@@ -271,7 +292,8 @@
     wsPage.product = true;
     siteProductSyncShop();
     siteProductRender(true);
-    if (wsRoot.hidden) siteProduct.classList.add('is-active'); // пока открыты настройки окна, выделено окно
+    if (!secRoot.hidden) siteBlankSection.classList.add('is-active'); // пока открыты настройки секции, выделена секция
+    else if (wsRoot.hidden) siteProduct.classList.add('is-active'); // пока открыты настройки окна, выделено окно
     else wsRender();
   }
   $('#siteProductDelete').addEventListener('click', () => {
@@ -303,14 +325,14 @@
   $('.site-blank__back').addEventListener('click', () => siteSelectWindow(true));
 
   stage.addEventListener('mousedown', (e) => {
-    if (wsRoot.hidden && !e.target.closest('#bgWin')) { // пока открыты настройки или окно «Фон», окно остаётся выделенным
+    if (wsRoot.hidden && secRoot.hidden && !e.target.closest('#bgWin')) { // пока открыты настройки или окно «Фон», выделение остаётся
       const inSection = !!e.target.closest('#siteBlankSection');
       const inProduct = !!e.target.closest('#siteProduct');
       siteBlankSection.classList.toggle('is-active', inSection && !inProduct);
       siteProduct.classList.toggle('is-active', inProduct);
       const windowHit = !inSection && siteBlank.classList.contains('is-window') && !!e.target.closest('#siteBlankBody');
       siteSelectWindow(windowHit);
-      if (!(bgAnchor === bgSectionBtn ? inSection && !inProduct : windowHit)) bgClose(); // тулбар с командой скрылся
+      if (!(bgKey === 'section' ? inSection && !inProduct : windowHit)) bgClose(); // тулбар с командой скрылся
     }
     if (siteCatalog.hidden) return;
     siteCatalog.classList.toggle('is-active', !!e.target.closest('#siteCatalog'));
@@ -319,6 +341,7 @@
   // Настройки окна: открываются по левому верхнему углу окна, шестерёнка в это время активна. Правки сразу видны на холсте, галочка сохраняет их в страницу,
   // крестик и Esc возвращают прежнее, сброс — исходные значения. Клик мимо не закрывает. Размер и оформление — PropertyEditor из ui-kit, отступы — свои поля.
   const WS_DEFAULTS = {
+    posMode: 'screen', // позиционирование: 'element' или 'screen'. Пока выбор режима меняет только сам редактор, на холсте окно остаётся по центру
     pad: { split: false, top: 12, right: 12, bottom: 12, left: 12 },
     // Фон и затемнение — из окна «Фон»: {kind: 'color', hex, a} · {kind: 'grad', c} · {kind: 'img', i, fx}. На холсте конструктора затемнения нет, под окном его фон
     fills: { dim: { kind: 'color', hex: '#000000', a: 5 }, background: { kind: 'color', hex: '#ffffff', a: 100 } },
@@ -337,6 +360,25 @@
   };
   const wsRoot = $('#ws');
   const wsOpenBtn = $('#wsOpen');
+  // Сетка положения «На экране»: значки из макета, по строкам. edge — столбики прижаты к краю, middle — по центру; у средней ячейки значок свой
+  const WS_POS_ICONS = {
+    edge: '<rect y="5" width="3" height="9" rx="1.5"/><rect x="5" width="3" height="14" rx="1.5"/><rect x="10" y="7" width="3" height="7" rx="1.5"/>',
+    middle: '<rect y="2" width="3" height="10" rx="1.5"/><rect x="5" width="3" height="14" rx="1.5"/><rect x="10" y="2" width="3" height="10" rx="1.5"/>',
+  };
+  const WS_POS = [
+    ['edge', 'scaleY(-1)'], ['edge', 'scaleY(-1)'], ['edge', 'rotate(180deg)'],
+    ['middle', 'scaleY(-1)'], null, ['middle', 'rotate(180deg)'],
+    ['edge', 'scale(1)'], ['edge', 'scale(1)'], ['edge', 'scaleX(-1)'],
+  ];
+  $('.ws-pos__grid', wsRoot).innerHTML = WS_POS.map((pos, i) => {
+    const col = i % 3 - 1;
+    const row = Math.floor(i / 3) - 1;
+    const vars = `--x:${col * 57.5}px;--y:${row * 17.5}px;--dot-x:${col * 57}px;--dot-y:${row * 19.5}px;--t:${pos?.[1] ?? 'scale(1)'}`;
+    const ico = pos
+      ? `<svg class="ws-pos__ico" width="13" height="14" viewBox="0 0 13 14" aria-hidden="true">${WS_POS_ICONS[pos[0]]}</svg>`
+      : '<img class="ws-pos__ico" src="assets/img/pos/22.svg" width="13" height="14" alt="">';
+    return `<div class="ws-pos__cell${pos ? '' : ' is-selected'}" style="${vars}"><img class="ws-pos__dot" src="assets/img/pos/dot.svg" width="3" height="3" alt="">${ico}</div>`;
+  }).join('');
   const wsTemplate = wsRoot.innerHTML; // PropertyEditor читает значения из разметки при монтировании
   let wsPage = null; // открытая страница, её окно на холсте
   let wsDraft = null; // значения, пока открыты настройки
@@ -388,7 +430,13 @@
   // Поля отступов из черновика и фактический размер в «по контенту» и «заполнить»: окно меняется уже после отрисовки PropertyEditor.
   // Значения цветов с прозрачностью он не пишет: дописываем сами, как в макете
   function wsRender() {
-    const { pad, pe } = wsDraft;
+    const { pad, pe, posMode } = wsDraft;
+    wsRoot.querySelectorAll('[data-ws-pos-mode]').forEach((seg) => {
+      const on = seg.dataset.wsPosMode === posMode;
+      seg.classList.toggle('is-on', on);
+      seg.setAttribute('aria-checked', on);
+    });
+    wsRoot.querySelectorAll('[data-ws-pos-for]').forEach((row) => { row.hidden = row.dataset.wsPosFor !== posMode; });
     wsRoot.querySelectorAll('[data-pe-dim]').forEach((dim) => {
       if (dim.classList.contains('pe__dim--auto')) dim.querySelector('input').placeholder = wsActualSize(dim.dataset.peDim);
     });
@@ -468,7 +516,7 @@
 
   wsOpenBtn.addEventListener('click', () => {
     if (!wsRoot.hidden) { wsClose(); return; }
-    bgClose();
+    popupsClose();
     wsMount(wsPage.win ?? WS_DEFAULTS);
     const r = stageRect(siteBlankBody);
     wsRoot.hidden = false;
@@ -506,15 +554,18 @@
   // Enter и уход с поля показывают значение, которое применилось: неверный ввод возвращает прежнее
   wsRoot.addEventListener('change', (e) => { if (e.target.dataset.wsPad) wsRender(); });
   wsRoot.addEventListener('click', (e) => {
-    // «Фон» и «Затемнение» открывают окно «Фон» вместо палитры PropertyEditor; клик по остальному редактору его закрывает
+    // «Фон» и «Затемнение» открывают окно «Фон» вместо палитры PropertyEditor
     const fillBtn = e.target.closest('[data-pe-row="dim"] [data-pe-color], [data-pe-row="background"] [data-pe-color]');
     if (fillBtn) {
       e.stopPropagation();
-      bgToggle(fillBtn);
+      bgFromSettings(fillBtn, fillBtn.closest('[data-pe-row]').dataset.peRow);
       return;
     }
-    bgClose();
-    if (e.target.closest('.pe__reset')) { // свой сброс: PropertyEditor вернул бы значения на момент открытия
+    const posMode = e.target.closest('[data-ws-pos-mode]');
+    if (posMode) {
+      wsDraft.posMode = posMode.dataset.wsPosMode;
+      wsRender();
+    } else if (e.target.closest('.pe__reset')) { // свой сброс: PropertyEditor вернул бы значения на момент открытия
       e.stopPropagation();
       wsMount(WS_DEFAULTS);
       wsApply(wsDraft);
@@ -530,14 +581,187 @@
       wsRender();
     }
   }, true);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') wsClose(); });
+
+  // Настройки секции: открываются по левому верхнему углу секции, шестерёнка в это время активна. Правки сразу видны на холсте, галочка сохраняет их в страницу,
+  // крестик и Esc возвращают прежнее, сброс — исходные значения. Клик мимо не закрывает. Пока настроек нет, отступы секции — из стилей, поэтому в полях их фактические значения.
+  // В макете есть только ширина «Узкая», «Широкая» и «Во всю ширину» — допущение. «Действие» и «Закрепить снизу» пока без действий.
+  const SEC_NAME = 'Секция';
+  const SEC_WIDTHS = { narrow: { name: 'Узкая', px: 1024 }, wide: { name: 'Широкая', px: 1280 }, full: { name: 'Во всю ширину', px: null } };
+  const secRoot = $('#sec');
+  const secOpenBtn = $('#secOpen');
+  const secNameInput = $('#secName');
+  const secWidth = $('#secWidth');
+  const secWidthMenu = $('#secWidthMenu');
+  const secPx = $('#secPx');
+  const secGap = $('#secGap');
+  const secFillBtn = $('#secFill');
+  let secDraft = null; // значения, пока открыты настройки
+
+  $('.pe__menu-list', secWidthMenu).innerHTML = Object.entries(SEC_WIDTHS).map(([id, w]) =>
+    `<button type="button" class="pe__menu-item" role="menuitemradio" data-width="${id}"><span class="pe__menu-bullet"></span>${w.name}</button>`).join('');
+
+  const secContentWidth = (sec) => sec.px ?? SEC_WIDTHS[sec.width].px;
+
+  // Отступы, зазор и ширина контента на холсте; без значений — исходный вид секции
+  function secApply(sec) {
+    const s = siteBlankSection.style;
+    s.padding = sec ? `${sec.pad.top}px ${sec.pad.right}px ${sec.pad.bottom}px ${sec.pad.left}px` : '';
+    s.gap = sec ? sec.gap + 'px' : '';
+    const w = sec && secContentWidth(sec);
+    if (w) s.setProperty('--sec-content-w', w + 'px');
+    else s.removeProperty('--sec-content-w');
+  }
+
+  function secDefaults() {
+    secApply(null);
+    const c = getComputedStyle(siteBlankSection);
+    const pad = { split: false, top: parseInt(c.paddingTop, 10), right: parseInt(c.paddingRight, 10), bottom: parseInt(c.paddingBottom, 10), left: parseInt(c.paddingLeft, 10) };
+    return { name: SEC_NAME, width: 'narrow', px: null, pad, gap: 0, fill: null };
+  }
+
+  function secRender() {
+    const { pad, gap, width, px, fill } = secDraft;
+    secRoot.querySelectorAll('[data-sec-axis]').forEach((n) => { n.hidden = pad.split; });
+    secRoot.querySelector('[data-sec-sides]').hidden = !pad.split;
+    secRoot.querySelector('[data-sec-pad-split]').classList.toggle('is-active', pad.split);
+    secRoot.querySelectorAll('[data-sec-pad]').forEach((input) => {
+      const key = input.dataset.secPad;
+      input.value = key === 'h' ? pad.left : key === 'v' ? pad.top : pad[key];
+    });
+    secGap.value = gap;
+    $('#secWidthName').textContent = SEC_WIDTHS[width].name;
+    secWidthMenu.querySelectorAll('[data-width]').forEach((item) => {
+      const on = item.dataset.width === width;
+      item.classList.toggle('is-selected', on);
+      item.setAttribute('aria-checked', on);
+    });
+    const preset = SEC_WIDTHS[width].px;
+    secPx.value = px ?? '';
+    secPx.placeholder = preset ? preset.toLocaleString('ru-RU') : '';
+    secPx.disabled = !preset;
+    secFillBtn.classList.toggle('is-none', !fill);
+    if (fill) bgPaintBubble(secFillBtn, fill);
+    else {
+      secFillBtn.style.removeProperty('--pe-color');
+      $('.pe__bubble-text', secFillBtn).textContent = '';
+    }
+  }
+
+  function secCommit() {
+    secDraft.name = secNameInput.value.trim() || SEC_NAME;
+    wsPage.section = secDraft;
+    wsPage.sectionFill = secDraft.fill;
+  }
+
+  function secMenuClose() {
+    secWidthMenu.hidden = true;
+    secWidth.setAttribute('aria-expanded', 'false');
+  }
+
+  function secClose() {
+    if (secRoot.hidden) return;
+    secMenuClose();
+    secRoot.hidden = true;
+    secOpenBtn.classList.remove('is-selected');
+    secOpenBtn.setAttribute('aria-pressed', 'false');
+    secApply(wsPage.section);
+    wsPaintFill(siteBlankSection, wsPage.sectionFill, '', BG_DEFAULT);
+  }
+
+  const secEditor = PropertyEditor.mount(secRoot, {
+    onDone: () => { secCommit(); secClose(); },
+    onClose: secClose,
+  });
+
+  secOpenBtn.addEventListener('click', () => {
+    if (!secRoot.hidden) { secClose(); return; }
+    popupsClose();
+    const saved = wsPage.section;
+    secDraft = { ...(saved ? structuredClone(saved) : secDefaults()), fill: wsPage.sectionFill ?? null };
+    secEditor.reset();
+    if (secDraft.fill) secRoot.querySelector('[data-pe-chip="background"]').click(); // заданный фон — строкой, иначе чипса
+    secNameInput.value = secDraft.name;
+    secNameInput.dispatchEvent(new Event('input', { bubbles: true }));
+    secRender();
+    const r = stageRect(siteBlankSection);
+    secRoot.hidden = false;
+    secRoot.style.left = Math.round(r.left) + 'px';
+    secRoot.style.top = Math.round(r.top) + 'px';
+    secOpenBtn.classList.add('is-selected');
+    secOpenBtn.setAttribute('aria-pressed', 'true');
+  });
+
+  // Новый ввод сразу виден на холсте; Enter и уход с поля показывают значение, которое применилось
+  secRoot.addEventListener('input', (e) => {
+    const t = e.target;
+    const n = parseInt(t.value, 10);
+    const valid = Number.isFinite(n);
+    const { pad } = secDraft;
+    const value = Math.min(Math.max(n, 0), 300);
+    const side = t.dataset.secPad;
+    if (side && valid) {
+      if (side === 'h') pad.left = pad.right = value;
+      else if (side === 'v') pad.top = pad.bottom = value;
+      else pad[side] = value;
+    } else if (t === secGap && valid) secDraft.gap = value;
+    else if (t === secPx) secDraft.px = valid && n > 0 ? n : null;
+    else return;
+    secApply(secDraft);
+  });
+  secRoot.addEventListener('change', (e) => { if (e.target.closest('[data-sec-pad], #secGap, #secPx')) secRender(); });
+  secRoot.addEventListener('click', (e) => {
+    if (e.target.closest('.pe__reset')) { // свой сброс: PropertyEditor вернул бы значения на момент открытия
+      e.stopPropagation();
+      secDraft = secDefaults();
+      secEditor.reset();
+      secApply(secDraft);
+      wsPaintFill(siteBlankSection, null, '', BG_DEFAULT);
+      secRender();
+    } else if (e.target.closest('[data-sec-pad-split]')) {
+      const { pad } = secDraft;
+      pad.split = !pad.split;
+      if (!pad.split) { // при сворачивании значения выравниваются по осям
+        pad.right = pad.left;
+        pad.bottom = pad.top;
+      }
+      secApply(secDraft);
+      secRender();
+    } else if (e.target.closest('#secFill')) bgFromSettings(secFillBtn, 'section');
+    else if (e.target.closest('[data-pe-clear]')) { // строку убирает PropertyEditor, фон на холсте снимаем сами
+      secDraft.fill = null;
+      wsPaintFill(siteBlankSection, null, '', BG_DEFAULT);
+      secRender();
+    }
+  }, true);
+
+  secWidth.addEventListener('click', () => {
+    if (!secWidthMenu.hidden) { secMenuClose(); return; }
+    const r = stageRect(secWidth);
+    const box = stageRect(secWidth.closest('.pe__card'));
+    secWidthMenu.hidden = false;
+    secWidthMenu.style.left = Math.round(r.left - box.left - 16) + 'px';
+    secWidthMenu.style.top = Math.round(r.top - box.top - 12) + 'px';
+    secWidth.setAttribute('aria-expanded', 'true');
+  });
+  secWidthMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-width]');
+    if (!item) return;
+    secDraft.width = item.dataset.width;
+    secDraft.px = null; // ширина из варианта заменяет введённую
+    secMenuClose();
+    secApply(secDraft);
+    secRender();
+  });
+  document.addEventListener('mousedown', (e) => { if (!e.target.closest('#secWidthMenu, #secWidth')) secMenuClose(); });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    if (bgKey) bgClose();
-    else wsClose();
+    if (secWidthMenu.hidden) secClose();
+    else secMenuClose();
   });
 
   // ---------- Окно «Фон» (Figma 16385:63244, верхняя строка 16385:63266) — как в interface-prototype ----------
-  // Общее для «Фона» и «Затемнения сайта», открывается и из тулбара окна. Правки сразу видны на холсте. Пока открыты настройки окна, они идут в черновик: их судьбу решают ✓ и ✕ настроек.
+  // Общее для «Фона» и «Затемнения сайта», открывается и из тулбаров окна и секции. Из строки настроек встаёт вместо них, правки настроек при этом сохраняются. Правки фона сразу применяются к странице.
   // ✓ и ✕ этого окна только закрывают его, заготовленный цвет или градиент применяется и закрывает, картинка оставляет открытым.
   const BG_DEFAULT = '#f8f8f8';
   const BG_GRADS = ['#943253', '#f16767', '#e59545', '#e5cb45', '#009918', '#0c94ff', '#326194', '#4c3294', '#943288'];
@@ -580,12 +804,12 @@
   const bgHex = $('#bgHex');
   const bgAlpha = $('#bgAlpha');
   let bgKey = null; // что настраиваем: 'background' и 'dim' окна или 'section'
-  let bgAnchor = null;
+  let bgAnchor = null; // команда тулбара, из которой открыто окно
+  let bgSpot = null; // место окна, открытого из строки настроек: самой строки уже нет
   const bgBtn = $('#wsFill');
   const bgSectionBtn = $('#sectionFill');
   const BG_TOOLS = new Map([[bgBtn, 'background'], [bgSectionBtn, 'section']]); // команды тулбаров и что они настраивают
-  // Правки идут в черновик, пока открыты настройки, иначе (окно открыто из тулбара) — сразу в окно страницы
-  const bgDoc = () => (wsRoot.hidden ? (wsPage.win ??= structuredClone(WS_DEFAULTS)) : wsDraft);
+  const bgDoc = () => (wsPage.win ??= structuredClone(WS_DEFAULTS));
   // У секции фон по умолчанию не задан
   const bgCur = () => (bgKey === 'section' ? wsPage.sectionFill ?? { kind: 'none' } : bgDoc().fills[bgKey]);
 
@@ -607,9 +831,8 @@
     }
     const doc = bgDoc();
     doc.fills[bgKey] = f;
-    if (wsRoot.hidden) doc.pe.rows.background = true; // фон, убранный в настройках, возвращается
+    doc.pe.rows[bgKey] = true; // строка, убранная в настройках, возвращается
     wsApply(doc);
-    if (!wsRoot.hidden) wsRender();
   }
   function bgSet(f) {
     bgStore(f);
@@ -657,20 +880,30 @@
 
   // Из тулбара окно встаёт под командой с зазором 4px, из строки настроек — поверх кружка, как палитра PropertyEditor. За сцену не выходит
   function bgPlace() {
-    const r = stageRect(bgAnchor);
-    const tool = BG_TOOLS.has(bgAnchor);
-    const left = tool ? r.left : r.left - 13;
-    const top = tool ? r.top + r.height + 4 : r.top - 13;
+    const r = bgAnchor && stageRect(bgAnchor);
+    const { left, top } = bgAnchor ? { left: r.left, top: r.top + r.height + 4 } : bgSpot;
     bgWin.style.left = Math.max(8, Math.min(Math.round(left), stage.offsetWidth - bgWin.offsetWidth - 8)) + 'px';
     bgWin.style.top = Math.max(8, Math.min(Math.round(top), stage.offsetHeight - bgWin.offsetHeight - 8)) + 'px';
   }
   function bgToggle(anchor) {
     if (bgAnchor === anchor) { bgClose(); return; }
+    popupsClose();
     bgAnchor = anchor;
-    bgKey = BG_TOOLS.get(anchor) ?? anchor.closest('[data-pe-row]').dataset.peRow;
+    bgShow(BG_TOOLS.get(anchor));
+  }
+  function bgFromSettings(btn, key) {
+    const r = stageRect(btn);
+    if (wsRoot.hidden) secCommit();
+    else wsPage.win = wsDraft;
+    popupsClose();
+    bgSpot = { left: r.left - 13, top: r.top - 13 };
+    bgShow(key);
+  }
+  function bgShow(key) {
+    bgKey = key;
     for (const btn of BG_TOOLS.keys()) {
-      btn.classList.toggle('is-selected', btn === anchor);
-      btn.setAttribute('aria-pressed', btn === anchor);
+      btn.classList.toggle('is-selected', btn === bgAnchor);
+      btn.setAttribute('aria-pressed', btn === bgAnchor);
     }
     closePic();
     bgRender(true);
@@ -687,11 +920,7 @@
     }
   }
 
-  // Первая команда тулбара окна. Если фон убран в открытых настройках, его строка возвращается
-  bgBtn.addEventListener('click', () => {
-    if (!wsRoot.hidden && !wsDraft.pe.rows.background) wsRoot.querySelector('[data-pe-chip="background"]').click();
-    bgToggle(bgBtn);
-  });
+  bgBtn.addEventListener('click', () => bgToggle(bgBtn));
   bgSectionBtn.addEventListener('click', () => bgToggle(bgSectionBtn));
 
   $('#bgDone').addEventListener('click', bgClose);
@@ -847,6 +1076,7 @@
   }
 
   function lsOpenMenu(id, btn) {
+    popupsClose();
     lsMenuPage = id;
     btn.closest('.ls-item').classList.add('is-menu');
     lsMenu.hidden = false;
@@ -943,7 +1173,7 @@
     const cmd = e.target.closest('[data-cmd]');
     if (cmd?.dataset.cmd === 'more') {
       if (lsMenuPage === id) lsCloseMenu();
-      else { lsCloseMenu(); lsOpenMenu(id, cmd); }
+      else lsOpenMenu(id, cmd);
     } else {
       lsSelect(id);
     }
@@ -1010,6 +1240,7 @@
   }
 
   function lsNewShow(left, top) {
+    popupsClose();
     lsNew.hidden = false;
     lsNew.style.left = Math.round(left) + 'px';
     lsNew.style.top = Math.round(top) + 'px';
@@ -1033,6 +1264,7 @@
 
   function lsNewClose() {
     if (lsNew.hidden) return;
+    lsModeClose();
     lsNew.hidden = true;
     lsCollapseIfLeft();
   }

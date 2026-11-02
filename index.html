@@ -6,14 +6,14 @@
   <title>Попапы</title>
   <link rel="icon" href="data:,">
   <!-- токены и рамка демо (шапка и вспомогательная панель) — компонент demo-frame из ui-kit -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/tokens.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/demo-frame/demo-frame.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/button/button.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/widget/widget.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/toolbar/toolbar.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/input/input.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/chips/chips.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/property-editor/property-editor.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/tokens.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/demo-frame/demo-frame.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/button/button.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/widget/widget.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/toolbar/toolbar.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/input/input.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/chips/chips.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.css">
   <!-- шрифт сайта в макете -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400&display=swap">
   <link rel="stylesheet" href="styles.css">
@@ -74,7 +74,7 @@
       <main class="content" id="content">
         <!-- Середина: сайт в конструкторе (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:63290). Ховер виджетов — .wg из ui-kit -->
         <div class="site" id="site">
-          <header class="wg site-header">
+          <header class="wg wg--style-success site-header">
             <img class="site-logo" src="assets/img/site/logo.svg" width="61" height="46" alt="">
             <div class="site-header__center"><span class="site-menu">Меню</span></div>
             <span class="site-phone">+7 (4852) 12-13-14</span>
@@ -152,7 +152,7 @@
         </div>
         <!-- Новая страница: на странице — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:28596, в окне — 2167:87296. Секция и пустой виджет — .wg из ui-kit, кнопка «+ секция» — Figma rHabzni5OI5D4fxBLQdj2m 4590:7239 -->
         <div class="site-blank" id="siteBlank" hidden>
-          <header class="wg site-header">
+          <header class="wg wg--style-success site-header">
             <img class="site-logo" src="assets/img/site/logo.svg" width="61" height="46" alt="">
             <div class="site-header__center"><span class="site-menu">Меню</span></div>
             <span class="site-phone">+7 (4852) 12-13-14</span>
@@ -186,7 +186,7 @@
                 <div class="tb tb--style-info" role="toolbar" aria-label="Секция">
                   <button type="button" class="tb__btn site-blank__back" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
                   <button type="button" class="tb__btn" id="sectionFill" aria-label="Фон"><span class="tb__icon" aria-hidden="true">&#xe664;</span></button>
-                  <button type="button" class="tb__btn" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe75d;</span></button>
+                  <button type="button" class="tb__btn" id="secOpen" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe75d;</span></button>
                   <button type="button" class="tb__btn tb__btn--delete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
                   <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
                 </div>
@@ -334,9 +334,32 @@
         <div class="pe__body">
           <div class="pe__card">
             <div class="pe__rows">
-              <div class="pe__row">
-                <span class="pe__label">Положение</span>
-                <button class="btn btn--link btn--style-link btn--size-m ls-new__access" type="button"><span class="btn__icon">&#xEBC5;</span><span class="btn__caption">По центру</span></button>
+              <!-- Редактор положения (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2489:25551), тумблер — Figma nuC4KFMiS36uDWDUp9wKGl 11398:5771 -->
+              <div class="pe__row pe__row--style">
+                <span class="pe__label pe__label--style">Положение</span>
+                <div class="pe__row-body">
+                  <div class="tumbler" role="radiogroup" aria-label="Положение">
+                    <button type="button" class="tumbler__seg" role="radio" data-ws-pos-mode="element">От элемента</button>
+                    <button type="button" class="tumbler__seg" role="radio" data-ws-pos-mode="screen">На экране</button>
+                  </div>
+                </div>
+              </div>
+              <div class="pe__row pe__row--style" data-ws-pos-for="element">
+                <span class="pe__label pe__label--style"></span>
+                <div class="pe__row-body">
+                  <div class="ws-anchor">
+                    <div class="ws-anchor__cell is-selected"><i class="ws-anchor__box"></i><img src="assets/img/pos/anchor-on.svg" width="12" height="12" alt=""></div>
+                    <div class="ws-anchor__cell"><i class="ws-anchor__box"></i><img src="assets/img/pos/anchor.svg" width="12" height="12" alt=""></div>
+                    <div class="ws-anchor__cell"><i class="ws-anchor__box"></i><img src="assets/img/pos/anchor.svg" width="12" height="12" alt=""></div>
+                    <div class="ws-anchor__cell"><i class="ws-anchor__box"></i><img src="assets/img/pos/anchor.svg" width="12" height="12" alt=""></div>
+                  </div>
+                </div>
+              </div>
+              <div class="pe__row pe__row--style" data-ws-pos-for="screen">
+                <span class="pe__label pe__label--style"></span>
+                <div class="pe__row-body">
+                  <div class="ws-pos__grid"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -350,10 +373,9 @@
               <span></span>
             </div>
             <div>
-              <div class="pe__title">Отступы</div>
               <div class="pe__rows">
                 <div class="pe__row pe__row--style">
-                  <span class="pe__label pe__label--style">Внутренние</span>
+                  <span class="pe__label pe__label--style">Отступы</span>
                   <div class="pe__row-body">
                     <label class="pe__num" data-ws-axis><svg class="ws__ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M.5 1v10M11.5 1v10"/><rect x="3.5" y="3.5" width="5" height="5" rx="1.5"/></svg><input class="pe__num-value" data-ws-pad="h" inputmode="numeric" maxlength="3" aria-label="Отступы по горизонтали"></label>
                     <label class="pe__num" data-ws-axis><svg class="ws__ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 .5h10M1 11.5h10"/><rect x="3.5" y="3.5" width="5" height="5" rx="1.5"/></svg><input class="pe__num-value" data-ws-pad="v" inputmode="numeric" maxlength="3" aria-label="Отступы по вертикали"></label>
@@ -401,6 +423,71 @@
             <button type="button" class="chips chips--optional" data-pe-chip="background"><span class="chips__caption">Фон</span></button>
             <button type="button" class="chips chips--optional" data-pe-chip="shadow"><span class="chips__caption">Тень</span></button>
             <button type="button" class="chips chips--optional" data-pe-chip="border"><span class="chips__caption">Границы</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Настройки секции: .pe из ui-kit, свойства — Figma rZBslLyyMuhvoFziHj5SZi 17197:204679. Название правит PropertyEditor -->
+      <section class="pe sec" id="sec" aria-label="Настройки секции" hidden>
+        <header class="pe__head">
+          <label class="pe__name"><input class="pe__name-input" id="secName" value="Секция" data-pe-default="Секция" aria-label="Название секции"></label>
+          <div class="pe__cmds">
+            <button type="button" class="pe__reset" aria-label="Сбросить настройки">&#xe629;</button>
+            <button type="button" class="pe__done" aria-label="Сохранить">&#xe75e;</button>
+            <button type="button" class="pe__close" aria-label="Закрыть">&#xe66c;</button>
+          </div>
+        </header>
+        <div class="pe__body">
+          <div class="pe__card">
+            <div class="pe__title">Контент секций</div>
+            <div class="pe__rows">
+              <div class="pe__row">
+                <span class="pe__label">Ширина</span>
+                <div class="pe__row-body">
+                  <button type="button" class="sec__select" id="secWidth" aria-haspopup="menu" aria-expanded="false"><span id="secWidthName"></span><span class="sec__arrow" aria-hidden="true">&#xe9aa;</span></button>
+                  <label class="pe__num sec__px"><input class="pe__num-value" id="secPx" inputmode="numeric" maxlength="4" aria-label="Ширина контента"><span class="pe__label">px</span></label>
+                </div>
+              </div>
+            </div>
+            <div class="sec__hint">Контент растянется до заданной ширины</div>
+            <div class="pe__menu pe__menu--size sec__menu" id="secWidthMenu" role="menu" aria-label="Ширина контента" hidden><div class="pe__menu-list"></div></div>
+          </div>
+          <div class="pe__card">
+            <div class="pe__title">Отступы</div>
+            <div class="pe__rows">
+              <div class="pe__row pe__row--style">
+                <span class="pe__label pe__label--style">Внутренние</span>
+                <div class="pe__row-body">
+                  <label class="pe__num" data-sec-axis><svg class="ws__ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M.5 1v10M11.5 1v10"/><rect x="3.5" y="3.5" width="5" height="5" rx="1.5"/></svg><input class="pe__num-value" data-sec-pad="h" inputmode="numeric" maxlength="3" aria-label="Отступы по горизонтали"></label>
+                  <label class="pe__num" data-sec-axis><svg class="ws__ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 .5h10M1 11.5h10"/><rect x="3.5" y="3.5" width="5" height="5" rx="1.5"/></svg><input class="pe__num-value" data-sec-pad="v" inputmode="numeric" maxlength="3" aria-label="Отступы по вертикали"></label>
+                  <span class="pe__box pe__box--sides" data-sec-sides>
+                    <input class="pe__box-input pe__box-input--top" data-sec-pad="top" inputmode="numeric" maxlength="3" aria-label="Отступ сверху"><i class="pe__box-mark pe__box-mark--top"></i>
+                    <input class="pe__box-input pe__box-input--right" data-sec-pad="right" inputmode="numeric" maxlength="3" aria-label="Отступ справа"><i class="pe__box-mark pe__box-mark--right"></i>
+                    <input class="pe__box-input pe__box-input--bottom" data-sec-pad="bottom" inputmode="numeric" maxlength="3" aria-label="Отступ снизу"><i class="pe__box-mark pe__box-mark--bottom"></i>
+                    <input class="pe__box-input pe__box-input--left" data-sec-pad="left" inputmode="numeric" maxlength="3" aria-label="Отступ слева"><i class="pe__box-mark pe__box-mark--left"></i>
+                  </span>
+                  <span class="pe__spacer"></span>
+                  <button type="button" class="pe__switch" data-sec-pad-split aria-label="Отступы по сторонам">&#xebce;</button>
+                </div>
+              </div>
+              <div class="pe__row pe__row--style">
+                <span class="pe__label pe__label--style">Между</span>
+                <div class="pe__row-body"><label class="pe__num"><img src="assets/img/pad-between.svg" width="12" height="12" alt=""><input class="pe__num-value" id="secGap" inputmode="numeric" maxlength="3" aria-label="Отступ между виджетами"></label></div>
+              </div>
+            </div>
+          </div>
+          <div class="pe__card">
+            <div class="pe__rows">
+              <div class="pe__row pe__row--style" data-pe-row="background" hidden>
+                <span class="pe__label pe__label--style">Фон</span>
+                <div class="pe__row-body"><button type="button" class="pe__bubble sec__fill" id="secFill" aria-label="Фон"><span class="pe__swatch"></span><span class="pe__bubble-text"></span></button><button type="button" class="pe__x" data-pe-clear aria-label="Фон: убрать">&#xe66c;</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="pe__chips">
+            <button type="button" class="chips chips--optional" data-pe-chip="background"><span class="chips__caption">Фон</span></button>
+            <button type="button" class="chips chips--optional"><span class="chips__caption">Действие</span></button>
+            <button type="button" class="chips chips--optional"><span class="chips__caption">Закрепить снизу</span></button>
           </div>
         </div>
       </section>
@@ -460,8 +547,8 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/demo-frame/demo-frame.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/property-editor/property-editor.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/demo-frame/demo-frame.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
