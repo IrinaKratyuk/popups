@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "popups",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [".claude/serve.js"],
+      "port": 5173,
+      "autoPort": true
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Попапы</title>
+  <link rel="icon" href="data:,">
+  <!-- токены и рамка демо (шапка и вспомогательная панель) — компонент demo-frame из ui-kit -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/tokens.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/components/demo-frame/demo-frame.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="viewport">
+    <div class="stage" id="stage" data-scenario="demo">
+
+      <!-- Шапка конструктора -->
+      <header class="ctor-header">
+        <div class="ctor-header__left">
+          <div class="pill-group">
+            <button class="tb-btn tb-btn--text" type="button" id="menuBtn"><span class="ico">&#xEBBE;</span><span class="tb-btn__label">Меню</span></button>
+            <button class="tb-btn tb-btn--text" type="button" id="logoBtn"><span class="ico">&#xE9E2;</span><span class="tb-btn__label">Логотип</span></button>
+          </div>
+        </div>
+
+        <div class="ctor-header__center">
+          <div class="ctor-header__colors">
+            <div class="pill-group theme-btn">
+              <button class="theme-btn__label" type="button" id="themeBtn">Тема</button>
+              <span class="swatches"><span class="swatch" style="--c:#2c3e50"></span><span class="swatch" style="--c:#cc3d00"></span><span class="swatch" style="--c:#0c94ff"></span></span>
+            </div>
+            <div class="pill-group theme-btn theme-btn--bg" id="bgBtn">
+              <button class="theme-btn__label" type="button">Фон</button>
+              <span class="swatches"><span class="swatch" id="bgSwatch" style="--c:#f8f8f8"></span></span>
+            </div>
+          </div>
+
+          <div class="ctor-header__tools">
+            <div class="pill-group" id="alignGroup" role="radiogroup" aria-label="Позиционирование контента">
+              <button class="tb-btn" type="button" role="radio" data-align="left" aria-label="Слева" aria-checked="false"><span class="ico">&#xE6C0;</span></button>
+              <button class="tb-btn" type="button" role="radio" data-align="center" aria-label="По центру" aria-checked="false"><span class="ico">&#xE6BF;</span></button>
+              <button class="tb-btn is-active" type="button" role="radio" data-align="stretch" aria-label="Растянуть" aria-checked="true"><span class="ico">&#xE6C2;</span></button>
+            </div>
+            <div class="pill-group pill-group--r12">
+              <button class="tb-btn is-active" type="button" id="devDesktop" aria-label="Десктоп"><span class="ico">&#xE730;</span></button>
+              <button class="tb-btn" type="button" id="devMobile" aria-label="Мобильная версия"><span class="ico">&#xE637;</span></button>
+              <button class="tb-btn" type="button"><span class="ico">&#xEAB4;</span></button>
+            </div>
+            <div class="pill-group pill-group--r12">
+              <button class="tb-btn" type="button" id="undoBtn" aria-label="Отменить" disabled><span class="ico">&#xE6CF;</span></button>
+              <button class="tb-btn" type="button" id="redoBtn" aria-label="Повторить" disabled><span class="ico">&#xE6CA;</span></button>
+              <button class="tb-btn" type="button"><span class="ico">&#xE629;</span></button>
+              <button class="tb-btn tb-btn--zoom" type="button">100%</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ctor-header__right">
+          <button class="pill-group lang-btn" type="button" id="langBtn">Язык RU</button>
+          <button class="done-btn" type="button" aria-label="Сохранить"><span class="ico ico--20">&#xE75E;</span></button>
+          <button class="close-btn" type="button" aria-label="Закрыть"><img src="assets/img/close-header.svg" width="28" height="28" alt=""></button>
+        </div>
+      </header>
+
+      <!-- Контент: пусто, наполняется по макету -->
+      <main class="content"></main>
+
+      <!-- Правая панель -->
+      <aside class="right-panel">
+        <div class="right-panel__cmds">
+          <button class="rp-btn rp-btn--accent" type="button" aria-label="Магазин" data-rp="shop"><span class="ico24">&#xEADD;</span></button>
+          <button class="rp-btn" type="button" aria-label="Данные" data-rp="data"><span class="rp-svg rp-svg--data"></span></button>
+          <button class="rp-btn" type="button" aria-label="Слои" data-rp="layers"><span class="rp-svg rp-svg--layers"></span></button>
+          <button class="rp-btn" type="button" aria-label="Фильтр" data-rp="filter"><span class="ico24">&#xE94C;</span></button>
+          <!-- лупа в макете (Figma 16041:45395) — с толстой ручкой, как в cbuc-icons: в нашем cbuc-icons24 она другая и крупнее -->
+          <button class="rp-btn" type="button" aria-label="Поиск" data-rp="search"><span class="ico ico--20">&#xEAA7;</span></button>
+          <button class="rp-btn" type="button" aria-label="Настройки" data-rp="settings"><span class="ico24">&#xEAA9;</span></button>
+        </div>
+        <button class="rp-more" type="button" id="rpMore" aria-label="Ещё"><span class="ico ico--20">&#xE9D9;</span></button>
+        <div class="right-panel__spacer"></div>
+        <button class="rp-help" type="button" aria-label="Помощь"><img src="assets/img/help.svg" width="12" height="16" alt=""></button>
+      </aside>
+
+      <!-- Окна правой панели: открываются слева от колонки, верх — по своей иконке, высота — по содержимому («Магазин» — на всю высоту) -->
+      <section class="rp-win rp-win--shop" id="rp-shop" data-fit="full" hidden aria-label="Магазин">
+        <div class="rp-win__head">
+          <span class="rp-win__title">Виджеты</span><span class="rp-plus"><span class="ico">&#xEADD;</span></span>
+          <span class="rp-filter-ico ico24">&#xE94C;</span><span class="rp-find rp-find--shop">Найти</span>
+        </div>
+        <div class="rp-shop">
+          <div class="rp-cats" id="rpCats"></div>
+          <div class="rp-shop__pv" id="rpShopPv"><img class="rp-shop__preview" src="assets/img/shop-preview.png" width="350" height="726" alt=""><div class="rp-shop__reports"><div class="rp-sw__title">Отчеты</div><div class="rp-sw__desc">Контролируйте движение товара, выручку и остатки на складах</div><div class="rp-sw__pv"><img src="assets/img/shop-reports.png" alt=""></div></div></div>
+        </div>
+      </section>
+
+      <section class="rp-win" id="rp-data" hidden aria-label="Данные">
+        <div class="rp-win__head"><span class="rp-win__title">Данные</span><span class="rp-find">Найти</span></div>
+        <div class="rp-fields">
+          <div class="rp-group rp-group--open">
+            <div class="rp-field rp-field--obj"><span class="rp-field__name">Аккаунт<span class="ico rp-field__arrow">&#xEB8A;</span></span><span class="rp-field__type">Аккаунт</span></div>
+            <div class="rp-field rp-field--child"><span class="rp-field__name">Тип<span class="ico rp-field__arrow">&#xEB89;</span></span><span class="rp-field__type">Строка</span></div>
+            <div class="rp-field rp-field--child rp-field--leaf"><span class="rp-field__name">Номер лицевого счета</span><span class="rp-field__type">Число</span></div>
+            <div class="rp-field rp-field--child rp-field--leaf"><span class="rp-field__name">Название аккаунта</span><span class="rp-field__type">Строка</span></div>
+            <div class="rp-field rp-field--child"><span class="rp-field__name">Операторы поддержки<span class="ico rp-field__arrow">&#xEB89;</span></span><span class="rp-field__type">Операторы</span></div>
+            <div class="rp-field rp-field--child"><span class="rp-field__name">Чаты<span class="ico rp-field__arrow">&#xEB89;</span></span><span class="rp-field__type">Чаты</span></div>
+            <div class="rp-field rp-field--child"><span class="rp-field__name">Звонки<span class="ico rp-field__arrow">&#xEB89;</span></span><span class="rp-field__type">Звонки</span></div>
+          </div>
+          <div class="rp-group"><div class="rp-field rp-field--obj"><span class="rp-field__name">Пользователь<span class="ico rp-field__arrow">&#xEB89;</span></span><span class="rp-field__type">Пользователь</span></div></div>
+          <div class="rp-group"><div class="rp-field rp-field--obj"><span class="rp-field__name">Контрагент<span class="ico rp-field__arrow">&#xEB89;</span></span><span class="rp-field__type">Контрагент</span></div></div>
+          <div class="rp-group"><div class="rp-field rp-field--obj"><span class="rp-field__name">Сотрудник<span class="ico rp-field__arrow">&#xEB89;</span></span><span class="rp-field__type">Сотрудник</span></div></div>
+        </div>
+      </section>
+
+      <section class="rp-win" id="rp-filter" hidden aria-label="Фильтр">
+        <div class="rp-win__head"><span class="rp-win__title">Глобальный фильтр</span></div>
+        <div class="rp-chips">
+          <div class="rp-add rp-add--filter">
+            <div class="rp-add__label">Можно добавить</div>
+            <div class="rp-add__list">
+              <button class="rp-add__item" type="button">Организации</button>
+              <button class="rp-add__item" type="button">Сотрудники и подразделения</button>
+              <button class="rp-add__item" type="button">Период</button>
+              <button class="rp-add__item" type="button">Линии</button>
+              <button class="rp-add__item" type="button">Тип отклика</button>
+              <button class="rp-add__item" type="button">Тип продаж</button>
+              <button class="rp-add__item" type="button">Обороты</button>
+              <button class="rp-add__item" type="button">Обороты</button>
+              <button class="rp-add__item" type="button">Партнеры</button>
+              <button class="rp-add__item" type="button">Источники</button>
+              <button class="rp-add__item" type="button">Сервисы</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rp-win" id="rp-layers" hidden aria-label="Слои">
+        <div class="rp-win__head"><span class="rp-win__title">Слои</span></div>
+        <div class="rp-list rp-layers">
+          <div class="rp-row"><span class="rp-row__lead"></span><span class="ico rp-wico">&#xEBB9;</span><span class="rp-row__name">Вкладки</span><span class="rp-row__cmds"><span class="ico24 rp-row__eye">&#xE651;</span><span class="rp-row__del"><span class="ico">&#xEB72;</span></span></span></div>
+          <div class="rp-row"><span class="rp-row__lead"><span class="ico rp-arrow">&#xEB89;</span></span><span class="ico rp-wico">&#xEBB9;</span><span class="rp-row__name">Виджет 2</span><span class="rp-row__cmds"><span class="ico24 rp-row__eye">&#xE651;</span><span class="rp-row__del"><span class="ico">&#xEB72;</span></span></span></div>
+          <div class="rp-row"><span class="rp-row__lead"><span class="ico rp-arrow">&#xEB89;</span></span><span class="ico rp-wico">&#xEBB9;</span><span class="rp-row__name">Виджет 3</span><span class="rp-row__cmds"><span class="ico24 rp-row__eye">&#xE651;</span><span class="rp-row__del"><span class="ico">&#xEB72;</span></span></span></div>
+          <div class="rp-row"><span class="rp-row__lead"></span><span class="ico rp-wico">&#xEBB9;</span><span class="rp-row__name">Виджет 4</span><span class="rp-row__cmds"><span class="ico24 rp-row__eye">&#xE651;</span><span class="rp-row__del"><span class="ico">&#xEB72;</span></span></span></div>
+        </div>
+      </section>
+
+      <section class="rp-win" id="rp-search" hidden aria-label="Поиск">
+        <div class="rp-win__head"><span class="rp-win__title">Поиск</span></div>
+        <div class="rp-chips">
+          <div class="rp-chip"><span class="rp-chip__name">Компании</span><button class="rp-chip__x" type="button" aria-label="Убрать"><img src="assets/img/close-popup.svg" width="28" height="28" alt=""></button></div>
+          <div class="rp-chip"><span class="rp-chip__name">Новости</span><button class="rp-chip__x" type="button" aria-label="Убрать"><img src="assets/img/close-popup.svg" width="28" height="28" alt=""></button></div>
+          <div class="rp-chip"><span class="rp-chip__name">Сотрудники</span><button class="rp-chip__x" type="button" aria-label="Убрать"><img src="assets/img/close-popup.svg" width="28" height="28" alt=""></button></div>
+          <div class="rp-add">
+            <div class="rp-add__label">Можно добавить</div>
+            <div class="rp-add__list">
+              <button class="rp-add__item" type="button">Вакансии</button>
+              <button class="rp-add__item" type="button">Мои курсы</button>
+              <button class="rp-add__item" type="button">Доступные курсы</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rp-win" id="rp-settings" hidden aria-label="Настройки">
+        <div class="rp-win__head"><span class="rp-win__title">Настройки</span></div>
+        <div class="rp-cards">
+          <div class="rp-card rp-card--informers">
+            <div class="rp-prop"><span class="rp-prop__label rp-prop__label--82">Информеры</span><button class="rp-switch is-on" type="button" id="rpInformers" role="switch" aria-checked="true" aria-label="Информеры"></button></div>
+          </div>
+          <div class="rp-card">
+            <div class="rp-card__title">Центр уведомлений</div>
+            <div class="rp-props">
+              <div class="rp-prop"><span class="rp-prop__label">Монитор</span><button class="rp-link" type="button">На странице</button></div>
+              <div class="rp-prop"><span class="rp-prop__label">Ноутбук</span><button class="rp-link" type="button">На странице</button></div>
+              <div class="rp-prop"><span class="rp-prop__label">Планшет</span><button class="rp-link" type="button">В окне</button></div>
+            </div>
+          </div>
+          <div class="rp-card">
+            <div class="rp-card__title">Отступы</div>
+            <div class="rp-props">
+              <div class="rp-prop"><span class="rp-prop__label rp-prop__label--soft">Между виджетами</span><span class="rp-gap"><img src="assets/img/gap-between.svg" width="12" height="12" alt=""><span class="rp-gap__num">8</span></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Меню «⋮» правой панели (Figma vUgZuefpqUuaG2j0DDnEZf 16550:155703): пункты только с ховером, без действий; крестик — поверх «⋮» -->
+      <div class="mw-menu rp-more-menu" id="rpMoreMenu" hidden>
+        <div class="mw-menu__list">
+          <div class="mw-menu__item rp-more-item"><span class="ico24">&#xE9DD;</span><span class="mw-menu__text">Сохранить на диск</span></div>
+          <div class="mw-menu__item rp-more-item rp-more-item--admin"><span class="ico24">&#xE669;</span><span class="mw-menu__text">Копировать</span></div>
+          <div class="mw-menu__item rp-more-item"><span class="ico24">&#xE628;</span><span class="mw-menu__text">Скачать</span></div>
+          <div class="mw-menu__item rp-more-item rp-more-item--admin"><span class="ico24">&#xEA30;</span><span class="mw-menu__text">Загрузить</span></div>
+          <div class="mw-menu__item rp-more-item rp-more-item--admin"><span class="ico24">&#xE631;</span><span class="mw-menu__text">Опубликовать</span><span class="rp-more-item__arrow"><span class="ico">&#xE9AB;</span></span></div>
+          <div class="mw-menu__item rp-more-item"><span class="ico24">&#xE67D;</span><span class="mw-menu__text">История изменений</span></div>
+        </div>
+        <button class="mw-menu__close" type="button" id="rpMoreClose" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
+      </div>
+      <!-- Выпадающий список «На странице / В окне» (окно «Настройки») -->
+      <div class="mw-menu rp-menu" id="rpMenu" hidden>
+        <div class="mw-menu__list" id="rpMenuList"></div>
+        <button class="mw-menu__close" type="button" id="rpMenuClose" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/components/demo-frame/demo-frame.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
