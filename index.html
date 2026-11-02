@@ -8,59 +8,53 @@
   <!-- токены и рамка демо (шапка и вспомогательная панель) — компонент demo-frame из ui-kit -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/tokens.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/components/demo-frame/demo-frame.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/components/button/button.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="viewport">
     <div class="stage" id="stage" data-scenario="demo">
 
-      <!-- Шапка конструктора -->
-      <header class="ctor-header">
-        <div class="ctor-header__left">
-          <div class="pill-group">
-            <button class="tb-btn tb-btn--text" type="button" id="menuBtn"><span class="ico">&#xEBBE;</span><span class="tb-btn__label">Меню</span></button>
-            <button class="tb-btn tb-btn--text" type="button" id="logoBtn"><span class="ico">&#xE9E2;</span><span class="tb-btn__label">Логотип</span></button>
-          </div>
+      <!-- Шапка конструктора (Figma rHabzni5OI5D4fxBLQdj2m 5:28058): только ховер, без действий по клику -->
+      <header class="ch">
+        <div class="ch-title">Название сайта</div>
+        <div class="ch-tumbler" aria-label="Устройство">
+          <button class="ch-seg is-on" type="button" aria-label="Десктоп"><span class="ch-seg__ico">&#xE730;</span></button>
+          <button class="ch-seg" type="button" aria-label="Мобильная версия"><span class="ch-seg__ico">&#xE637;</span></button>
+          <button class="ch-seg" type="button" aria-label="Ещё"><span class="ch-seg__ico">&#xEAB4;</span></button>
         </div>
-
-        <div class="ctor-header__center">
-          <div class="ctor-header__colors">
-            <div class="pill-group theme-btn">
-              <button class="theme-btn__label" type="button" id="themeBtn">Тема</button>
-              <span class="swatches"><span class="swatch" style="--c:#2c3e50"></span><span class="swatch" style="--c:#cc3d00"></span><span class="swatch" style="--c:#0c94ff"></span></span>
-            </div>
-            <div class="pill-group theme-btn theme-btn--bg" id="bgBtn">
-              <button class="theme-btn__label" type="button">Фон</button>
-              <span class="swatches"><span class="swatch" id="bgSwatch" style="--c:#f8f8f8"></span></span>
-            </div>
-          </div>
-
-          <div class="ctor-header__tools">
-            <div class="pill-group" id="alignGroup" role="radiogroup" aria-label="Позиционирование контента">
-              <button class="tb-btn" type="button" role="radio" data-align="left" aria-label="Слева" aria-checked="false"><span class="ico">&#xE6C0;</span></button>
-              <button class="tb-btn" type="button" role="radio" data-align="center" aria-label="По центру" aria-checked="false"><span class="ico">&#xE6BF;</span></button>
-              <button class="tb-btn is-active" type="button" role="radio" data-align="stretch" aria-label="Растянуть" aria-checked="true"><span class="ico">&#xE6C2;</span></button>
-            </div>
-            <div class="pill-group pill-group--r12">
-              <button class="tb-btn is-active" type="button" id="devDesktop" aria-label="Десктоп"><span class="ico">&#xE730;</span></button>
-              <button class="tb-btn" type="button" id="devMobile" aria-label="Мобильная версия"><span class="ico">&#xE637;</span></button>
-              <button class="tb-btn" type="button"><span class="ico">&#xEAB4;</span></button>
-            </div>
-            <div class="pill-group pill-group--r12">
-              <button class="tb-btn" type="button" id="undoBtn" aria-label="Отменить" disabled><span class="ico">&#xE6CF;</span></button>
-              <button class="tb-btn" type="button" id="redoBtn" aria-label="Повторить" disabled><span class="ico">&#xE6CA;</span></button>
-              <button class="tb-btn" type="button"><span class="ico">&#xE629;</span></button>
-              <button class="tb-btn tb-btn--zoom" type="button">100%</button>
+        <div class="ch-right">
+          <div class="ch-cmds">
+            <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Отменить"><span class="btn__icon">&#xE6CF;</span></button>
+            <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Повторить"><span class="btn__icon">&#xE6CA;</span></button>
+            <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Сбросить" disabled><span class="btn__icon">&#xE629;</span></button>
+            <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Предпросмотр"><span class="btn__icon">&#xEAB9;</span></button>
+            <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Компоновка"><span class="btn__icon">&#xEBBA;</span></button>
+            <div class="ch-zoom">
+              <span class="ch-zoom__sep"></span>
+              <button class="btn btn--ghost btn--style-label btn--size-m btn--icon ch-zoom__btn" type="button" aria-label="Уменьшить"><span class="btn__icon">&#xE6EA;</span></button>
+              <button class="btn btn--link btn--style-label btn--size-m ch-zoom__val" type="button">100%</button>
+              <button class="btn btn--ghost btn--style-label btn--size-m btn--icon ch-zoom__btn" type="button" aria-label="Увеличить"><span class="btn__icon">&#xE6E9;</span></button>
             </div>
           </div>
-        </div>
-
-        <div class="ctor-header__right">
-          <button class="pill-group lang-btn" type="button" id="langBtn">Язык RU</button>
-          <button class="done-btn" type="button" aria-label="Сохранить"><span class="ico ico--20">&#xE75E;</span></button>
-          <button class="close-btn" type="button" aria-label="Закрыть"><img src="assets/img/close-header.svg" width="28" height="28" alt=""></button>
+          <div class="ch-save">
+            <button class="btn btn--filled btn--style-success btn--icon ch-done" type="button" aria-label="Сохранить"><span class="btn__icon">&#xE75E;</span></button>
+            <button class="btn btn--filled btn--style-pale btn--icon" type="button" aria-label="Закрыть"><img src="assets/img/close-union.svg" width="12" height="12" alt=""></button>
+          </div>
         </div>
       </header>
+
+      <!-- Левый сайдбар (Figma rHabzni5OI5D4fxBLQdj2m 5:28393): вписан в страницу или свёрнут в линии, по наведению на линии — панель поверх контента -->
+      <aside class="ls" id="ls" aria-label="Страницы">
+        <div class="ls-lines" id="lsLines" aria-hidden="true"></div>
+        <div class="ls-panel">
+          <div class="ls-head">
+            <span class="ls-head__title">Страницы</span>
+            <button class="btn btn--filled btn--style-pale btn--icon ls-toggle" type="button" id="lsToggle"><span class="btn__icon" id="lsToggleIco"></span></button>
+          </div>
+          <div class="ls-list" id="lsList"></div>
+        </div>
+      </aside>
 
       <!-- Контент: пусто, наполняется по макету -->
       <main class="content"></main>
@@ -199,6 +193,14 @@
       <div class="mw-menu rp-menu" id="rpMenu" hidden>
         <div class="mw-menu__list" id="rpMenuList"></div>
         <button class="mw-menu__close" type="button" id="rpMenuClose" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
+      </div>
+      <!-- Меню «⋮» страницы: вид — как меню пункта аккордеона в interface-prototype, крестик — поверх «⋮» -->
+      <div class="mw-menu ls-menu" id="lsMenu" hidden>
+        <div class="mw-menu__list">
+          <button class="mw-menu__item ls-menu__item" type="button" data-act="rename"><span class="ico24">&#xE698;</span><span class="mw-menu__text">Переименовать</span></button>
+          <button class="mw-menu__item ls-menu__item" type="button" data-act="delete"><span class="ico24 ls-menu__danger">&#xEB72;</span><span class="mw-menu__text">Удалить</span></button>
+        </div>
+        <button class="mw-menu__close" type="button" id="lsMenuClose" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
       </div>
     </div>
   </div>

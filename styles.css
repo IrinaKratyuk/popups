@@ -12,13 +12,8 @@
 
   /* конструктор */
   --ctor-bg: #eae9ee;
-  --pill-bg: #f8f7ff;          /* background/info_background-color */
-  --pill-hover: #eeebff;       /* background/info_hover_background-color */
-  --pill-active: #e1dbff;      /* background/info_active_background-color */
   --icon: #333;
   --text: #000;
-  --swatch-border: #d2d6da;
-  --success: #12a12c;
 
   /* окна и меню */
   --win-shadow: 0 0 46px rgba(0, 0, 0, .12), 0 0 15px rgba(0, 0, 0, .12); /* shadow_a */
@@ -56,61 +51,86 @@ ul { list-style: none; margin: 0; padding: 0; }
   transform-origin: 0 0;
 }
 
-/* ---------- Шапка конструктора ---------- */
-.ctor-header {
-  position: absolute; left: 0; top: 0; width: 1600px; height: 45px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.ctor-header__left { flex: 1 0 0; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 8px; }
-.ctor-header__center { display: flex; align-items: center; gap: 80px; }
-.ctor-header__colors, .ctor-header__tools { display: flex; align-items: center; gap: 6px; }
-.ctor-header__right { flex: 1 0 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding-right: 10px; }
-
-.pill-group { display: flex; align-items: flex-start; gap: 2px; padding: 1px; border-radius: 11px; background: var(--pill-bg); }
-.pill-group--r12 { border-radius: 12px; }
-
-.tb-btn { display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 28px; height: 28px; padding: 2px; border-radius: 10px; transition: background-color .12s; }
-.tb-btn--text { padding: 2px 6px; }
-.tb-btn__label, .tb-btn--zoom, .theme-btn__label, .lang-btn { font-size: 14px; letter-spacing: -.1974px; color: var(--text); }
-.tb-btn__label { padding-right: 4px; }
-.tb-btn--zoom { width: 55px; padding: 2px 10px; } /* «Масштаб» (Figma xMQ3ZEN4AUINgwjVoxR8hS 16219:71273): 55×28, отступы 10 по бокам */
-.tb-btn:hover { background: var(--pill-hover); }
-.tb-btn.is-active { background: var(--pill-active); }
-.tb-btn:disabled { cursor: default; background: none; }
-.tb-btn:disabled .ico { color: var(--readonly); }
-
-/* бабл «Тема» / «Фон» (Figma 16219:71534): ховер и активное состояние — у всего бабла */
-.theme-btn { align-items: center; gap: 0; padding: 1px 1px 1px 0; transition: background-color .12s; }
-.theme-btn:hover { background: var(--pill-hover); }
-.theme-btn:has(.is-active) { background: var(--pill-active); }
-.theme-btn__label { display: flex; align-items: center; height: 28px; padding: 0 6px 0 10px; }
-.swatches { display: flex; align-items: center; }
-/* кружок: при наведении растёт до 32px на месте, поверх соседей (Figma 16369:59560) */
-.swatch { position: relative; width: 28px; height: 28px; border-radius: 50%; background: var(--c); border: 1px solid var(--swatch-border); margin-right: -4px; transition: transform .12s; }
-.swatch:hover { z-index: 1; transform: scale(1.142857); }
-.swatch:last-child { margin-right: 0; }
-/* без цвета (прозрачный аккордеон) — белый круг, перечёркнутый справа сверху влево вниз (Figma «нет фона»);
-   шахматка — только для полупрозрачного цвета (.is-alpha, пока ни в одной теме) */
-.swatch.is-none, .tp-tile__sw i.is-none { background: linear-gradient(to bottom right, transparent calc(50% - .5px), #d2d6da calc(50% - .5px), #d2d6da calc(50% + .5px), transparent calc(50% + .5px)), #fff; }
-.swatch.is-alpha, .tp-tile__sw i.is-alpha { background: linear-gradient(var(--c), var(--c)), repeating-conic-gradient(#d2d6da 0 25%, #fff 0 50%) 50% 50% / 8px 8px; }
-.tp-tile__sw i.is-alpha { background-size: auto, 6px 6px; }
-
-.lang-btn { height: 30px; padding: 0 10px; align-items: center; transition: background-color .12s; }
-.lang-btn:hover, .lang-btn.is-active { background: var(--pill-hover); }
-
-.done-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--success); display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 3px rgba(0, 0, 0, .1)); transition: filter .12s; }
-.done-btn .ico { color: #fff; }
-.done-btn:hover { filter: drop-shadow(0 0 3px rgba(0, 0, 0, .1)) brightness(1.08); }
-.close-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-.close-btn img { display: block; transition: opacity .12s; }
-.close-btn:hover img { opacity: .8; }
+/* ---------- Шапка конструктора (Figma rHabzni5OI5D4fxBLQdj2m 5:28058) ---------- */
+.ch { position: absolute; left: 0; top: 0; width: 1600px; height: 44px; display: flex; align-items: center; justify-content: space-between; }
+.ch-title { flex: 1 0 0; min-width: 0; padding-left: 20px; font-size: 16px; letter-spacing: -.2256px; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* переключатель устройств (Tumbler 1537:8661): ховера в макете нет — у невыбранных темнеет иконка */
+.ch-tumbler { flex: none; height: 24px; display: flex; align-items: center; gap: 2px; padding: 2px; border-radius: 100px; background: rgba(51, 51, 51, .05); }
+.ch-seg { height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 12px; border-radius: 100px; }
+.ch-seg.is-on { background: #fff; cursor: default; }
+.ch-seg__ico { width: 14px; height: 14px; padding-bottom: 1px; display: flex; align-items: center; justify-content: center; font-family: "cbuc-icons"; font-size: 14px; line-height: 1; color: #656c87; transition: color .12s; } /* text/label_contrast_text-color */
+.ch-seg.is-on .ch-seg__ico, .ch-seg:hover .ch-seg__ico { color: #000; }
+.ch-right { flex: 1 0 0; min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 0 10px 0 24px; }
+.ch-cmds { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+/* команды: кнопки ghost из кита, иконка secondary; глиф 20 из cbuc-icons в рамке 24 */
+.ch-cmd { --s-icon: var(--icon-secondary_icon-color); }
+.ch-cmd .btn__icon { font-family: "cbuc-icons"; font-size: 20px; }
+.ch-zoom { display: flex; align-items: center; gap: 6px; padding-right: 2px; }
+.ch-zoom__sep { width: 13px; height: 24px; background: linear-gradient(rgba(0, 0, 0, .08), rgba(0, 0, 0, .08)) center / 1px 100% no-repeat; } /* extra/unaccented_separator_color */
+.ch-zoom__btn { --s-icon: var(--icon-secondary_icon-color); --btn-is: 24px; --btn-if: "cbuc-icons24"; }
+.ch-zoom__btn .btn__icon { padding-bottom: 2px; }
+.ch-zoom__val { --s-text: #656c87; height: 24px; }
+.ch-save { display: flex; align-items: center; gap: 14px; }
+.ch-done .btn__icon { padding-bottom: 2px; }
 
 /* ---------- Контент ---------- */
-.content { position: absolute; left: 8px; top: 45px; width: 1539px; height: 855px; overflow: hidden; background: var(--content-bg); border-radius: 8px 8px 0 0; }
+/* справа от вписанного сайдбара (колонка 366); сайдбар свёрнут — от колонки линий 52 */
+.content { position: absolute; left: 366px; top: 44px; width: 1181px; height: 856px; overflow: hidden; background: var(--content-bg); border-radius: 8px 8px 0 0; }
+.stage.is-ls-collapsed .content { left: 52px; width: 1495px; }
+
+/* ---------- Левый сайдбар (Figma rHabzni5OI5D4fxBLQdj2m 5:28393) ---------- */
+.ls-panel {
+  position: absolute; z-index: 10; left: 8px; top: 44px; bottom: 8px; width: 350px;
+  display: flex; flex-direction: column;
+  background: #fff; border-radius: 8px;
+}
+.stage.is-ls-collapsed .ls-panel { display: none; box-shadow: var(--win-shadow); }
+.stage.is-ls-collapsed.is-ls-open .ls-panel { display: flex; }
+.ls-head { flex: none; display: flex; align-items: center; gap: 12px; padding: 12px 8px 8px 0; }
+.ls-head__title { flex: 1; height: 24px; display: flex; align-items: center; padding-left: 12px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; white-space: nowrap; }
+/* кнопка — .btn из ui-kit; выше шапки на 8, поэтому поля −4 (в макете кнопка 32 в ряду высотой 24) */
+.ls-toggle { flex: none; margin: -4px 0; }
+.ls-toggle .btn__icon { padding-bottom: 2px; }
+
+/* пункт списка (Figma 5:28133): ховер и выбранный — один фон, команды по ховеру */
+.ls-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 2px; padding: 0 4px; overflow: hidden auto; }
+.ls-item { flex: none; position: relative; height: 31px; display: flex; align-items: center; gap: 5px; padding-right: 8px; border-radius: 4px; cursor: pointer; }
+.ls-item.is-active, .ls-item:hover, .ls-item.is-menu { background: #ebf4ff; }
+.ls-item__marker { flex: none; width: 3px; height: 16px; border-radius: 4px; }
+.ls-item.is-active .ls-item__marker { background: #cc3d00; }
+.ls-item__name { flex: 1; min-width: 0; font-size: 15px; letter-spacing: -.2115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+.ls-item.is-active .ls-item__name { font-weight: 600; }
+.ls-item.is-off .ls-item__name { color: #999; } /* text/unaccented_text-color */
+.ls-item__cmds { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: none; gap: 6px; padding-left: 4px; background: #ebf4ff; }
+.ls-item:hover .ls-item__cmds, .ls-item.is-menu .ls-item__cmds { display: flex; }
+/* команды — .btn размера m из ui-kit: глиф 16 из cbuc-icons, у глазика и ✕ в макете 24 из cbuc-icons24 */
+.ls-cmd .btn__icon { padding-bottom: 1px; }
+.ls-cmd--24 { --btn-is: 24px; --btn-if: "cbuc-icons24"; }
+.ls-cmd--24 .btn__icon { padding-bottom: 2px; }
+
+/* переименование (Edit=on, Figma 635:6957): поле с линией снизу, ✓ и ✕ */
+.ls-item.is-edit { cursor: default; background: #ebf4ff; }
+.ls-item.is-edit .ls-item__cmds { display: none; }
+.ls-input { flex: 1; min-width: 0; height: 18px; margin: 0; padding: 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; outline: none; background: transparent; font: inherit; font-size: 15px; letter-spacing: -.2115px; color: var(--text); }
+.ls-save { flex: none; display: flex; gap: 6px; padding-left: 2px; }
+.btn--filled.btn--style-pale.ls-save__ok { --btn-ic-r: var(--icon-success_icon-color); }
+
+/* линии: вместо панели, активная длиннее и цветом маркера (Figma 5:28427) */
+.ls-lines { display: none; position: absolute; left: 0; top: 44px; bottom: 0; width: 52px; flex-direction: column; align-items: flex-start; gap: 16px; padding: 100px 16px 0; }
+.stage.is-ls-collapsed .ls-lines { display: flex; }
+.ls-line { flex: none; width: 16px; height: 2px; background: #ccc; } /* icon/unaccented_icon-color */
+.ls-line.is-active { width: 20px; background: #cc3d00; }
+
+/* меню «⋮» страницы */
+.mw-menu.ls-menu { width: 232px; }
+.ls-menu .mw-menu__list { padding: 8px; }
+.mw-menu__item.ls-menu__item { padding: 0 8px 0 12px; }
+.ls-menu__item .ico24 { flex: none; height: 32px; margin-right: 8px; color: #656c87; } /* icon/secondary_icon-color */
+.ls-menu__item .ico24.ls-menu__danger { color: #c2140a; } /* icon/danger_icon-color */
 
 /* ---------- Правая панель ---------- */
 .right-panel {
-  position: absolute; left: 1547px; top: 45px; width: 53px; bottom: 0;
+  position: absolute; left: 1547px; top: 44px; width: 53px; bottom: 0;
   display: flex; flex-direction: column; align-items: center; padding: 0 4px 8px 6px;
 }
 .right-panel__cmds { display: flex; flex-direction: column; gap: 2px; padding-bottom: 10px; }

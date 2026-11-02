@@ -158,4 +158,187 @@
     if (!rpMoreMenu.hidden && !e.target.closest('#rpMoreMenu, #rpMore')) closeRpMore();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !rpMoreMenu.hidden) closeRpMore(); });
+
+  // ---------- Левый сайдбар (Figma rHabzni5OI5D4fxBLQdj2m 5:28393) ----------
+  // Вписан в страницу или свёрнут в линии: по наведению на линии панель открывается поверх контента.
+  // Режим запоминается между открытиями, страницы при обновлении возвращаются к исходным.
+  const LS_KEY = 'popups.sidebar';
+  const lsRoot = $('#ls');
+  const lsList = $('#lsList');
+  const lsLines = $('#lsLines');
+  const lsMenu = $('#lsMenu');
+  const lsToggle = $('#lsToggle');
+  let lsPages = [{ id: 1, name: 'Страница 1', off: false }, { id: 2, name: 'Страница 2', off: false }];
+  let lsActive = 1;
+  let lsNextId = 3;
+  let lsMenuPage = null; // страница, у которой открыто меню «⋮»
+  let lsEditing = null;  // { page, row, input } — идёт переименование
+  let lsCloseTimer = 0;
+
+  const lsPage = (id) => lsPages.find((p) => p.id === id);
+  const lsVisibleCount = () => lsPages.filter((p) => !p.off).length;
+
+  function lsReadCollapsed() {
+    try { return localStorage.getItem(LS_KEY) === 'collapsed'; } catch { return false; }
+  }
+
+  function lsSetCollapsed(collapsed) {
+    stage.classList.toggle('is-ls-collapsed', collapsed);
+    stage.classList.remove('is-ls-open');
+    $('#lsToggleIco').innerHTML = collapsed ? '&#xEBFB;' : '&#xEBFA;';
+    lsToggle.setAttribute('aria-label', collapsed ? 'Закрепить панель' : 'Свернуть панель');
+    try { localStorage.setItem(LS_KEY, collapsed ? 'collapsed' : 'pinned'); } catch {}
+  }
+
+  function lsRenderLines() {
+    lsLines.replaceChildren(...lsPages.map((p) => el('span', 'ls-line' + (p.id === lsActive ? ' is-active' : ''))));
+  }
+
+  function lsRender() {
+    lsList.replaceChildren(...lsPages.map((p) => {
+      const row = el('div', 'ls-item' + (p.id === lsActive ? ' is-active' : '') + (p.off ? ' is-off' : ''),
+        '<span class="ls-item__marker"></span><span class="ls-item__name"></span>' +
+        '<span class="ls-item__cmds">' +
+        `<button class="btn btn--ghost btn--style-label btn--size-m btn--icon ls-cmd ls-cmd--24" type="button" data-cmd="eye" aria-label="${p.off ? 'Показать' : 'Скрыть'}"><span class="btn__icon">${p.off ? '&#xE619;' : '&#xE651;'}</span></button>` +
+        '<button class="btn btn--ghost btn--style-label btn--size-m btn--icon ls-cmd" type="button" data-cmd="more" aria-label="Ещё"><span class="btn__icon">&#xE9D9;</span></button>' +
+        '</span>');
+      row.dataset.id = p.id;
+      row.querySelector('.ls-item__name').textContent = p.name;
+      // нельзя скрыть все страницы: у последней видимой глазик не срабатывает
+      row.querySelector('[data-cmd="eye"]').disabled = !p.off && lsVisibleCount() === 1;
+      return row;
+    }));
+    lsRenderLines();
+  }
+
+  // Выбор только переставляет классы: строки остаются на месте, иначе двойной клик не дойдёт до строки.
+  function lsSelect(id) {
+    lsActive = id;
+    for (const row of lsList.children) {
+      row.classList.toggle('is-active', Number(row.dataset.id) === id);
+    }
+    lsRenderLines();
+  }
+
+  function lsCloseMenu() {
+    if (lsMenuPage == null) return;
+    lsMenu.hidden = true;
+    lsList.querySelector('.is-menu')?.classList.remove('is-menu');
+    lsMenuPage = null;
+    lsCollapseIfLeft();
+  }
+
+  function lsOpenMenu(id, btn) {
+    lsMenuPage = id;
+    btn.closest('.ls-item').classList.add('is-menu');
+    lsMenu.hidden = false;
+    const r = stageRect(btn);
+    lsMenu.style.left = Math.round(r.left + r.width / 2 - lsMenu.offsetWidth) + 'px';
+    lsMenu.style.top = Math.round(r.top + r.height / 2 - 8 - 14) + 'px';
+  }
+
+  function lsStartRename(id) {
+    lsFinishRename(true);
+    lsSelect(id);
+    const page = lsPage(id);
+    const row = lsList.querySelector(`[data-id="${id}"]`);
+    const input = el('input', 'ls-input');
+    input.value = page.name;
+    input.setAttribute('aria-label', 'Название страницы');
+    const save = el('span', 'ls-save',
+      '<button class="btn btn--filled btn--style-pale btn--size-m btn--icon ls-cmd ls-save__ok" type="button" data-save="ok" aria-label="Сохранить"><span class="btn__icon">&#xE75E;</span></button>' +
+      '<button class="btn btn--ghost btn--style-label btn--size-m btn--icon ls-cmd ls-cmd--24" type="button" data-save="cancel" aria-label="Отменить"><span class="btn__icon">&#xE66C;</span></button>');
+    row.classList.add('is-edit');
+    row.querySelector('.ls-item__name').replaceWith(input);
+    row.querySelector('.ls-item__cmds').before(save);
+    lsEditing = { page, row, input };
+    input.focus();
+    input.select();
+  }
+
+  // apply — сохранить название; пустое название не сохраняется.
+  function lsFinishRename(apply) {
+    if (!lsEditing) return;
+    const { page, input } = lsEditing;
+    lsEditing = null;
+    const name = input.value.trim();
+    if (apply && name) page.name = name;
+    lsRender();
+    lsCollapseIfLeft();
+  }
+
+  // Удаление: фокус — на предыдущую. Удалена последняя — создаётся пустая страница.
+  function lsDelete(id) {
+    const at = lsPages.findIndex((p) => p.id === id);
+    lsPages.splice(at, 1);
+    if (!lsPages.length) lsPages.push({ id: lsNextId++, name: 'Страница 1', off: false });
+    if (id === lsActive) lsActive = lsPages[Math.max(0, at - 1)].id;
+    if (!lsVisibleCount()) lsPage(lsActive).off = false; // хотя бы одна страница остаётся видимой
+    lsRender();
+  }
+
+  // Панель поверх контента закрывается, когда мышь ушла, а меню и переименование закрыты.
+  function lsCollapseIfLeft() {
+    clearTimeout(lsCloseTimer);
+    if (!stage.classList.contains('is-ls-open') || lsRoot.matches(':hover')) return;
+    lsCloseTimer = setTimeout(() => {
+      if (lsMenuPage == null && !lsEditing && !lsRoot.matches(':hover')) stage.classList.remove('is-ls-open');
+    }, 200);
+  }
+
+  lsLines.addEventListener('mouseenter', () => {
+    clearTimeout(lsCloseTimer);
+    stage.classList.add('is-ls-open');
+  });
+  lsRoot.addEventListener('mouseenter', () => clearTimeout(lsCloseTimer));
+  lsRoot.addEventListener('mouseleave', lsCollapseIfLeft);
+  lsToggle.addEventListener('click', () => lsSetCollapsed(!stage.classList.contains('is-ls-collapsed')));
+
+  lsList.addEventListener('click', (e) => {
+    const row = e.target.closest('.ls-item');
+    if (!row) return;
+    const id = Number(row.dataset.id);
+    const save = e.target.closest('[data-save]');
+    if (save) { lsFinishRename(save.dataset.save === 'ok'); return; }
+    if (row.classList.contains('is-edit')) return;
+    const cmd = e.target.closest('[data-cmd]');
+    if (cmd?.dataset.cmd === 'eye') {
+      const page = lsPage(id);
+      page.off = !page.off;
+      lsRender();
+    } else if (cmd?.dataset.cmd === 'more') {
+      if (lsMenuPage === id) lsCloseMenu();
+      else { lsCloseMenu(); lsOpenMenu(id, cmd); }
+    } else {
+      lsSelect(id);
+    }
+  });
+  lsList.addEventListener('dblclick', (e) => {
+    const row = e.target.closest('.ls-item');
+    if (row && !e.target.closest('[data-cmd], [data-save]') && !row.classList.contains('is-edit')) lsStartRename(Number(row.dataset.id));
+  });
+  lsList.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') lsFinishRename(true);
+    else if (e.key === 'Escape') lsFinishRename(false);
+  });
+
+  lsMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-act]');
+    if (!item) return;
+    const id = lsMenuPage;
+    lsCloseMenu();
+    if (item.dataset.act === 'rename') lsStartRename(id);
+    else lsDelete(id);
+  });
+  $('#lsMenuClose').addEventListener('click', lsCloseMenu);
+
+  // Клик мимо закрывает меню и сохраняет название.
+  stage.addEventListener('mousedown', (e) => {
+    if (lsMenuPage != null && !e.target.closest('#lsMenu, [data-cmd="more"]')) lsCloseMenu();
+    if (lsEditing && !lsEditing.row.contains(e.target)) lsFinishRename(true);
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lsCloseMenu(); });
+
+  lsSetCollapsed(lsReadCollapsed());
+  lsRender();
 })();
