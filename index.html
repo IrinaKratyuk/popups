@@ -6,26 +6,36 @@
   <title>Попапы</title>
   <link rel="icon" href="data:,">
   <!-- токены и рамка демо (шапка и вспомогательная панель) — компонент demo-frame из ui-kit -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/tokens.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/components/demo-frame/demo-frame.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/components/button/button.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/components/widget/widget.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/components/toolbar/toolbar.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/tokens.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/demo-frame/demo-frame.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/button/button.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/widget/widget.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/toolbar/toolbar.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/input/input.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/chips/chips.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/property-editor/property-editor.css">
   <!-- шрифт сайта в макете -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="viewport">
-    <div class="stage" id="stage" data-scenario="no-catalog">
+    <div class="stage" id="stage" data-scenario="window-create">
 
       <!-- Шапка конструктора (Figma rHabzni5OI5D4fxBLQdj2m 5:28058): только ховер, без действий по клику -->
       <header class="ch">
         <div class="ch-title">Название сайта</div>
-        <div class="ch-tumbler" aria-label="Устройство">
-          <button class="ch-seg is-on" type="button" aria-label="Десктоп"><span class="ch-seg__ico">&#xE730;</span></button>
-          <button class="ch-seg" type="button" aria-label="Мобильная версия"><span class="ch-seg__ico">&#xE637;</span></button>
-          <button class="ch-seg" type="button" aria-label="Ещё"><span class="ch-seg__ico">&#xEAB4;</span></button>
+        <div class="ch-center">
+          <div class="ch-tumbler" id="chDevice" aria-label="Устройство">
+            <button class="ch-seg is-on" type="button" aria-label="Десктоп"><span class="ch-seg__ico">&#xE730;</span></button>
+            <button class="ch-seg" type="button" aria-label="Мобильная версия"><span class="ch-seg__ico">&#xE637;</span></button>
+            <button class="ch-seg" type="button" aria-label="Ещё"><span class="ch-seg__ico">&#xEAB4;</span></button>
+          </div>
+          <!-- Переключатель окно-страница (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2516:32636): только в режиме «Страница и окно» -->
+          <div class="ch-tumbler ch-view" id="chView" aria-label="Вид страницы" hidden>
+            <button class="ch-seg is-on" type="button" aria-label="Страница" data-view="page"><span class="ch-seg__ico">&#xE735;</span></button>
+            <button class="ch-seg" type="button" aria-label="Окно" data-view="window"><span class="ch-seg__ico">&#xEBE1;</span></button>
+          </div>
         </div>
         <div class="ch-right">
           <div class="ch-cmds">
@@ -53,7 +63,7 @@
         <div class="ls-lines" id="lsLines" aria-hidden="true"></div>
         <div class="ls-panel">
           <div class="ls-head">
-            <span class="ls-head__title">Страницы</span>
+            <div class="ls-head__title">Страницы<button class="btn btn--filled btn--style-pale btn--size-m rs-plus" type="button" id="lsAdd" aria-label="Добавить страницу"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button></div>
             <button class="btn btn--filled btn--style-pale btn--icon ls-toggle" type="button" id="lsToggle"><span class="btn__icon" id="lsToggleIco"></span></button>
           </div>
           <div class="ls-list" id="lsList"></div>
@@ -61,9 +71,9 @@
       </aside>
 
       <!-- Контент -->
-      <main class="content">
+      <main class="content" id="content">
         <!-- Середина: сайт в конструкторе (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:63290). Ховер виджетов — .wg из ui-kit -->
-        <div class="site">
+        <div class="site" id="site">
           <header class="wg site-header">
             <img class="site-logo" src="assets/img/site/logo.svg" width="61" height="46" alt="">
             <div class="site-header__center"><span class="site-menu">Меню</span></div>
@@ -140,6 +150,57 @@
             </div>
           </div>
         </div>
+        <!-- Новая страница: на странице — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:28596, в окне — 2167:87296. Секция и пустой виджет — .wg из ui-kit, кнопка «+ секция» — Figma rHabzni5OI5D4fxBLQdj2m 4590:7239 -->
+        <div class="site-blank" id="siteBlank" hidden>
+          <header class="wg site-header">
+            <img class="site-logo" src="assets/img/site/logo.svg" width="61" height="46" alt="">
+            <div class="site-header__center"><span class="site-menu">Меню</span></div>
+            <span class="site-phone">+7 (4852) 12-13-14</span>
+          </header>
+          <div class="site-blank__body" id="siteBlankBody">
+            <section class="wg site-blank__section" id="siteBlankSection">
+              <div class="wg site-blank__cell" id="siteBlankCell">
+                <div class="wg__content wg__empty">
+                  <div class="wg__actions">
+                    <button type="button" class="wg__action wg__action--cols"><span class="wg__action-caption">Колонки</span></button>
+                    <button type="button" class="wg__action wg__action--widget"><span class="wg__action-caption">Виджет</span></button>
+                    <button type="button" class="wg__action wg__action--rows"><span class="wg__action-caption">Строки</span></button>
+                  </div>
+                </div>
+              </div>
+              <!-- Карточка товара (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2695:72015): рендер макета внутри секции, вместо пустой ячейки. Выделение и тулбар — .wg и .tb из ui-kit, команды — 2695:71293 -->
+              <div class="wg site-product" id="siteProduct" hidden>
+                <div class="wg__content"><img class="site-product__img" src="assets/img/site/product-card.png?v=2" width="756" height="768" alt="Карточка товара" draggable="false"></div>
+                <div class="wg__toolbar">
+                  <div class="tb tb--style-info" role="toolbar" aria-label="Карточка товара">
+                    <button type="button" class="tb__btn" id="siteProductBack" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
+                    <button type="button" class="tb__btn" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
+                    <button type="button" class="tb__btn tb__btn--delete" id="siteProductDelete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
+                    <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="site-plus site-plus--up"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
+              <button type="button" class="site-plus site-plus--down"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
+              <div class="wg__toolbar">
+                <div class="tb tb--style-info" role="toolbar" aria-label="Секция">
+                  <button type="button" class="tb__btn site-blank__back" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
+                  <button type="button" class="tb__btn" id="sectionFill" aria-label="Фон"><span class="tb__icon" aria-hidden="true">&#xe664;</span></button>
+                  <button type="button" class="tb__btn" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe75d;</span></button>
+                  <button type="button" class="tb__btn tb__btn--delete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
+                  <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
+                </div>
+              </div>
+            </section>
+            <button class="mw-menu__close site-blank__close" type="button" aria-label="Закрыть"><img src="assets/img/close-union.svg" width="12" height="12" alt=""></button>
+            <div class="wg__toolbar">
+              <div class="tb tb--style-info" role="toolbar" aria-label="Окно">
+                <button type="button" class="tb__btn" id="wsFill" aria-label="Фон"><span class="tb__icon" aria-hidden="true">&#xe664;</span></button>
+                <button type="button" class="tb__btn" id="wsOpen" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe75d;</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
 
       <!-- Вписанная панель правого сайдбара (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 148:15451): «Магазин» или «Данные», слева от тулбара -->
@@ -160,7 +221,7 @@
 
       <section class="rs-panel" id="rs-data" aria-label="Данные" hidden>
         <div class="rs-head rs-head--data">
-          <div class="rs-head__title rs-head__title--data">Данные<button class="btn btn--same-outlined btn--style-default btn--size-m rs-plus" type="button" aria-label="Добавить"><span class="btn__icon">&#xEADD;</span></button></div>
+          <div class="rs-head__title rs-head__title--data">Данные<button class="btn btn--filled btn--style-pale btn--size-m rs-plus" type="button" aria-label="Добавить"><span class="btn__icon">&#xEADD;</span></button></div>
           <div class="rs-find rs-find--data">Найти<span class="rs-find__filter">Все</span></div>
         </div>
         <div class="rs-fields">
@@ -169,7 +230,7 @@
         </div>
       </section>
 
-      <!-- Окно «Параметры сайта» (Figma 2547:76412): поверх контента, вписанной панели в этом состоянии нет -->
+      <!-- Окно «Параметры сайта» (Figma 2547:76412): поверх контента, вписанная панель скрыта, её место остаётся за ней -->
       <section class="rs-params" id="rsParams" aria-label="Параметры сайта" hidden>
         <div class="rs-params__head">
           <span class="rs-params__title">Параметры сайта</span>
@@ -205,18 +266,202 @@
         <button class="rp-help" type="button" aria-label="Помощь"><img src="assets/img/help.svg" width="12" height="16" alt=""></button>
       </aside>
 
-      <!-- Меню «⋮» страницы: вид — как меню пункта аккордеона в interface-prototype, крестик — поверх «⋮» -->
+      <!-- Окно новой страницы: .pe из ui-kit («Окно редактора свойств», Figma rHabzni5OI5D4fxBLQdj2m 4625:846), содержимое — Figma G3QPR5r3X5ox6DmPwj6rJ7 30037:38001. Без .pe__mark: треугольника «имя изменено» нет -->
+      <section class="pe ls-new" id="lsNew" aria-label="Новая страница" hidden>
+        <header class="pe__head">
+          <label class="pe__name"><input class="pe__name-input" id="lsNewName" data-pe-default="Новая страница" aria-label="Название страницы"></label>
+          <div class="pe__cmds">
+            <button type="button" class="pe__reset" aria-label="Сбросить настройки" disabled>&#xe629;</button>
+            <button type="button" class="pe__done" aria-label="Сохранить">&#xe75e;</button>
+            <button type="button" class="pe__close" aria-label="Закрыть">&#xe66c;</button>
+          </div>
+        </header>
+        <div class="pe__body">
+          <div class="pe__card ls-new__main">
+            <div class="pe__rows">
+              <div class="pe__row">
+                <span class="pe__label">Адрес</span>
+                <span class="ls-new__addr">/<label class="input input--size-l"><span class="input__body"><span class="input__field"><input class="input__control" id="lsNewAddr" aria-label="Адрес страницы"></span></span></label></span>
+              </div>
+              <div class="pe__row">
+                <span class="pe__label">Доступ</span>
+                <button class="btn btn--link btn--style-link btn--size-m ls-new__access" type="button">Без авторизации</button>
+              </div>
+            </div>
+            <button class="ls-new__index" type="button" id="lsNewIndex" role="switch" aria-checked="false"><span>Запретить поисковую индексацию</span><span class="rp-switch"></span></button>
+          </div>
+          <div class="pe__card">
+            <div class="pe__rows">
+              <div class="pe__row">
+                <span class="pe__label">Режим открытия</span>
+                <button class="btn btn--link btn--style-link btn--size-m ls-new__access" type="button" id="lsMode" aria-haspopup="menu" aria-expanded="false">На странице</button>
+              </div>
+            </div>
+          </div>
+          <div class="pe__card">
+            <div class="ls-new__seo" data-pe-row="seo" hidden>
+              <div class="pe__title">SEO<button type="button" class="pe__x" data-pe-clear aria-label="Убрать SEO">&#xe66c;</button></div>
+              <div class="ls-new__seo-fields">
+                <label class="input input--label-top"><span class="input__label">Заголовок</span><span class="input__body"><span class="input__field"><input class="input__control" id="lsNewSeoTitle"></span></span></label>
+                <button class="btn btn--filled btn--style-pale btn--size-m" type="button">Описание</button>
+              </div>
+            </div>
+          </div>
+          <div class="pe__chips"><button type="button" class="chips chips--optional" data-pe-chip="seo"><span class="chips__caption">SEO</span></button></div>
+        </div>
+        <!-- Меню режима открытия (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:20980) -->
+        <div class="mw-menu ls-mode" id="lsModeMenu" role="menu" aria-label="Открывать" hidden>
+          <div class="mw-menu__list">
+            <div class="ls-mode__head">Открывать</div>
+            <button class="mw-menu__item ls-mode__item is-selected" type="button" role="menuitemradio" aria-checked="true" data-mode="page"><span class="ls-mode__toggle"></span><span class="mw-menu__text">На странице</span></button>
+            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="window"><span class="ls-mode__toggle"></span><span class="mw-menu__text">В окне</span></button>
+            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="both"><span class="ls-mode__toggle"></span><span class="mw-menu__text">Страница и окно</span></button>
+          </div>
+          <button class="mw-menu__close" type="button" id="lsModeClose" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
+        </div>
+      </section>
+
+      <!-- Настройки окна: .pe из ui-kit, свойства — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2489:24408. Редакторы, крестики и чипсы — PropertyEditor -->
+      <section class="pe ws" id="ws" aria-label="Настройки окна" hidden>
+        <header class="pe__head">
+          <span class="pe__name pe__name--static">Окно</span>
+          <div class="pe__cmds">
+            <button type="button" class="pe__reset" aria-label="Сбросить настройки">&#xe629;</button>
+            <button type="button" class="pe__done" aria-label="Сохранить">&#xe75e;</button>
+            <button type="button" class="pe__close" aria-label="Закрыть">&#xe66c;</button>
+          </div>
+        </header>
+        <div class="pe__body">
+          <div class="pe__card">
+            <div class="pe__rows">
+              <div class="pe__row">
+                <span class="pe__label">Положение</span>
+                <button class="btn btn--link btn--style-link btn--size-m ls-new__access" type="button"><span class="btn__icon">&#xEBC5;</span><span class="btn__caption">По центру</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="pe__card ws__card">
+            <div class="pe__size">
+              <span class="pe__label">Ширина</span>
+              <label class="pe__dim" data-pe-dim="w"><input class="pe__dim-value" inputmode="numeric" maxlength="4" aria-label="Ширина"><button type="button" class="pe__dim-unit"></button></label>
+              <span></span>
+              <span class="pe__label">Высота</span>
+              <label class="pe__dim" data-pe-dim="h"><input class="pe__dim-value" inputmode="numeric" maxlength="4" aria-label="Высота"><button type="button" class="pe__dim-unit"></button></label>
+              <span></span>
+            </div>
+            <div>
+              <div class="pe__title">Отступы</div>
+              <div class="pe__rows">
+                <div class="pe__row pe__row--style">
+                  <span class="pe__label pe__label--style">Внутренние</span>
+                  <div class="pe__row-body">
+                    <label class="pe__num" data-ws-axis><svg class="ws__ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M.5 1v10M11.5 1v10"/><rect x="3.5" y="3.5" width="5" height="5" rx="1.5"/></svg><input class="pe__num-value" data-ws-pad="h" inputmode="numeric" maxlength="3" aria-label="Отступы по горизонтали"></label>
+                    <label class="pe__num" data-ws-axis><svg class="ws__ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 .5h10M1 11.5h10"/><rect x="3.5" y="3.5" width="5" height="5" rx="1.5"/></svg><input class="pe__num-value" data-ws-pad="v" inputmode="numeric" maxlength="3" aria-label="Отступы по вертикали"></label>
+                    <span class="pe__box pe__box--sides" data-ws-sides>
+                      <input class="pe__box-input pe__box-input--top" data-ws-pad="top" inputmode="numeric" maxlength="3" aria-label="Отступ сверху"><i class="pe__box-mark pe__box-mark--top"></i>
+                      <input class="pe__box-input pe__box-input--right" data-ws-pad="right" inputmode="numeric" maxlength="3" aria-label="Отступ справа"><i class="pe__box-mark pe__box-mark--right"></i>
+                      <input class="pe__box-input pe__box-input--bottom" data-ws-pad="bottom" inputmode="numeric" maxlength="3" aria-label="Отступ снизу"><i class="pe__box-mark pe__box-mark--bottom"></i>
+                      <input class="pe__box-input pe__box-input--left" data-ws-pad="left" inputmode="numeric" maxlength="3" aria-label="Отступ слева"><i class="pe__box-mark pe__box-mark--left"></i>
+                    </span>
+                    <span class="pe__spacer"></span>
+                    <button type="button" class="pe__switch" data-ws-pad-split aria-label="Отступы по сторонам">&#xebce;</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pe__card">
+            <div class="pe__title">Оформление</div>
+            <div class="pe__rows">
+              <div class="pe__row pe__row--style" data-pe-row="dim">
+                <span class="pe__label pe__label--style">Затемнение сайта</span>
+                <div class="pe__row-body"><button type="button" class="pe__bubble" data-pe-color="#000000" data-pe-title="Затемнение" style="--pe-alpha: 14%"><span class="pe__swatch pe__swatch--alpha"></span><span class="pe__bubble-text"></span></button><button type="button" class="pe__x" data-pe-clear aria-label="Затемнение: убрать">&#xe66c;</button></div>
+              </div>
+              <div class="pe__row pe__row--style" data-pe-row="radius">
+                <span class="pe__label pe__label--style">Скругления</span>
+                <div class="pe__row-body"><label class="pe__num"><span class="pe__corners" aria-hidden="true"></span><input class="pe__num-value" inputmode="numeric" maxlength="3" aria-label="Скругления"></label><span class="pe__spacer"></span><button type="button" class="pe__switch" data-pe-split="corners" data-pe-max="100" aria-label="Углы по отдельности">&#xe95f;</button><button type="button" class="pe__x" data-pe-clear aria-label="Скругления: убрать">&#xe66c;</button></div>
+              </div>
+              <div class="pe__row pe__row--style" data-pe-row="background" data-pe-also="shadow">
+                <span class="pe__label pe__label--style">Фон</span>
+                <div class="pe__row-body"><button type="button" class="pe__bubble" data-pe-color="#ffffff" data-pe-title="Фон"><span class="pe__swatch"></span><span class="pe__bubble-text"></span></button><button type="button" class="pe__x" data-pe-clear aria-label="Фон: убрать">&#xe66c;</button></div>
+              </div>
+              <div class="pe__row pe__row--style" data-pe-row="shadow">
+                <span class="pe__label pe__label--style">Тень</span>
+                <div class="pe__row-body"><button type="button" class="pe__bubble" data-pe-shadow="#a39c97"><span class="pe__swatch pe__swatch--alpha"></span><span class="pe__bubble-text"></span></button><button type="button" class="pe__x" data-pe-clear aria-label="Тень: убрать">&#xe66c;</button></div>
+              </div>
+              <div class="pe__row pe__row--style" data-pe-row="border" hidden>
+                <span class="pe__label pe__label--style">Границы</span>
+                <div class="pe__row-body"><button type="button" class="pe__swatch" data-pe-color="#000000" data-pe-title="Границы" aria-label="Цвет границы"></button><button type="button" class="pe__line" aria-label="Тип линии" aria-haspopup="menu"></button><label class="pe__num pe__num--edge"><input class="pe__num-value" inputmode="numeric" maxlength="2" aria-label="Толщина"></label><span class="pe__spacer"></span><button type="button" class="pe__switch" data-pe-split="sides" data-pe-max="20" aria-label="Стороны по отдельности">&#xebce;</button><button type="button" class="pe__x" data-pe-clear aria-label="Границы: убрать">&#xe66c;</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="pe__chips">
+            <button type="button" class="chips chips--optional" data-pe-chip="dim"><span class="chips__caption">Затемнение сайта</span></button>
+            <button type="button" class="chips chips--optional" data-pe-chip="radius"><span class="chips__caption">Скругления</span></button>
+            <button type="button" class="chips chips--optional" data-pe-chip="background"><span class="chips__caption">Фон</span></button>
+            <button type="button" class="chips chips--optional" data-pe-chip="shadow"><span class="chips__caption">Тень</span></button>
+            <button type="button" class="chips chips--optional" data-pe-chip="border"><span class="chips__caption">Границы</span></button>
+          </div>
+        </div>
+      </section>
+      <!-- Окно «Фон» (Figma 16385:63244, верхняя строка 16385:63266): перенесено из interface-prototype, общее для «Фона» окна и «Затемнения сайта»;
+           клик по картинке открывает «Картинку» (настройки картинки) в том же окне -->
+      <div class="color-win bg-win" id="bgWin" hidden role="dialog" aria-labelledby="bgTitle">
+        <div class="cw-head">
+          <button class="bg-back" type="button" id="bgBack" aria-label="Назад"><img src="assets/img/back-arrow.svg" width="7.5" height="13" alt=""></button>
+          <span class="cw-title" id="bgTitle">Фон</span>
+          <div class="cw-cmds">
+            <span class="cw-btn" title="Загрузить"><span class="ico bg-clip">&#xE671;</span></span>
+            <span class="cw-btn" title="Пипетка"><img src="assets/img/eyedropper.svg" width="16" height="16" alt=""></span>
+          </div>
+          <button class="cw-done" type="button" id="bgDone" aria-label="Готово"><span class="ico">&#xE75E;</span></button>
+          <button class="cw-close" type="button" id="bgClose" aria-label="Закрыть"><img src="assets/img/close-color.svg" width="24" height="24" alt=""></button>
+        </div>
+        <div class="cw-body bg-main">
+          <div class="cw-card cw-value">
+            <span class="cw-pill" id="bgPill"></span>
+            <span class="cw-fields bg-fields--color">
+              <span class="cw-mode">HEX<span class="ico">&#xE9AA;</span></span>
+              <span class="cw-hex">#<input id="bgHex" type="text" spellcheck="false" autocomplete="off" maxlength="6" placeholder="FFFFFF" aria-label="HEX"></span>
+              <span class="cw-alpha"><input id="bgAlpha" type="text" inputmode="numeric" autocomplete="off" maxlength="3" aria-label="Прозрачность"><span>%</span></span>
+            </span>
+            <span class="cw-fields bg-fields--grad"><span class="bg-grad"><span class="bg-grad__hash">#</span><span id="bgGradFrom"></span><span class="bg-grad__arrow">&rarr;</span><span>F8F8F8</span></span><span class="bg-grad__alpha">100%</span></span>
+          </div>
+          <div class="cw-card">
+            <div class="cw-presets" id="bgPresets"></div>
+            <div class="cw-more bg-more"><span>Другой цвет</span><span>Градиент</span><span>Текстура</span></div>
+          </div>
+          <div class="cw-card bg-cat" id="bgCat"></div>
+        </div>
+        <div class="cw-body bg-pic">
+          <div class="cw-card bg-pic__card bg-pic__info">
+            <div class="bg-pic__pv" id="bgPicPv">
+              <span class="bg-tool"><span class="ico">&#xE660;</span></span><span class="bg-tool"><span class="ico">&#xE95F;</span></span>
+            </div>
+            <div class="bg-row"><span class="bg-row__label">Отображение</span><span class="bg-row__val"><span class="bg-link">Кадрировать</span><span class="bg-link-ico ico">&#xE660;</span></span></div>
+            <div class="bg-row"><span class="bg-row__label">Стиль</span><span class="bg-row__val"><span class="bg-link">Оригинал картинки</span></span></div>
+          </div>
+          <div class="cw-card bg-pic__card bg-fx" id="bgFx"></div>
+        </div>
+      </div>
+
+      <!-- Меню «⋮» страницы (Figma G3QPR5r3X5ox6DmPwj6rJ7 17009:434390): крестик в заголовке приходится на место «⋮» -->
       <div class="mw-menu ls-menu" id="lsMenu" hidden>
         <div class="mw-menu__list">
-          <button class="mw-menu__item ls-menu__item" type="button" data-act="rename"><span class="ico24">&#xE698;</span><span class="mw-menu__text">Переименовать</span></button>
+          <div class="ls-menu__top"><div class="ls-menu__head">Действия</div><button class="ls-menu__close" type="button" id="lsMenuClose" aria-label="Закрыть"><img src="assets/img/close-link.svg" width="32" height="32" alt=""></button></div>
+          <button class="mw-menu__item ls-menu__item" type="button" data-act="home"><span class="ico24">&#xE64C;</span><span class="mw-menu__text">Сделать главной</span></button>
+          <button class="mw-menu__item ls-menu__item" type="button" data-act="settings"><span class="ico24">&#xE61B;</span><span class="mw-menu__text">Настроить</span></button>
+          <button class="mw-menu__item ls-menu__item" type="button" data-act="link"><span class="ico24">&#xE6A7;</span><span class="mw-menu__text">Скопировать ссылку</span></button>
+          <button class="mw-menu__item ls-menu__item" type="button" data-act="duplicate"><span class="ico24">&#xE669;</span><span class="mw-menu__text">Дублировать</span></button>
+          <button class="mw-menu__item ls-menu__item" type="button" data-act="hide"><span class="ico24">&#xE651;</span><span class="mw-menu__text">Скрыть</span></button>
           <button class="mw-menu__item ls-menu__item" type="button" data-act="delete"><span class="ico24 ls-menu__danger">&#xEB72;</span><span class="mw-menu__text">Удалить</span></button>
         </div>
-        <button class="mw-menu__close" type="button" id="lsMenuClose" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
-      </div>
+              </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.11.0/components/demo-frame/demo-frame.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/demo-frame/demo-frame.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.12.0/components/property-editor/property-editor.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

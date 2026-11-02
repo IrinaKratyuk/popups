@@ -14,6 +14,7 @@
 
   // Рамка демо — demo-frame из ui-kit: шапка, сцена 1600×900 и вспомогательная панель справа масштабируются как одно целое.
   let scale = 1;
+  let scenSyncing = false; // панель догоняет открытую страницу, сцену не трогаем
   // disabled — сценарий пока не сделан
   const frame = DemoFrame.mount({
     stage,
@@ -25,16 +26,22 @@
     device: 'monitor',
     scenarios: [
       { group: 'Работа с каталогом', items: [
-        { id: 'no-catalog', title: 'Без каталога' },
+        { id: 'no-catalog', title: 'Без каталога', disabled: true },
         { id: 'catalog-add', title: 'Добавление каталога', disabled: true },
         { id: 'catalog-setup', title: 'Настройка каталога', disabled: true },
         { id: 'product-card', title: 'Карточка товара', disabled: true },
       ] },
       { group: 'Работа с окнами/страницами', items: [
-        { id: 'window-create', title: 'Создание окна с товаром', disabled: true },
-        { id: 'window-setup', title: 'Настройки окна', disabled: true },
-        { id: 'window-switch', title: 'Переключение страница-окно', disabled: true },
-        { id: 'window-link', title: 'Связь кнопки с окном', disabled: true },
+        { id: 'window-create', title: 'Создание окна с товаром' },
+        { id: 'window-setup', title: 'Настройки окна', disabled: true, hidden: true },
+        { id: 'window-switch', title: 'Переключение страница-окно', disabled: true, hidden: true },
+        { id: 'window-link', title: 'Связь кнопки с окном', disabled: true, hidden: true },
+        // Состояния новой страницы: вариант — режим открытия
+        { id: 'new', title: 'Новая страница', variants: [
+          { id: 'page', title: 'На странице' },
+          { id: 'window', title: 'В окне' },
+          { id: 'both', title: 'Страница и окно' },
+        ] },
       ] },
       { group: 'Режим просмотра', items: [
         { id: 'view-catalog', title: 'В каталоге и по кнопке', disabled: true },
@@ -57,9 +64,11 @@
     ],
     value: { scenario: stage.dataset.scenario },
     onScale: (s) => { scale = s; },
-    onChange: ({ scenario }) => {
+    onChange: ({ scenario, variant }) => {
       stage.dataset.scenario = scenario;
+      if (scenSyncing) return;
       rsCloseParams();
+      scenApply(scenario, variant);
     },
   });
 
@@ -84,11 +93,11 @@
 
   const groupNodes = (g) => [g, g.nextElementSibling];
   for (const g of scenGroups) g.classList.add('pop-sub');
-  const scenLast = scenGroups[3];
+  const scenLast = scenGroups.at(-1);
   const scenLastOptions = scenLast.nextElementSibling;
   scenLast.remove(); // заголовок группы становится заголовком раздела
   scenCard.append(
-    scenSection('Окна', scenGroups.slice(0, 3).flatMap(groupNodes)),
+    scenSection('Окна', scenGroups.slice(0, -1).flatMap(groupNodes)),
     scenSection('Внешние виджеты', [scenLastOptions]),
   );
 
@@ -111,14 +120,14 @@
 
   // ---------- Правый сайдбар (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 148:15451) ----------
   // Вписан в страницу, по умолчанию открыт «Магазин». Клик по иконке переключает панель, повторный — сворачивает до тулбара.
-  // «Настройки» открывают окно поверх контента без вписанной панели; закрытие окна возвращает панель.
+  // «Настройки» открывают окно поверх контента: вписанная панель скрыта, но её место остаётся за ней, поэтому контент не прыгает. Закрытие окна возвращает панель.
   // «Структура», «Стиль», «Шрифт» пока только с ховером: их панелей в макете нет.
   const rsParams = $('#rsParams');
   let rsPanel = 'shop';    // открытая панель или null
   let rsParamsOpen = false;
 
   function rsRender() {
-    stage.classList.toggle('is-rs-closed', !rsPanel || rsParamsOpen);
+    stage.classList.toggle('is-rs-closed', !rsPanel);
     for (const name of ['shop', 'data']) $('#rs-' + name).hidden = name !== rsPanel || rsParamsOpen;
     rsParams.hidden = !rsParamsOpen;
     for (const b of document.querySelectorAll('.rp-btn[data-rp]')) {
@@ -160,6 +169,7 @@
   const COVER = 'inset:0;width:100%;height:100%;object-fit:cover';
   const CONTAIN = 'inset:0;width:100%;height:100%;object-fit:contain';
   const SHOP_WIDGETS = [
+    ['Карточка товара', 'Для отображения товара со всеми его свойствами', 357, 'product', true, CONTAIN],
     ['Каталог', 'Виджет товаров и услуг, доступных в вашем заведении', 304, 'catalog', false, COVER],
     ['Корзина', 'Для хранения выбранных товаров, расчета итоговой стоимости и быстрого перехода к оформлению заказа', 231, 'cart', true, CONTAIN],
     ['Мои контакты', 'Закрепите контакты для быстрого доступа, звоните и пишите коллегам в один клик', 267, 'contacts', false, 'left:-8.18%;top:-16.06%;width:110.98%;height:126.28%'],
@@ -176,12 +186,20 @@
   // Выделение — .is-active у .wg: снимается кликом мимо, клик по виджету ставит снова. «Удалить» в тулбаре возвращает пустую секцию.
   const siteSection = $('#siteSection');
   const siteCatalog = $('#siteCatalog');
+  const siteContent = $('#content');
+  const siteMain = $('#site');
+  const siteBlank = $('#siteBlank');
+  const siteBlankBody = $('#siteBlankBody');
+  const siteBlankSection = $('#siteBlankSection');
+  const siteBlankCell = $('#siteBlankCell');
+  const siteProduct = $('#siteProduct');
 
   const shopCatalog = $('#rsWidgets [data-widget="catalog"]').closest('.rs-w');
+  const shopProduct = $('#rsWidgets [data-widget="product"]').closest('.rs-w');
 
   function siteAddCatalog() {
     shopCatalog.hidden = true;
-    lsAddCardPage();
+    if (stage.dataset.scenario === 'no-catalog') lsAddCardPage();
     siteSection.hidden = true;
     siteCatalog.hidden = false;
     siteCatalog.classList.add('is-active');
@@ -196,12 +214,562 @@
 
   $('#rsWidgets').addEventListener('click', (e) => {
     if (e.target.closest('[data-widget="catalog"]')) siteAddCatalog();
+    if (e.target.closest('[data-widget="product"]')) siteAddProduct();
   });
   $('#siteCatalogDelete').addEventListener('click', siteRemoveCatalog);
+
+  // Новая страница (blank) — вместо сайта пустая секция, она сразу выделена. «В окне» — внутри окна и с неактивным адаптивом, иначе — под шапкой сайта.
+  // «Страница и окно» — переключатель в шапке показывает страницу (по умолчанию) или окно, выбор запоминается в странице.
+  const siteTumbler = $('#chDevice');
+  const siteView = $('#chView');
+  let siteShown = null;
+  function siteShowPage(page) {
+    const isBoth = page.mode === 'both';
+    const view = page.view ?? 'page';
+    const shown = `${page.id}:${page.mode}:${isBoth ? view : ''}`;
+    if (shown === siteShown) return;
+    siteShown = shown;
+    const isWindow = page.mode === 'window' || (isBoth && view === 'window');
+    const isBlank = page.blank || isWindow;
+    siteView.hidden = !isBoth;
+    for (const seg of siteView.children) seg.classList.toggle('is-on', seg.dataset.view === view);
+    siteMain.hidden = isBlank;
+    siteBlank.hidden = !isBlank;
+    siteTumbler.classList.toggle('is-off', isWindow);
+    siteTumbler.querySelectorAll('.ch-seg').forEach((seg) => { seg.disabled = isWindow; });
+    siteBlank.classList.toggle('is-window', isWindow);
+    siteContent.classList.toggle('is-window', isWindow);
+    siteContent.scrollTop = 0;
+    siteBlankBody.classList.toggle('wg', isWindow);
+    wsClose();
+    wsPage = page;
+    wsPaintFill(siteBlankSection, page.sectionFill, '', BG_DEFAULT);
+    if (isWindow) wsApply(page.win ?? WS_DEFAULTS);
+    else {
+      siteBlankBody.removeAttribute('style');
+      wsPaintFill(siteBlankBody, null);
+    }
+    siteSelectWindow(false);
+    siteProductRender(!!page.product);
+    (page.product ? siteProduct : siteBlankSection).classList.add('is-active');
+  }
+
+  // Карточка товара: клик в магазине ставит её в секцию новой страницы вместо пустой ячейки и выделяет, из магазина она пропадает.
+  // На странице с контентом клик ничего не делает. «Удалить» в тулбаре возвращает пустую ячейку и виджет в магазин, удаление страницы с карточкой — тоже.
+  function siteProductSyncShop() {
+    shopProduct.hidden = lsPages.some((p) => p.product);
+  }
+  function siteProductRender(on) {
+    siteProduct.hidden = !on;
+    siteBlankCell.hidden = on;
+    siteBlankSection.classList.toggle('has-widget', on);
+    siteProduct.classList.remove('is-active');
+    siteBlankSection.classList.remove('is-active');
+  }
+  function siteAddProduct() {
+    if (siteBlank.hidden || wsPage.product) return;
+    wsPage.product = true;
+    siteProductSyncShop();
+    siteProductRender(true);
+    if (wsRoot.hidden) siteProduct.classList.add('is-active'); // пока открыты настройки окна, выделено окно
+    else wsRender();
+  }
+  $('#siteProductDelete').addEventListener('click', () => {
+    wsPage.product = false;
+    siteProductSyncShop();
+    siteProductRender(false);
+    siteBlankSection.classList.add('is-active');
+  });
+  // «Назад» поднимает на уровень секции
+  $('#siteProductBack').addEventListener('click', () => {
+    siteProduct.classList.remove('is-active');
+    siteBlankSection.classList.add('is-active');
+  });
+
+  siteView.addEventListener('click', (e) => {
+    const seg = e.target.closest('[data-view]');
+    if (!seg) return;
+    const page = lsPage(lsActive);
+    page.view = seg.dataset.view;
+    siteShowPage(page);
+  });
+
+  // Рамка окна: пунктир родителя, пока выделена секция; выделенное окно — обычный активный .wg со своим тулбаром.
+  function siteSelectWindow(on) {
+    siteBlankBody.classList.toggle('wg--level-2', siteBlank.classList.contains('is-window') && !on);
+    siteBlankBody.classList.toggle('is-active', on);
+    if (on) siteBlankSection.classList.remove('is-active');
+  }
+  $('.site-blank__back').addEventListener('click', () => siteSelectWindow(true));
+
   stage.addEventListener('mousedown', (e) => {
+    if (wsRoot.hidden && !e.target.closest('#bgWin')) { // пока открыты настройки или окно «Фон», окно остаётся выделенным
+      const inSection = !!e.target.closest('#siteBlankSection');
+      const inProduct = !!e.target.closest('#siteProduct');
+      siteBlankSection.classList.toggle('is-active', inSection && !inProduct);
+      siteProduct.classList.toggle('is-active', inProduct);
+      const windowHit = !inSection && siteBlank.classList.contains('is-window') && !!e.target.closest('#siteBlankBody');
+      siteSelectWindow(windowHit);
+      if (!(bgAnchor === bgSectionBtn ? inSection && !inProduct : windowHit)) bgClose(); // тулбар с командой скрылся
+    }
     if (siteCatalog.hidden) return;
     siteCatalog.classList.toggle('is-active', !!e.target.closest('#siteCatalog'));
   });
+
+  // Настройки окна: открываются по левому верхнему углу окна, шестерёнка в это время активна. Правки сразу видны на холсте, галочка сохраняет их в страницу,
+  // крестик и Esc возвращают прежнее, сброс — исходные значения. Клик мимо не закрывает. Размер и оформление — PropertyEditor из ui-kit, отступы — свои поля.
+  const WS_DEFAULTS = {
+    pad: { split: false, top: 12, right: 12, bottom: 12, left: 12 },
+    // Фон и затемнение — из окна «Фон»: {kind: 'color', hex, a} · {kind: 'grad', c} · {kind: 'img', i, fx}. На холсте конструктора затемнения нет, под окном его фон
+    fills: { dim: { kind: 'color', hex: '#000000', a: 5 }, background: { kind: 'color', hex: '#ffffff', a: 100 } },
+    pe: {
+      dims: { w: { mode: 'px', px: 800, pct: 100 }, h: { mode: 'auto', px: 100, pct: 100 } },
+      edges: {},
+      rows: { dim: true, radius: true, background: true, shadow: true, border: false },
+      colors: { dim: '#000000', background: '#ffffff', border: '#000000' },
+      shadow: { color: '#a39c97', opacity: 10, x: 0, y: 0, blur: 46, spread: 0 },
+      line: 'solid',
+      split: {
+        radius: { on: false, values: { tl: 10, tr: 10, bl: 10, br: 10 } },
+        border: { on: false, values: { top: 1, right: 1, bottom: 1, left: 1 } },
+      },
+    },
+  };
+  const wsRoot = $('#ws');
+  const wsOpenBtn = $('#wsOpen');
+  const wsTemplate = wsRoot.innerHTML; // PropertyEditor читает значения из разметки при монтировании
+  let wsPage = null; // открытая страница, её окно на холсте
+  let wsDraft = null; // значения, пока открыты настройки
+  let wsEditor = null;
+
+  function wsApply(win) {
+    const { dims, edges, rows, colors, shadow: sh, line, split } = win.pe;
+    const s = siteBlankBody.style;
+    const r = rows.radius ? split.radius.values : { tl: 0, tr: 0, bl: 0, br: 0 };
+    const b = split.border.values;
+    const side = (a, cell) => ({ px: Math.min(a.px, cell), pct: Math.round(cell * a.pct / 100), fill: cell }[a.mode]);
+    const edge = (key) => (edges[key] == null ? '' : edges[key] + 'px');
+    s.width = (side(dims.w, siteContent.clientWidth) ?? WS_DEFAULTS.pe.dims.w.px) + 'px'; // у пустого окна своей ширины контента нет
+    const height = side(dims.h, siteContent.clientHeight - 12); // 12 — отступ окна сверху
+    s.height = height == null ? '' : height + 'px'; // по контенту — по секции внутри окна
+    s.minWidth = edge('minW');
+    s.maxWidth = edge('maxW');
+    s.minHeight = edge('minH');
+    s.maxHeight = edge('maxH');
+    s.padding = `${win.pad.top}px ${win.pad.right}px ${win.pad.bottom}px ${win.pad.left}px`;
+    s.borderRadius = `${r.tl}px ${r.tr}px ${r.br}px ${r.bl}px`;
+    wsPaintFill(siteBlankBody, rows.background ? win.fills.background : null, 'transparent', BG_DEFAULT);
+    s.boxShadow = rows.shadow ? `${sh.x}px ${sh.y}px ${sh.blur}px ${sh.spread}px color-mix(in srgb, ${sh.color} ${sh.opacity}%, transparent)` : 'none';
+    s.border = rows.border ? `${line} ${colors.border}` : '0';
+    if (rows.border) s.borderWidth = `${b.top}px ${b.right}px ${b.bottom}px ${b.left}px`;
+  }
+
+  // Заливка на холсте. Картинка — отдельным слоем (.ws-fill-img::before), остальное — фоном элемента. base — подложка под градиентом
+  function wsPaintFill(node, fill, empty = '', base = '') {
+    const img = fill?.kind === 'img';
+    node.classList.toggle('ws-fill-img', img);
+    if (!img) {
+      for (const p of ['--fill-img', '--fill-op', '--fill-filter', '--fill-tint']) node.style.removeProperty(p);
+      node.style.background = !fill ? empty : fill.kind === 'grad' ? bgGradCss(fill, base) : bgColorCss(fill);
+      return;
+    }
+    const f = fill.fx;
+    // температура: тёплый или холодный оттенок поверх картинки (soft-light)
+    const tint = f.temp > 0 ? `255, 140, 0, ${(f.temp / 100 * .6).toFixed(2)}` : `0, 110, 255, ${(-f.temp / 100 * .6).toFixed(2)}`;
+    node.style.background = 'none';
+    node.style.setProperty('--fill-img', `url(${BG_IMGS[fill.i]})`);
+    node.style.setProperty('--fill-op', f.op / 100);
+    node.style.setProperty('--fill-filter', `blur(${f.blur / 5}px) contrast(${f.con}%) saturate(${f.sat}%)`);
+    node.style.setProperty('--fill-tint', `linear-gradient(rgba(${tint}), rgba(${tint}))`);
+  }
+
+  const wsActualSize = (axis) => (axis === 'w' ? siteBlankBody.offsetWidth : siteBlankBody.offsetHeight);
+
+  // Поля отступов из черновика и фактический размер в «по контенту» и «заполнить»: окно меняется уже после отрисовки PropertyEditor.
+  // Значения цветов с прозрачностью он не пишет: дописываем сами, как в макете
+  function wsRender() {
+    const { pad, pe } = wsDraft;
+    wsRoot.querySelectorAll('[data-pe-dim]').forEach((dim) => {
+      if (dim.classList.contains('pe__dim--auto')) dim.querySelector('input').placeholder = wsActualSize(dim.dataset.peDim);
+    });
+    wsRoot.querySelectorAll('[data-ws-axis]').forEach((n) => { n.hidden = pad.split; });
+    wsRoot.querySelector('[data-ws-sides]').hidden = !pad.split;
+    wsRoot.querySelector('[data-ws-pad-split]').classList.toggle('is-active', pad.split);
+    wsRoot.querySelectorAll('[data-ws-pad]').forEach((input) => {
+      const key = input.dataset.wsPad;
+      input.value = key === 'h' ? pad.left : key === 'v' ? pad.top : pad[key];
+    });
+    for (const key of ['dim', 'background']) bgPaintBubble(wsRoot.querySelector(`[data-pe-row="${key}"] [data-pe-color]`), wsDraft.fills[key]);
+    wsRoot.querySelector('[data-pe-shadow] .pe__bubble-text').textContent = `${pe.shadow.color.toUpperCase()}, ${pe.shadow.opacity / 100}`;
+  }
+
+  // Монтирует редактор со значениями win: сначала разметка, затем раскрытые блоки — их PropertyEditor из разметки не читает
+  function wsMount(win) {
+    wsEditor?.destroy();
+    wsRoot.innerHTML = wsTemplate;
+    wsDraft = structuredClone(win);
+    const { dims, edges, rows, colors, shadow: sh, line, split } = win.pe;
+    wsRoot.querySelectorAll('[data-pe-dim]').forEach((dim) => {
+      const a = dims[dim.dataset.peDim];
+      dim.dataset.peMode = a.mode;
+      dim.querySelector('input').value = a.mode === 'px' ? a.px : a.mode === 'pct' ? a.pct : '';
+    });
+    wsRoot.querySelectorAll('[data-pe-row]').forEach((row) => {
+      const key = row.dataset.peRow;
+      row.hidden = !rows[key];
+      const color = row.querySelector('[data-pe-color]');
+      if (color) color.dataset.peColor = colors[key];
+      const num = split[key] && row.querySelector('.pe__num-value');
+      if (num) num.value = Object.values(split[key].values)[0];
+    });
+    Object.assign(wsRoot.querySelector('[data-pe-shadow]').dataset, { peShadow: sh.color, peOpacity: sh.opacity, peX: sh.x, peY: sh.y, peBlur: sh.blur, peSpread: sh.spread });
+    wsRoot.querySelector('.pe__line').classList.toggle('pe__line--dashed', line === 'dashed');
+    wsEditor = PropertyEditor.mount(wsRoot, {
+      actualSize: wsActualSize,
+      onChange: (state) => {
+        wsDraft.pe = state;
+        wsApply(wsDraft);
+        wsRender();
+      },
+      onDone: () => { wsPage.win = wsDraft; wsClose(); },
+      onClose: wsClose,
+    });
+    Object.keys(split).forEach((key) => {
+      if (!split[key].on) return;
+      const row = wsRoot.querySelector(`[data-pe-row="${key}"]`);
+      row.querySelector('[data-pe-split]').click();
+      Object.entries(split[key].values).forEach(([side, value]) => {
+        const input = row.querySelector(`[data-pe-side="${side}"]`);
+        input.value = value;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+    Object.entries(edges).forEach(([key, value]) => {
+      wsRoot.querySelector(`[data-pe-dim="${key.slice(-1).toLowerCase()}"] .pe__dim-unit`).click();
+      wsRoot.querySelector(`.pe__menu [data-edge="${key}"]`).click();
+      const input = wsRoot.querySelector(`[data-pe-edge="${key}"]`);
+      input.value = value;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    wsDraft.pe = wsEditor.getState();
+    wsRender();
+  }
+
+  function wsClose() {
+    bgClose();
+    if (wsRoot.hidden) return;
+    wsEditor.destroy();
+    wsEditor = null;
+    wsRoot.hidden = true;
+    wsOpenBtn.classList.remove('is-selected');
+    wsOpenBtn.setAttribute('aria-pressed', 'false');
+    wsApply(wsPage.win ?? WS_DEFAULTS);
+  }
+
+  wsOpenBtn.addEventListener('click', () => {
+    if (!wsRoot.hidden) { wsClose(); return; }
+    bgClose();
+    wsMount(wsPage.win ?? WS_DEFAULTS);
+    const r = stageRect(siteBlankBody);
+    wsRoot.hidden = false;
+    wsRoot.style.left = Math.round(r.left) + 'px';
+    wsRoot.style.top = Math.round(r.top) + 'px';
+    wsOpenBtn.classList.add('is-selected');
+    wsOpenBtn.setAttribute('aria-pressed', 'true');
+  });
+
+  wsRoot.addEventListener('input', (e) => {
+    const t = e.target;
+    const n = parseInt(t.value, 10);
+    const valid = Number.isFinite(n);
+    // поля PropertyEditor применяются по change, а на холсте правка видна сразу.
+    // Размер меньше 40 px он поднял бы до 40 прямо во время набора, поэтому такой ввод ждёт ухода с поля; Min и Max он перерисовывает, они тоже применяются при уходе
+    const dim = t.closest('[data-pe-dim]');
+    if (dim) {
+      if (n >= (wsDraft.pe.dims[dim.dataset.peDim].mode === 'pct' ? 1 : 40)) t.dispatchEvent(new Event('change', { bubbles: true }));
+      return;
+    }
+    if (t.closest('[data-pe-row]')) {
+      if (valid) t.dispatchEvent(new Event('change', { bubbles: true }));
+      return;
+    }
+    const { pad } = wsDraft;
+    const side = t.dataset.wsPad;
+    if (side && valid) {
+      const value = Math.min(Math.max(n, 0), 100);
+      if (side === 'h') pad.left = pad.right = value;
+      else if (side === 'v') pad.top = pad.bottom = value;
+      else pad[side] = value;
+    }
+    wsApply(wsDraft);
+  });
+  // Enter и уход с поля показывают значение, которое применилось: неверный ввод возвращает прежнее
+  wsRoot.addEventListener('change', (e) => { if (e.target.dataset.wsPad) wsRender(); });
+  wsRoot.addEventListener('click', (e) => {
+    // «Фон» и «Затемнение» открывают окно «Фон» вместо палитры PropertyEditor; клик по остальному редактору его закрывает
+    const fillBtn = e.target.closest('[data-pe-row="dim"] [data-pe-color], [data-pe-row="background"] [data-pe-color]');
+    if (fillBtn) {
+      e.stopPropagation();
+      bgToggle(fillBtn);
+      return;
+    }
+    bgClose();
+    if (e.target.closest('.pe__reset')) { // свой сброс: PropertyEditor вернул бы значения на момент открытия
+      e.stopPropagation();
+      wsMount(WS_DEFAULTS);
+      wsApply(wsDraft);
+      wsRender();
+    } else if (e.target.closest('[data-ws-pad-split]')) {
+      const { pad } = wsDraft;
+      pad.split = !pad.split;
+      if (!pad.split) { // при сворачивании значения выравниваются по осям
+        pad.right = pad.left;
+        pad.bottom = pad.top;
+      }
+      wsApply(wsDraft);
+      wsRender();
+    }
+  }, true);
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (bgKey) bgClose();
+    else wsClose();
+  });
+
+  // ---------- Окно «Фон» (Figma 16385:63244, верхняя строка 16385:63266) — как в interface-prototype ----------
+  // Общее для «Фона» и «Затемнения сайта», открывается и из тулбара окна. Правки сразу видны на холсте. Пока открыты настройки окна, они идут в черновик: их судьбу решают ✓ и ✕ настроек.
+  // ✓ и ✕ этого окна только закрывают его, заготовленный цвет или градиент применяется и закрывает, картинка оставляет открытым.
+  const BG_DEFAULT = '#f8f8f8';
+  const BG_GRADS = ['#943253', '#f16767', '#e59545', '#e5cb45', '#009918', '#0c94ff', '#326194', '#4c3294', '#943288'];
+  const BG_COLORS = ['#ffe3ec', '#ffe5e3', '#fff1e3', '#fffbe3', '#e3ffe8', '#e3faff', '#e3f1ff', '#eae3ff', '#ffe3fa', '#ededed'];
+  const BG_IMGS = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => `assets/img/bg/0${n}.jpg`);
+  const FX_DEFAULT = { op: 100, blur: 0, con: 100, sat: 100, temp: 0 };
+  // Ползунки «Картинки»: диапазон и единица; 0 у контраста и насыщенности — серое / плоское, 100 — как в оригинале.
+  const FX = [
+    { key: 'op', name: 'Прозрачность', min: 0, max: 100, unit: '%' },
+    { key: 'blur', name: 'Размытие', min: 0, max: 100, unit: '' },
+    { key: 'con', name: 'Контраст', min: 0, max: 200, unit: '%' },
+    { key: 'sat', name: 'Насыщенность', min: 0, max: 200, unit: '%' },
+    { key: 'temp', name: 'Температура', min: -100, max: 100, unit: '' },
+  ];
+  const hexRgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const rgba = (hex, a) => `rgba(${hexRgb(hex).join(', ')}, ${a})`;
+  const mixHex = (base, c, k) => {
+    const b = hexRgb(base);
+    return '#' + hexRgb(c).map((v, i) => Math.round(b[i] + (v - b[i]) * k).toString(16).padStart(2, '0')).join('');
+  };
+  const bgColorCss = (f) => (f.a >= 100 ? f.hex : rgba(f.hex, f.a / 100));
+  const bgGradCss = (f, base = '') => `linear-gradient(${rgba(f.c, .1)}, rgba(248, 248, 248, 0) 27.546%)${base ? ', ' + base : ''}`;
+  // Кружок в строке редактора и плашка в окне
+  function bgPreview(f) {
+    if (f.kind === 'img') return `url(${BG_IMGS[f.i]}) center / cover`;
+    if (f.kind === 'grad') return `linear-gradient(${rgba(f.c, .1)}, rgba(248, 248, 248, 0)), ${BG_DEFAULT}`;
+    return bgColorCss(f);
+  }
+  function bgPaintBubble(btn, f) {
+    const alpha = f.kind === 'color' && f.a < 100;
+    btn.style.setProperty('--pe-color', alpha ? f.hex : bgPreview(f));
+    btn.style.setProperty('--pe-alpha', Math.max(alpha ? f.a : 0, 14) + '%');
+    btn.querySelector('.pe__swatch').classList.toggle('pe__swatch--alpha', alpha);
+    btn.querySelector('.pe__bubble-text').textContent = f.kind === 'img' ? 'Картинка'
+      : f.kind === 'grad' ? `${mixHex(BG_DEFAULT, f.c, .1).toUpperCase()} → ${BG_DEFAULT.slice(1).toUpperCase()}`
+      : f.hex.toUpperCase() + (alpha ? `, ${f.a / 100}` : '');
+  }
+
+  const bgWin = $('#bgWin');
+  const bgHex = $('#bgHex');
+  const bgAlpha = $('#bgAlpha');
+  let bgKey = null; // что настраиваем: 'background' и 'dim' окна или 'section'
+  let bgAnchor = null;
+  const bgBtn = $('#wsFill');
+  const bgSectionBtn = $('#sectionFill');
+  const BG_TOOLS = new Map([[bgBtn, 'background'], [bgSectionBtn, 'section']]); // команды тулбаров и что они настраивают
+  // Правки идут в черновик, пока открыты настройки, иначе (окно открыто из тулбара) — сразу в окно страницы
+  const bgDoc = () => (wsRoot.hidden ? (wsPage.win ??= structuredClone(WS_DEFAULTS)) : wsDraft);
+  // У секции фон по умолчанию не задан
+  const bgCur = () => (bgKey === 'section' ? wsPage.sectionFill ?? { kind: 'none' } : bgDoc().fills[bgKey]);
+
+  $('#bgPresets').innerHTML =
+    BG_GRADS.map((c) => `<button class="cw-sw is-grad" type="button" data-grad="${c}" style="--c:${rgba(c, .1)}" aria-label="Градиент"></button>`).join('') +
+    [BG_DEFAULT, ...BG_COLORS].map((h) => `<button class="cw-sw" type="button" data-hex="${h}" style="--c:${h}" aria-label="${h}"></button>`).join('');
+  $('#bgCat').innerHTML = BG_IMGS.map((src, i) =>
+    `<button class="bg-tile" type="button" data-img="${i}" style="--img:url(${src})" aria-label="Картинка ${i + 1}"><span class="bg-tool"><span class="ico">&#xE660;</span></span></button>`).join('');
+  $('#bgFx').innerHTML = FX.map((x) =>
+    `<div class="bg-row" data-fx="${x.key}"><span class="bg-row__label">${x.name}</span>` +
+    '<span class="bg-slider"><i class="bg-slider__fill"></i><i class="bg-slider__thumb"></i></span>' +
+    `<span class="bg-num${x.unit ? '' : ' no-unit'}"><input type="text" inputmode="numeric" autocomplete="off" maxlength="4" aria-label="${x.name}"><span>${x.unit}</span></span></div>`).join('');
+
+  function bgStore(f) {
+    if (bgKey === 'section') {
+      wsPage.sectionFill = f;
+      wsPaintFill(siteBlankSection, f, '', BG_DEFAULT);
+      return;
+    }
+    const doc = bgDoc();
+    doc.fills[bgKey] = f;
+    if (wsRoot.hidden) doc.pe.rows.background = true; // фон, убранный в настройках, возвращается
+    wsApply(doc);
+    if (!wsRoot.hidden) wsRender();
+  }
+  function bgSet(f) {
+    bgStore(f);
+    bgRender(true);
+  }
+  function setFx(key, v, typed) {
+    const f = bgCur();
+    bgSet({ ...f, fx: { ...f.fx, [key]: v } });
+    fxRender(typed ? key : null);
+  }
+
+  // fields — обновить и поля ввода (не нужно, пока пользователь печатает в одном из них)
+  function bgRender(fields) {
+    const f = bgCur();
+    bgWin.dataset.kind = f.kind;
+    const pill = $('#bgPill');
+    pill.className = 'cw-pill' + (f.kind === 'img' ? ' is-img' : f.kind === 'none' ? ' is-none' : '');
+    pill.style.setProperty('--c', f.kind === 'img' ? `url(${BG_IMGS[f.i]})` : f.kind === 'none' ? '#fff' : bgPreview(f));
+    if (f.kind === 'grad') $('#bgGradFrom').textContent = mixHex(BG_DEFAULT, f.c, .1).slice(1).toUpperCase();
+    if (fields && f.kind === 'color') { bgHex.value = f.hex.slice(1).toUpperCase(); bgAlpha.value = f.a; }
+    if (fields && f.kind === 'none') { bgHex.value = ''; bgAlpha.value = 0; }
+  }
+
+  function fxRender(skipInput) {
+    const f = bgCur().fx;
+    for (const x of FX) {
+      const row = $(`[data-fx="${x.key}"]`, bgWin);
+      row.style.setProperty('--k', (f[x.key] - x.min) / (x.max - x.min));
+      if (skipInput !== x.key) $('input', row).value = f[x.key];
+    }
+  }
+  function openPic() {
+    const f = bgCur();
+    if (f.kind !== 'img') return;
+    bgWin.classList.add('is-pic');
+    $('#bgTitle').textContent = 'Картинка';
+    $('#bgPicPv').style.setProperty('--img', `url(${BG_IMGS[f.i]})`);
+    fxRender();
+    bgPlace();
+  }
+  function closePic() {
+    bgWin.classList.remove('is-pic');
+    $('#bgTitle').textContent = bgKey === 'dim' ? 'Затемнение' : 'Фон';
+  }
+
+  // Из тулбара окно встаёт под командой с зазором 4px, из строки настроек — поверх кружка, как палитра PropertyEditor. За сцену не выходит
+  function bgPlace() {
+    const r = stageRect(bgAnchor);
+    const tool = BG_TOOLS.has(bgAnchor);
+    const left = tool ? r.left : r.left - 13;
+    const top = tool ? r.top + r.height + 4 : r.top - 13;
+    bgWin.style.left = Math.max(8, Math.min(Math.round(left), stage.offsetWidth - bgWin.offsetWidth - 8)) + 'px';
+    bgWin.style.top = Math.max(8, Math.min(Math.round(top), stage.offsetHeight - bgWin.offsetHeight - 8)) + 'px';
+  }
+  function bgToggle(anchor) {
+    if (bgAnchor === anchor) { bgClose(); return; }
+    bgAnchor = anchor;
+    bgKey = BG_TOOLS.get(anchor) ?? anchor.closest('[data-pe-row]').dataset.peRow;
+    for (const btn of BG_TOOLS.keys()) {
+      btn.classList.toggle('is-selected', btn === anchor);
+      btn.setAttribute('aria-pressed', btn === anchor);
+    }
+    closePic();
+    bgRender(true);
+    bgWin.hidden = false;
+    bgPlace();
+  }
+  function bgClose() {
+    bgWin.hidden = true;
+    bgKey = null;
+    bgAnchor = null;
+    for (const btn of BG_TOOLS.keys()) {
+      btn.classList.remove('is-selected');
+      btn.setAttribute('aria-pressed', 'false');
+    }
+  }
+
+  // Первая команда тулбара окна. Если фон убран в открытых настройках, его строка возвращается
+  bgBtn.addEventListener('click', () => {
+    if (!wsRoot.hidden && !wsDraft.pe.rows.background) wsRoot.querySelector('[data-pe-chip="background"]').click();
+    bgToggle(bgBtn);
+  });
+  bgSectionBtn.addEventListener('click', () => bgToggle(bgSectionBtn));
+
+  $('#bgDone').addEventListener('click', bgClose);
+  $('#bgClose').addEventListener('click', bgClose);
+  $('#bgBack').addEventListener('click', () => { closePic(); bgPlace(); });
+  $('#bgPresets').addEventListener('click', (e) => {
+    const sw = e.target.closest('.cw-sw');
+    if (!sw) return;
+    const f = bgCur();
+    // затемнение сохраняет свою прозрачность, иначе непрозрачный цвет перекрыл бы сайт
+    const a = bgKey === 'dim' && f.kind === 'color' ? f.a : 100;
+    bgSet(sw.dataset.grad ? { kind: 'grad', c: sw.dataset.grad } : { kind: 'color', hex: sw.dataset.hex, a });
+    bgClose();
+  });
+  // клик по картинке — поставить её (настройки сбрасываются для новой картинки); карандаш на картинке — ещё и открыть «Картинку»
+  $('#bgCat').addEventListener('click', (e) => {
+    const tile = e.target.closest('.bg-tile');
+    if (!tile) return;
+    const i = +tile.dataset.img;
+    const f = bgCur();
+    if (!(f.kind === 'img' && f.i === i)) bgSet({ kind: 'img', i, fx: { ...FX_DEFAULT } });
+    if (e.target.closest('.bg-tool')) openPic();
+  });
+  bgHex.addEventListener('input', () => {
+    const v = '#' + bgHex.value.trim().replace(/^#/, '');
+    if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) return;
+    const hex = (v.length === 4 ? '#' + [...v.slice(1)].map((x) => x + x).join('') : v).toLowerCase();
+    bgStore({ kind: 'color', hex, a: bgCur().a ?? 100 });
+    bgRender(false);
+  });
+  bgAlpha.addEventListener('input', () => {
+    bgAlpha.value = bgAlpha.value.replace(/\D/g, '');
+    if (bgAlpha.value === '') return;
+    const a = Math.min(100, +bgAlpha.value);
+    const f = bgCur();
+    if (f.kind === 'none') { // у незаданного фона цвет появляется вместе с прозрачностью
+      if (a === 0) return;
+      bgHex.value = 'FFFFFF';
+    }
+    bgStore({ kind: 'color', hex: f.hex ?? '#ffffff', a });
+    bgRender(false);
+  });
+  for (const input of [bgHex, bgAlpha]) input.addEventListener('blur', () => { if (bgKey) bgRender(true); });
+
+  // Ползунки: нажатие и перетаскивание; поле справа — ввод числа
+  $('#bgFx').addEventListener('pointerdown', (e) => {
+    const slider = e.target.closest('.bg-slider');
+    if (!slider) return;
+    const x = FX.find((f) => f.key === slider.parentNode.dataset.fx);
+    const move = (ev) => {
+      const r = slider.getBoundingClientRect();
+      const k = Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width));
+      const v = Math.round(x.min + k * (x.max - x.min));
+      if (v !== bgCur().fx[x.key]) setFx(x.key, v);
+    };
+    slider.setPointerCapture(e.pointerId);
+    move(e);
+    slider.onpointermove = move;
+    slider.onpointerup = slider.onpointercancel = () => { slider.onpointermove = slider.onpointerup = slider.onpointercancel = null; };
+  });
+  $('#bgFx').addEventListener('input', (e) => {
+    const row = e.target.closest('[data-fx]');
+    const x = FX.find((f) => f.key === row.dataset.fx);
+    const input = e.target;
+    input.value = input.value.replace(x.min < 0 ? /[^\d-]/g : /\D/g, '');
+    if (!/^-?\d+$/.test(input.value)) return;
+    setFx(x.key, Math.min(x.max, Math.max(x.min, +input.value)), true);
+  });
+  $('#bgFx').addEventListener('focusout', () => { if (bgKey && bgCur().kind === 'img') fxRender(); });
+
+  // Сценарий «Создание окна с товаром»: каталог уже на странице и не выделен, страницы «Карточка товара» нет.
+  function sitePlaceCatalog() {
+    shopCatalog.hidden = true;
+    siteSection.hidden = true;
+    siteCatalog.hidden = false;
+    siteCatalog.classList.remove('is-active');
+  }
+  sitePlaceCatalog();
 
   rsRender();
 
@@ -214,8 +782,9 @@
   const lsLines = $('#lsLines');
   const lsMenu = $('#lsMenu');
   const lsToggle = $('#lsToggle');
-  // сценарий «Без каталога» — страница «Меню»
-  let lsPages = [{ id: 1, name: 'Главная', off: false }, { id: 2, name: 'Меню', off: false }];
+  // открыта страница «Меню»
+  const lsInitialPages = () => [{ id: 1, name: 'Главная', off: false }, { id: 2, name: 'Меню', off: false }];
+  let lsPages = lsInitialPages();
   let lsActive = 2;
   let lsNextId = 3;
   let lsMenuPage = null; // страница, у которой открыто меню «⋮»
@@ -246,16 +815,16 @@
       const row = el('div', 'ls-item' + (p.id === lsActive ? ' is-active' : '') + (p.off ? ' is-off' : ''),
         '<span class="ls-item__marker"></span><span class="ls-item__name"></span>' +
         '<span class="ls-item__cmds">' +
-        `<button class="btn btn--ghost btn--style-label btn--size-m btn--icon ls-cmd ls-cmd--24" type="button" data-cmd="eye" aria-label="${p.off ? 'Показать' : 'Скрыть'}"><span class="btn__icon">${p.off ? '&#xE619;' : '&#xE651;'}</span></button>` +
-        '<button class="btn btn--ghost btn--style-label btn--size-m btn--icon ls-cmd" type="button" data-cmd="more" aria-label="Ещё"><span class="btn__icon">&#xE9D9;</span></button>' +
+        '<button class="btn btn--link btn--style-label btn--size-m btn--icon ls-cmd" type="button" data-cmd="more" aria-label="Ещё"><span class="btn__icon">&#xE9D9;</span></button>' +
         '</span>');
       row.dataset.id = p.id;
       row.querySelector('.ls-item__name').textContent = p.name;
-      // нельзя скрыть все страницы: у последней видимой глазик не срабатывает
-      row.querySelector('[data-cmd="eye"]').disabled = !p.off && lsVisibleCount() === 1;
       return row;
     }));
     lsRenderLines();
+    siteShowPage(lsPage(lsActive));
+    siteProductSyncShop();
+    scenSync();
   }
 
   // Выбор только переставляет классы: строки остаются на месте, иначе двойной клик не дойдёт до строки.
@@ -265,6 +834,8 @@
       row.classList.toggle('is-active', Number(row.dataset.id) === id);
     }
     lsRenderLines();
+    siteShowPage(lsPage(id));
+    scenSync();
   }
 
   function lsCloseMenu() {
@@ -280,8 +851,8 @@
     btn.closest('.ls-item').classList.add('is-menu');
     lsMenu.hidden = false;
     const r = stageRect(btn);
-    lsMenu.style.left = Math.round(r.left + r.width / 2 - lsMenu.offsetWidth) + 'px';
-    lsMenu.style.top = Math.round(r.top + r.height / 2 - 8 - 14) + 'px';
+    lsMenu.style.left = Math.round(r.left + r.width / 2 + 26 - lsMenu.offsetWidth) + 'px'; // центр крестика — на центре «⋮»: 26 от правого края меню, 24 от верхнего
+    lsMenu.style.top = Math.round(r.top + r.height / 2 - 24) + 'px';
   }
 
   function lsStartRename(id) {
@@ -318,9 +889,18 @@
   function lsDelete(id) {
     const at = lsPages.findIndex((p) => p.id === id);
     lsPages.splice(at, 1);
-    if (!lsPages.length) lsPages.push({ id: lsNextId++, name: 'Страница 1', off: false });
+    if (!lsPages.length) lsPages.push({ id: lsNextId++, name: 'Страница 1', off: false, blank: true, mode: 'page' });
     if (id === lsActive) lsActive = lsPages[Math.max(0, at - 1)].id;
     if (!lsVisibleCount()) lsPage(lsActive).off = false; // хотя бы одна страница остаётся видимой
+    lsRender();
+  }
+
+  // Копия встаёт под исходную и сразу открывается. Адрес не копируем: он у каждой страницы свой.
+  function lsDuplicate(id) {
+    const at = lsPages.findIndex((p) => p.id === id);
+    const page = { ...lsPages[at], id: lsNextId++, name: lsPages[at].name + ' (копия)', addr: '' };
+    lsPages.splice(at + 1, 0, page);
+    lsActive = page.id;
     lsRender();
   }
 
@@ -341,7 +921,7 @@
     clearTimeout(lsCloseTimer);
     if (!stage.classList.contains('is-ls-open') || lsRoot.matches(':hover')) return;
     lsCloseTimer = setTimeout(() => {
-      if (lsMenuPage == null && !lsEditing && !lsRoot.matches(':hover')) stage.classList.remove('is-ls-open');
+      if (lsMenuPage == null && !lsEditing && lsNew.hidden && !lsRoot.matches(':hover')) stage.classList.remove('is-ls-open');
     }, 200);
   }
 
@@ -361,11 +941,7 @@
     if (save) { lsFinishRename(save.dataset.save === 'ok'); return; }
     if (row.classList.contains('is-edit')) return;
     const cmd = e.target.closest('[data-cmd]');
-    if (cmd?.dataset.cmd === 'eye') {
-      const page = lsPage(id);
-      page.off = !page.off;
-      lsRender();
-    } else if (cmd?.dataset.cmd === 'more') {
+    if (cmd?.dataset.cmd === 'more') {
       if (lsMenuPage === id) lsCloseMenu();
       else { lsCloseMenu(); lsOpenMenu(id, cmd); }
     } else {
@@ -385,11 +961,153 @@
     const item = e.target.closest('[data-act]');
     if (!item) return;
     const id = lsMenuPage;
+    const at = stageRect(lsMenu);
     lsCloseMenu();
-    if (item.dataset.act === 'rename') lsStartRename(id);
-    else lsDelete(id);
+    // «Сделать главной», «Скопировать ссылку» и «Скрыть» пока только закрывают меню
+    if (item.dataset.act === 'settings') lsPageSettings(id, at);
+    else if (item.dataset.act === 'duplicate') lsDuplicate(id);
+    else if (item.dataset.act === 'delete') lsDelete(id);
   });
   $('#lsMenuClose').addEventListener('click', lsCloseMenu);
+
+  // Окно новой страницы: открывается поверх плюса. Адрес и SEO-заголовок идут за названием, пока их не меняли вручную.
+  // «Сохранить» и Enter в названии добавляют страницу и открывают её, крестик и Esc закрывают без добавления. Клик мимо окно не закрывает.
+  // Это же окно — настройки страницы: открывается из меню «⋮» с её значениями, «Сохранить» применяет их к ней.
+  const lsNew = $('#lsNew');
+  const lsNewName = $('#lsNewName');
+  const lsNewAddr = $('#lsNewAddr');
+  const lsNewSeoTitle = $('#lsNewSeoTitle');
+  const lsNewIndex = $('#lsNewIndex');
+  const LS_NEW_NAME = 'Новая страница';
+  const TRANSLIT = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya' };
+  const lsSlug = (name) => [...name.trim().toLowerCase()].map((c) => TRANSLIT[c] ?? c).join('').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  let lsNewSeoEdited = false;
+  let lsNewPage = null; // настраиваемая страница, null — новая
+
+  function lsNewSync() {
+    const name = lsNewName.value.trim() || LS_NEW_NAME;
+    lsNewAddr.placeholder = lsSlug(name);
+    if (!lsNewSeoEdited) lsNewSeoTitle.value = name;
+  }
+
+  function lsNewFill(page) {
+    lsNewPage = page;
+    lsNew.setAttribute('aria-label', page ? 'Настройки страницы' : 'Новая страница');
+    lsNewAddr.value = page?.addr ?? '';
+    lsNewSeoEdited = page?.seo != null;
+    lsNewIndex.querySelector('.rp-switch').classList.toggle('is-on', !!page?.noindex);
+    lsNewIndex.setAttribute('aria-checked', !!page?.noindex);
+    lsModeClose();
+    lsModeSelect(lsModeMenu.querySelector(`[data-mode="${page?.mode ?? 'page'}"]`));
+    lsNewEditor.reset(); // пустое название, SEO убран; вызывает lsNewSync
+    if (!page) return;
+    lsNewName.value = page.name;
+    if (page.seo != null) {
+      lsNew.querySelector('[data-pe-chip="seo"]').click();
+      lsNewSeoTitle.value = page.seo;
+    }
+    lsNewName.dispatchEvent(new Event('input', { bubbles: true })); // PropertyEditor и подсказка адреса узнают название
+  }
+
+  function lsNewShow(left, top) {
+    lsNew.hidden = false;
+    lsNew.style.left = Math.round(left) + 'px';
+    lsNew.style.top = Math.round(top) + 'px';
+    lsNewName.focus();
+  }
+
+  const lsAddPin = $('#lsAdd .pin');
+
+  function lsNewOpen() {
+    lsAddPin.remove();
+    lsNewFill(null);
+    const r = stageRect($('#lsAdd'));
+    lsNewShow(r.left - 12, r.top + r.height / 2 - 22);
+  }
+
+  // Настройки страницы открываются на месте меню «⋮»
+  function lsPageSettings(id, at) {
+    lsNewFill(lsPage(id));
+    lsNewShow(at.left, at.top);
+  }
+
+  function lsNewClose() {
+    if (lsNew.hidden) return;
+    lsNew.hidden = true;
+    lsCollapseIfLeft();
+  }
+
+  function lsNewSave() {
+    const fields = {
+      name: lsNewName.value.trim() || LS_NEW_NAME,
+      addr: lsNewAddr.value.trim(),
+      noindex: lsNewIndex.querySelector('.rp-switch').classList.contains('is-on'),
+      seo: lsNew.querySelector('[data-pe-row="seo"]').hidden ? null : lsNewSeoTitle.value,
+      mode: lsModeMenu.querySelector('.is-selected').dataset.mode,
+    };
+    if (lsNewPage) {
+      Object.assign(lsNewPage, fields);
+    } else {
+      const page = { id: lsNextId++, off: false, blank: true, ...fields };
+      lsPages.push(page);
+      lsActive = page.id;
+    }
+    lsRender();
+    lsNewClose();
+  }
+
+  // Меню режима открытия: заголовок на уровне строки, текст пунктов — под значением. Клик мимо и Esc закрывают только меню.
+  const lsMode = $('#lsMode');
+  const lsModeMenu = $('#lsModeMenu');
+
+  function lsModeSelect(item) {
+    lsModeMenu.querySelectorAll('.ls-mode__item').forEach((el) => {
+      el.classList.toggle('is-selected', el === item);
+      el.setAttribute('aria-checked', el === item);
+    });
+    lsMode.textContent = item.textContent;
+  }
+
+  function lsModeOpen() {
+    const r = stageRect(lsMode);
+    const box = stageRect(lsNew);
+    lsModeMenu.hidden = false;
+    lsModeMenu.style.left = Math.round(r.left - box.left - 30) + 'px';
+    lsModeMenu.style.top = Math.round(r.top + r.height / 2 - box.top - 22) + 'px';
+    lsMode.setAttribute('aria-expanded', 'true');
+  }
+
+  function lsModeClose() {
+    lsModeMenu.hidden = true;
+    lsMode.setAttribute('aria-expanded', 'false');
+  }
+
+  lsMode.addEventListener('click', () => { if (lsModeMenu.hidden) lsModeOpen(); else lsModeClose(); });
+  lsModeMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('.ls-mode__item');
+    if (item) lsModeSelect(item);
+    if (item || e.target.closest('#lsModeClose')) lsModeClose();
+  });
+
+  // Чипс и крестик SEO, название и кнопки шапки — PropertyEditor из ui-kit
+  const lsNewEditor = PropertyEditor.mount(lsNew, { onChange: lsNewSync, onDone: lsNewSave, onClose: lsNewClose });
+
+  $('#lsAdd').addEventListener('click', lsNewOpen);
+  // пустое название показываем как имя по умолчанию, при возврате в поле его можно сразу перепечатать
+  lsNewName.addEventListener('blur', () => { if (!lsNewName.value.trim()) lsNewName.value = LS_NEW_NAME; });
+  lsNewName.addEventListener('focus', () => { if (lsNewName.value === LS_NEW_NAME) lsNewName.select(); });
+  lsNewName.addEventListener('keydown', (e) => { if (e.key === 'Enter') lsNewSave(); });
+  lsNewSeoTitle.addEventListener('input', () => { lsNewSeoEdited = true; });
+  lsNewIndex.addEventListener('click', () => {
+    const on = lsNewIndex.querySelector('.rp-switch').classList.toggle('is-on');
+    lsNewIndex.setAttribute('aria-checked', on);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (lsModeMenu.hidden) lsNewClose();
+    else lsModeClose();
+  });
+  document.addEventListener('mousedown', (e) => { if (!e.target.closest('#lsModeMenu, #lsMode')) lsModeClose(); });
 
   // Клик мимо закрывает меню и сохраняет название.
   stage.addEventListener('mousedown', (e) => {
@@ -397,6 +1115,43 @@
     if (lsEditing && !lsEditing.row.contains(e.target)) lsFinishRename(true);
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lsCloseMenu(); });
+
+  // Сценарии панели — состояния страницы. «Новая страница»: открытая новая страница (или последняя, или созданная заново) получает режим сценария.
+  // «Создание окна с товаром» возвращает исходные страницы, каталог и подсказку на плюсе.
+  function scenApply(scenario, mode) {
+    lsNewClose();
+    lsCloseMenu();
+    lsFinishRename(false);
+    if (scenario === 'new') {
+      const active = lsPage(lsActive);
+      let page = active.blank ? active : lsPages.findLast((p) => p.blank);
+      if (!page) {
+        page = { id: lsNextId++, name: LS_NEW_NAME, off: false, blank: true };
+        lsPages.push(page);
+      }
+      page.mode = mode;
+      lsActive = page.id;
+      lsAddPin.remove();
+    } else {
+      lsPages = lsInitialPages();
+      lsActive = 2;
+      lsCardPageId = null;
+      sitePlaceCatalog();
+      $('#lsAdd').append(lsAddPin);
+    }
+    lsRender();
+  }
+
+  // Панель показывает состояние открытой страницы, как бы та ни открылась: из списка, после сохранения или удаления.
+  function scenSync() {
+    const page = lsPage(lsActive);
+    const scenario = page.blank ? 'new' : 'window-create';
+    const mode = page.blank ? page.mode : null;
+    if (scenario === frame.value.scenario && mode === frame.value.variant) return;
+    scenSyncing = true;
+    frame.select(scenario, mode);
+    scenSyncing = false;
+  }
 
   lsSetCollapsed(lsReadCollapsed());
   lsRender();
