@@ -189,6 +189,7 @@
   let salesDraft = null;
   let salesSelection = new Set();
   let salesPickerMode = null;
+  let salesOnlySelected = false;
   let salesFocus = null;
   const salesCopy = (rows) => rows.map((row) => ({ ...row }));
   const salesCurrent = () => salesDraft || salesSaved;
@@ -256,6 +257,7 @@
   function salesPickerOpen(pointId = null) {
     salesFocus = document.activeElement;
     salesPickerMode = pointId || 'points';
+    salesOnlySelected = false;
     const rows = salesCurrent();
     salesSelection = new Set(pointId ? [rows.find((row) => row.id === pointId).price] : rows.map((row) => row.id));
     $('#salesPickerTitle').textContent = pointId ? 'Прайсы' : 'Точки продаж';
@@ -270,8 +272,8 @@
     root.replaceChildren();
     const query = $('#salesSearch').value.trim().toLocaleLowerCase('ru');
     const isPrice = salesPickerMode !== 'points';
-    $('#salesCount').textContent = 'Отмечено ' + salesSelection.size;
-    if (!query) {
+    salesPickerHeader();
+    if (!query && !salesOnlySelected) {
       root.append(el('div', 'sales-picker__company', isPrice ? 'Мили' : 'Вся компания'));
       const groups = isPrice ? ['Столовая Кострома', 'Столовая Питер', 'Столовые Ярославль', 'Столовая Новосибирск', 'Гастромаркет ЕКБ'] : SALES_GROUPS;
       for (const group of groups) {
@@ -287,6 +289,7 @@
     let count = 0;
     for (const option of isPrice ? PRICES.map((name) => ({ id: name, name })) : SALES) {
       if (!option.name.toLocaleLowerCase('ru').includes(query)) continue;
+      if (salesOnlySelected && !salesSelection.has(option.id)) continue;
       count++;
       const label = el('label', 'sales-option');
       const input = el('input');
@@ -298,13 +301,31 @@
         if (isPrice) salesSelection.clear();
         if (input.checked) salesSelection.add(option.id);
         else salesSelection.delete(option.id);
-        $('#salesCount').textContent = 'Отмечено ' + salesSelection.size;
+        salesPickerHeader();
+        if (salesOnlySelected) salesPickerRender();
       });
       label.append(input, document.createTextNode(option.name));
       root.append(label);
     }
-    if (query && !count) root.append(el('p', 'sales-empty', 'Ничего не найдено'));
+    if (!count) root.append(el('p', 'sales-empty', 'Ничего не найдено'));
   }
+  function salesPickerHeader() {
+    $('#salesCount').textContent = 'Отмечено ' + salesSelection.size;
+    $('#salesCount').setAttribute('aria-pressed', salesOnlySelected);
+    $('#salesFilter').setAttribute('aria-pressed', salesOnlySelected);
+    const all = $('#salesSelectAll');
+    all.hidden = salesPickerMode !== 'points';
+    all.checked = salesSelection.size === SALES.length;
+    all.indeterminate = salesSelection.size > 0 && salesSelection.size < SALES.length;
+  }
+  for (const button of [$('#salesCount'), $('#salesFilter')]) button.addEventListener('click', () => {
+    salesOnlySelected = !salesOnlySelected;
+    salesPickerRender();
+  });
+  $('#salesSelectAll').addEventListener('change', (e) => {
+    salesSelection = new Set(e.target.checked ? SALES.map((point) => point.id) : []);
+    salesPickerRender();
+  });
   $('#salesPickerDone').addEventListener('click', () => {
     let rows = salesCopy(salesCurrent());
     if (salesPickerMode === 'points') {
@@ -361,8 +382,8 @@
   const COVER = 'inset:0;width:100%;height:100%;object-fit:cover';
   const CONTAIN = 'inset:0;width:100%;height:100%;object-fit:contain';
   const SHOP_WIDGETS = [
-    ['Карточка товара', 'Для отображения товара со всеми его свойствами', 357, 'product', true, CONTAIN],
     ['Каталог', 'Виджет товаров и услуг, доступных в вашем заведении', 304, 'catalog', false, COVER],
+    ['Карточка товара', 'Для отображения товара со всеми его свойствами', 357, 'product', true, CONTAIN],
     ['Корзина', 'Для хранения выбранных товаров, расчета итоговой стоимости и быстрого перехода к оформлению заказа', 231, 'cart', true, CONTAIN],
     ['Мои контакты', 'Закрепите контакты для быстрого доступа, звоните и пишите коллегам в один клик', 267, 'contacts', false, 'left:-8.18%;top:-16.06%;width:110.98%;height:126.28%'],
     ['Список страниц', 'Позволяет редактировать и настраивать страницы', 190, 'pages', false, 'left:-13.21%;top:-23.68%;width:121.23%;height:137.37%'],
@@ -385,6 +406,30 @@
   const siteBlankSection = $('#siteBlankSection');
   const siteBlankCell = $('#siteBlankCell');
   const siteProduct = $('#siteProduct');
+
+  // Fixed привязан к масштабируемой сцене и выходит из overflow прокручиваемого контента.
+  // Оставляем настоящий тулбар внутри виджета: выделение, ховер и обработчики кнопок сохраняются.
+  const widgetToolbars = [...siteContent.querySelectorAll('.wg__toolbar')];
+  let toolbarFrame = 0;
+  function positionWidgetToolbars() {
+    toolbarFrame = 0;
+    for (const toolbar of widgetToolbars) {
+      const widget = toolbar.parentElement;
+      if (!widget.getClientRects().length) continue;
+      const r = stageRect(widget);
+      const h = toolbar.getBoundingClientRect().height / scale;
+      toolbar.style.setProperty('--widget-toolbar-left', r.left + 'px');
+      toolbar.style.setProperty('--widget-toolbar-top', Math.max(6, r.top - h - 8) + 'px');
+    }
+  }
+  function scheduleWidgetToolbars() {
+    if (!toolbarFrame) toolbarFrame = requestAnimationFrame(positionWidgetToolbars);
+  }
+  siteContent.addEventListener('scroll', scheduleWidgetToolbars, { passive: true });
+  window.addEventListener('resize', scheduleWidgetToolbars);
+  new ResizeObserver(scheduleWidgetToolbars).observe(siteContent);
+  new MutationObserver(scheduleWidgetToolbars).observe(stage, { subtree: true, attributes: true, attributeFilter: ['class', 'hidden'] });
+  scheduleWidgetToolbars();
 
   const shopCatalog = $('#rsWidgets [data-widget="catalog"]').closest('.rs-w');
   const shopProduct = $('#rsWidgets [data-widget="product"]').closest('.rs-w');
@@ -1394,6 +1439,9 @@
   const lsNewName = $('#lsNewName');
   const lsNewAddr = $('#lsNewAddr');
   const lsNewSeoTitle = $('#lsNewSeoTitle');
+  const lsNewSeoDescription = $('#lsNewSeoDescription');
+  const lsSeoDescriptionAdd = $('#lsSeoDescriptionAdd');
+  const lsSeoDescriptionField = $('#lsSeoDescriptionField');
   const lsNewIndex = $('#lsNewIndex');
   const LS_NEW_NAME = 'Новая страница';
   const TRANSLIT = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya' };
@@ -1415,7 +1463,11 @@
     lsNewIndex.querySelector('.rp-switch').classList.toggle('is-on', !!page?.noindex);
     lsNewIndex.setAttribute('aria-checked', !!page?.noindex);
     lsModeClose();
+    lsAccessClose();
     lsModeSelect(lsModeMenu.querySelector(`[data-mode="${page?.mode ?? 'page'}"]`));
+    lsAccessSelect(lsAccessMenu.querySelector(`[data-access="${page?.access ?? 'public'}"]`));
+    lsNewSeoDescription.value = page?.seoDescription ?? '';
+    lsDescriptionShow(page?.seoDescription != null);
     lsNewEditor.reset(); // пустое название, SEO убран; вызывает lsNewSync
     if (!page) return;
     lsNewName.value = page.name;
@@ -1452,6 +1504,7 @@
   function lsNewClose() {
     if (lsNew.hidden) return;
     lsModeClose();
+    lsAccessClose();
     lsNew.hidden = true;
     lsCollapseIfLeft();
   }
@@ -1462,6 +1515,8 @@
       addr: lsNewAddr.value.trim(),
       noindex: lsNewIndex.querySelector('.rp-switch').classList.contains('is-on'),
       seo: lsNew.querySelector('[data-pe-row="seo"]').hidden ? null : lsNewSeoTitle.value,
+      seoDescription: lsNew.querySelector('[data-pe-row="seo"]').hidden || lsSeoDescriptionField.hidden ? null : lsNewSeoDescription.value,
+      access: lsAccessMenu.querySelector('.is-selected').dataset.access,
       mode: lsModeMenu.querySelector('.is-selected').dataset.mode,
     };
     if (lsNewPage) {
@@ -1488,6 +1543,7 @@
   }
 
   function lsModeOpen() {
+    lsAccessClose();
     const r = stageRect(lsMode);
     const box = stageRect(lsNew);
     lsModeMenu.hidden = false;
@@ -1508,6 +1564,58 @@
     if (item || e.target.closest('#lsModeClose')) lsModeClose();
   });
 
+  // Доступ — настройка прототипа; здесь задаётся состояние страницы, серверной авторизации нет.
+  const lsAccess = $('#lsAccess');
+  const lsAccessMenu = $('#lsAccessMenu');
+  function lsAccessSelect(item) {
+    lsAccessMenu.querySelectorAll('[data-access]').forEach((option) => {
+      const selected = option === item;
+      option.classList.toggle('is-selected', selected);
+      option.setAttribute('aria-checked', selected);
+    });
+    lsAccess.textContent = item.textContent;
+  }
+  function lsAccessClose() {
+    lsAccessMenu.hidden = true;
+    lsAccess.setAttribute('aria-expanded', 'false');
+  }
+  lsAccess.addEventListener('click', () => {
+    if (!lsAccessMenu.hidden) { lsAccessClose(); return; }
+    lsModeClose();
+    const r = stageRect(lsAccess);
+    const box = stageRect(lsNew);
+    lsAccessMenu.style.left = Math.round(r.left - box.left - 30) + 'px';
+    lsAccessMenu.style.top = Math.round(r.top + r.height / 2 - box.top - 22) + 'px';
+    lsAccessMenu.hidden = false;
+    lsAccess.setAttribute('aria-expanded', 'true');
+  });
+  lsAccessMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-access]');
+    if (item) lsAccessSelect(item);
+    if (item || e.target.closest('#lsAccessClose')) { lsAccessClose(); lsAccess.focus(); }
+  });
+  document.addEventListener('mousedown', (e) => { if (!e.target.closest('#lsAccessMenu, #lsAccess')) lsAccessClose(); });
+
+  function lsDescriptionShow(show) {
+    lsSeoDescriptionField.hidden = !show;
+    lsSeoDescriptionAdd.hidden = show;
+    lsSeoDescriptionAdd.setAttribute('aria-expanded', show);
+  }
+  lsSeoDescriptionAdd.addEventListener('click', () => {
+    lsDescriptionShow(true);
+    lsNewSeoDescription.focus();
+  });
+  lsNew.addEventListener('click', (e) => {
+    if (e.target.closest('[data-pe-clear], .pe__reset')) {
+      lsNewSeoDescription.value = '';
+      lsDescriptionShow(false);
+    }
+    if (e.target.closest('.pe__reset')) {
+      lsAccessClose();
+      lsAccessSelect(lsAccessMenu.querySelector('[data-access="public"]'));
+    }
+  });
+
   // Чипс и крестик SEO, название и кнопки шапки — PropertyEditor из ui-kit
   const lsNewEditor = PropertyEditor.mount(lsNew, { onChange: lsNewSync, onDone: lsNewSave, onClose: lsNewClose });
 
@@ -1523,8 +1631,9 @@
   });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    if (lsModeMenu.hidden) lsNewClose();
-    else lsModeClose();
+    if (!lsAccessMenu.hidden) { lsAccessClose(); lsAccess.focus(); }
+    else if (!lsModeMenu.hidden) { lsModeClose(); lsMode.focus(); }
+    else lsNewClose();
   });
   document.addEventListener('mousedown', (e) => { if (!e.target.closest('#lsModeMenu, #lsMode')) lsModeClose(); });
 

@@ -262,8 +262,8 @@
         <div class="sales-popup__body"><div class="sales-rows" id="salesPopupRows"></div></div>
       </section>
       <section class="sales-picker" id="salesPicker" role="dialog" aria-modal="true" aria-labelledby="salesPickerTitle" hidden>
-        <div class="sales-picker__main"><div class="sales-picker__head"><strong id="salesPickerTitle">Точки продаж</strong><span class="sales-spacer"></span><button class="sales-done" id="salesPickerDone" type="button" aria-label="Подтвердить выбор"><span class="ico">&#xE75E;</span></button></div><div class="sales-picker__search"><input id="salesSearch" type="search" placeholder="Найти" aria-label="Поиск точек продаж"><span id="salesCount"></span></div><div class="sales-picker__list" id="salesPickerList"></div></div>
-        <div class="sales-picker__rail"><button class="sales-icon" id="salesPickerClose" type="button" aria-label="Отменить выбор"><img src="assets/img/close-tool.svg" width="28" height="28" alt=""></button><span class="sales-spacer"></span><img src="assets/img/help.svg" width="32" height="32" alt="Помощь"></div>
+        <div class="sales-picker__main"><div class="sales-picker__head"><strong id="salesPickerTitle">Точки продаж</strong><span class="sales-spacer"></span><button class="sales-icon sales-filter" id="salesFilter" type="button" aria-label="Показать только отмеченные" aria-pressed="false"><span class="ico24">&#xE94C;</span></button><button class="sales-done" id="salesPickerDone" type="button" aria-label="Подтвердить выбор"><span class="ico">&#xE75E;</span></button></div><div class="sales-picker__search"><input class="sales-checkbox" id="salesSelectAll" type="checkbox" aria-label="Выбрать все точки продаж"><input id="salesSearch" type="search" placeholder="Найти" aria-label="Поиск точек продаж"><button id="salesCount" type="button" aria-label="Показать только отмеченные точки" aria-pressed="false"></button></div><div class="sales-picker__list" id="salesPickerList"></div></div>
+        <div class="sales-picker__rail"><button class="sales-icon" id="salesPickerClose" type="button" aria-label="Отменить выбор"><img src="assets/img/sales-close.svg" width="28" height="28" alt=""></button><span class="sales-icon sales-list-settings" title="Настройки списка"><span class="ico24">&#xEB66;</span></span><span class="sales-spacer"></span><span class="rp-help" aria-label="Помощь"><img src="assets/img/help.svg" width="12" height="16" alt=""></span></div>
       </section>
 
       <!-- Тулбар правого сайдбара -->
@@ -299,7 +299,7 @@
               </div>
               <div class="pe__row">
                 <span class="pe__label">Доступ</span>
-                <button class="btn btn--link btn--style-link btn--size-m ls-new__access" type="button">Без авторизации</button>
+                <button class="btn btn--link btn--style-link btn--size-m ls-new__access" type="button" id="lsAccess" aria-haspopup="menu" aria-controls="lsAccessMenu" aria-expanded="false">Без авторизации</button>
               </div>
             </div>
             <button class="ls-new__index" type="button" id="lsNewIndex" role="switch" aria-checked="false"><span>Запретить поисковую индексацию</span><span class="rp-switch"></span></button>
@@ -317,7 +317,8 @@
               <div class="pe__title">SEO<button type="button" class="pe__x" data-pe-clear aria-label="Убрать SEO">&#xe66c;</button></div>
               <div class="ls-new__seo-fields">
                 <label class="input input--label-top"><span class="input__label">Заголовок</span><span class="input__body"><span class="input__field"><input class="input__control" id="lsNewSeoTitle"></span></span></label>
-                <button class="btn btn--filled btn--style-pale btn--size-m" type="button">Описание</button>
+                <button class="btn btn--filled btn--style-pale btn--size-m" id="lsSeoDescriptionAdd" type="button" aria-expanded="false" aria-controls="lsSeoDescriptionField">Описание</button>
+                <label class="input input--label-top ls-new__description" id="lsSeoDescriptionField" hidden><span class="input__label">Описание</span><span class="input__body"><span class="input__field"><textarea class="input__control" id="lsNewSeoDescription" aria-label="SEO-описание" rows="3"></textarea></span></span></label>
               </div>
             </div>
           </div>
@@ -332,6 +333,14 @@
             <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="both"><span class="ls-mode__toggle"></span><span class="mw-menu__text">Страница и окно</span></button>
           </div>
           <button class="mw-menu__close" type="button" id="lsModeClose" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
+        </div>
+        <div class="mw-menu ls-mode ls-access" id="lsAccessMenu" role="menu" aria-label="Доступ" hidden>
+          <div class="mw-menu__list">
+            <div class="ls-mode__head">Доступ</div>
+            <button class="mw-menu__item ls-mode__item is-selected" type="button" role="menuitemradio" aria-checked="true" data-access="public"><span class="ls-mode__toggle"></span><span class="mw-menu__text">Без авторизации</span></button>
+            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-access="authorized"><span class="ls-mode__toggle"></span><span class="mw-menu__text">Только авторизованным</span></button>
+          </div>
+          <button class="mw-menu__close" type="button" id="lsAccessClose" aria-label="Закрыть меню доступа"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
         </div>
       </section>
 

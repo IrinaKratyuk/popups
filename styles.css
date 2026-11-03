@@ -90,6 +90,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .content { position: absolute; left: 366px; right: 412px; top: 44px; bottom: 0; overflow: hidden auto; scrollbar-width: none; background: var(--content-bg); border-radius: 8px 8px 0 0; }
 .stage.is-ls-collapsed .content { left: 52px; }
 .stage.is-rs-closed .content { right: 54px; }
+.content .wg__toolbar { position: fixed; left: var(--widget-toolbar-left); top: var(--widget-toolbar-top); bottom: auto; z-index: 12; }
 
 /* сайт в конструкторе (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:63290): цвета и шрифт — самого сайта, не токены кита */
 .site { display: flex; flex-direction: column; }
@@ -240,6 +241,9 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ls-new .pe__x { margin-left: 0; } /* в ките поправка под зазор строки, в заголовке зазора нет */
 .ls-new__seo-fields { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .ls-new__seo-fields .input { width: 100%; }
+.ls-new__description[hidden], #lsSeoDescriptionAdd[hidden] { display: none; }
+.ls-new__description .input__body, .ls-new__description .input__field { height: auto; }
+.ls-new__description textarea.input__control { display: block; min-height: 72px; height: auto; line-height: 1.4; resize: vertical; white-space: pre-wrap; }
 /* меню режима открытия: .mw-menu, заголовок и маркер (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:20980) */
 /* настройки окна: .pe из ui-kit, свойства — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2489:24408 */
 .ws { position: absolute; z-index: 20; }
@@ -291,6 +295,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .mw-menu.ls-mode { width: 200px; }
 .ls-mode .mw-menu__list { padding-top: 8px; }
 .ls-mode__head, .ls-menu__head { height: 28px; display: flex; align-items: center; padding-left: 12px; font-size: 14px; letter-spacing: 1.25px; text-transform: uppercase; color: var(--text-label_text-color); }
+.ls-mode__head { padding-left: 22px; } /* 8 px отступ пункта + 14 px место радиомаркера: заголовок выровнен по тексту */
+.mw-menu.ls-access { width: 280px; }
 .ls-mode__toggle { flex: none; width: 14px; height: 32px; display: flex; align-items: center; justify-content: center; padding-right: 2px; }
 .ls-mode__toggle::before { content: ""; width: 7px; height: 7px; border-radius: 50%; visibility: hidden; }
 .ls-mode__item:hover .ls-mode__toggle::before { visibility: visible; border: 1px solid var(--border-border-color); background: var(--background-background-color); }
@@ -424,18 +430,29 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-picker { position: absolute; z-index: 35; left: 998px; top: 0; bottom: 0; width: 602px; display: flex; background: #f8f8f8; box-shadow: -6px 0 22px #0000001c, -2px 0 8px #00000005; }
 .sales-picker__main { width: 550px; min-width: 0; display: flex; flex-direction: column; }
 .sales-picker__head { height: 46px; padding: 0 12px 0 16px; display: flex; align-items: center; gap: 12px; }
-.sales-picker__head strong { font-size: 20px; font-weight: 600; }
+.sales-picker__head strong { font-size: 20px; font-weight: 600; letter-spacing: -.282px; }
+.sales-picker__head .sales-filter { width: 32px; height: 32px; }
+.sales-filter .ico24, .sales-list-settings .ico24 { color: #656c87; }
+.sales-filter[aria-pressed="true"] { background: #eeebff; }
 .sales-picker__head .sales-done { width: 26px; height: 26px; }
-.sales-picker__search { display: flex; gap: 8px; align-items: center; padding: 2px 12px 4px 20px; height: 32px; font-size: 14px; color: #313e78; }
-.sales-picker__search input { font: inherit; min-width: 0; flex: 1; height: 26px; padding: 0 12px; background: #fff; border: 1px solid #eaeaea; border-radius: 14px; outline-color: #8991a9; }
+.sales-picker__search { display: flex; gap: 0; align-items: center; padding: 0 12px 0 4px; height: 32px; font-size: 14px; letter-spacing: -.1974px; color: #313e78; }
+.sales-picker__search input[type="search"] { font: inherit; width: 300px; flex: none; height: 28px; padding: 0 12px; margin-left: 3px; margin-right: 8px; background: #fff; border: 1px solid #eaeaea; border-radius: 16px; outline-color: #8991a9; }
 .sales-picker__search input::placeholder { color: #8991a999; }
-.sales-picker__list { flex: 1; min-height: 0; background: #fff; overflow: auto; padding: 4px 0; }
+.sales-picker__list { flex: 1; min-height: 0; background: #fff; overflow: auto; padding: 5px 0 0; }
 .sales-picker__group { width: 100%; display: flex; align-items: center; min-height: 31px; padding: 0 16px 0 20px; gap: 4px; font-size: 16px; text-align: left; }
 .sales-picker__group .ico { color: #313e78; }
 .sales-picker__group:hover, .sales-option:hover { background: var(--menu-item-hover); }
-.sales-picker__company { font-size: 15px; font-weight: 600; padding: 7px 20px; }
-.sales-option { display: flex; align-items: center; gap: 20px; min-height: 31px; padding: 0 16px 0 4px; font-size: 14px; cursor: pointer; }
-.sales-option input { width: 13px; height: 13px; margin: 0; accent-color: var(--accent); flex: none; }
+.sales-picker__company { display: flex; align-items: center; height: 31px; font-size: 16px; font-weight: 600; padding: 0 20px; letter-spacing: -.2256px; }
+.sales-option { display: flex; align-items: center; gap: 23px; min-height: 31px; padding: 4px 16px 3px 4px; font-size: 14px; letter-spacing: -.1974px; cursor: pointer; }
+.sales-option input, .sales-checkbox { width: 13px; height: 13px; margin: 0; flex: none; }
+.sales-option input[type="checkbox"], .sales-checkbox { appearance: none; border: 0; border-radius: 0; background: url('assets/img/sales-unchecked.svg') center / 13px 13px no-repeat; cursor: pointer; }
+.sales-option input[type="checkbox"]:not(:checked) { opacity: 0; }
+.sales-option:hover input[type="checkbox"], .sales-option:focus-within input[type="checkbox"] { opacity: 1; }
+.sales-option:hover input[type="checkbox"]:not(:checked), .sales-checkbox:hover { background-image: url('assets/img/sales-unchecked-hover.svg'); }
+.sales-option input[type="checkbox"]:checked, .sales-checkbox:checked { background-image: url('assets/img/sales-checked.svg'); }
+.sales-option:hover input[type="checkbox"]:checked { background-image: url('assets/img/sales-checked-hover.svg'); }
+.sales-checkbox:indeterminate { background-image: url('assets/img/sales-partial.svg'); }
+.sales-option input:focus-visible, .sales-checkbox:focus-visible { outline: 2px solid #7b62f8; outline-offset: 2px; }
 .sales-picker__rail { width: 52px; border-left: 2px solid #0000000a; display: flex; flex-direction: column; align-items: center; padding: 7px 10px 6px 12px; gap: 7px; }
 .sales-picker__rail .sales-icon { width: 32px; height: 32px; }
 
