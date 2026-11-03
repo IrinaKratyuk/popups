@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/widget/widget.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/toolbar/toolbar.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/input/input.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/checkbox/checkbox.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/chips/chips.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.css">
   <!-- шрифт сайта в макете -->
@@ -20,7 +21,7 @@
 </head>
 <body>
   <div class="viewport">
-    <div class="stage" id="stage" data-scenario="ext-float">
+    <div class="stage" id="stage" data-scenario="ext-add">
 
       <!-- Шапка конструктора (Figma rHabzni5OI5D4fxBLQdj2m 5:28058): только ховер, без действий по клику -->
       <header class="ch">
@@ -85,6 +86,24 @@
           <button type="button" class="tb__btn" data-btn-cmd="settings" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
           <button type="button" class="tb__btn tb__btn--delete" data-btn-cmd="delete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
           <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
+        </template>
+        <!-- Форма обратной связи (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2654:44316) — одна на окно и секцию: вставляется в каждый [data-site-feedback] -->
+        <template id="siteFeedbackForm">
+          <div class="site-feedback__head">
+            <div class="input site-feedback__title"><div class="input__body"><div class="input__field"><input class="input__control" type="text" value="Обратная связь" aria-label="Заголовок"></div></div></div>
+            <button type="button" class="btn btn--ghost btn--style-label btn--size-m btn--icon site-feedback__close" aria-label="Закрыть"><span class="btn__icon">&#xE66C;</span></button>
+          </div>
+          <div class="input" data-fb-field="name"><div class="input__body"><div class="input__field"><input class="input__control" type="text" placeholder="Имя" aria-label="Имя"></div></div></div>
+          <div class="input" data-fb-field="phone"><div class="input__body"><div class="input__field"><input class="input__control" type="tel" placeholder="Телефон *" aria-label="Телефон"></div></div></div>
+          <div class="input" data-fb-field="email"><div class="input__body"><div class="input__field"><input class="input__control" type="email" placeholder="E-mail" aria-label="E-mail"></div></div></div>
+          <div class="input" data-fb-field="company"><div class="input__body"><div class="input__field"><input class="input__control" type="text" placeholder="Компания" aria-label="Компания"></div></div></div>
+          <div class="input" data-fb-field="desc" hidden><div class="input__body"><div class="input__field"><input class="input__control" type="text" placeholder="Введите текст сообщения" aria-label="Описание"></div></div></div>
+          <div class="site-feedback__actions">
+            <button type="button" class="btn btn--ghost btn--style-label btn--icon site-feedback__attach" aria-label="Прикрепить файл"><span class="btn__icon">&#xE671;</span></button>
+            <button type="button" class="btn btn--filled btn--style-primary btn--icon site-feedback__send" aria-label="Отправить"><span class="btn__icon">&#xEB17;</span></button>
+          </div>
+          <label class="checkbox checkbox--outlined site-feedback__check"><input class="checkbox__input" type="checkbox"><span class="checkbox__box"></span><span class="checkbox__caption">Я соглашаюсь с <span class="site-feedback__link">политикой обработки персональных данных</span></span></label>
+          <label class="checkbox checkbox--outlined site-feedback__check"><input class="checkbox__input" type="checkbox"><span class="checkbox__box"></span><span class="checkbox__caption">Я присоединяюсь к <span class="site-feedback__link">регламенту Saby</span></span></label>
         </template>
         <template id="sectionCmds">
           <button type="button" class="tb__btn" data-sec-cmd="fill" aria-label="Фон"><span class="tb__icon" aria-hidden="true">&#xe664;</span></button>
@@ -197,6 +216,23 @@
             <button type="button" class="site-plus site-plus--up"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
             <button type="button" class="site-plus site-plus--down"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
           </section>
+          <!-- Секция с формой обратной связи: сценарий «Виджет добавлен → В секции». Секция собрана из общих шаблонов, форма — та же, что в окне -->
+          <section class="wg site-ext" id="siteExt" aria-label="Секция с формой">
+            <div class="wg site-ext__widget" id="siteExtWidget">
+              <div class="wg__content"><div class="site-feedback" data-site-feedback></div></div>
+              <div class="wg__toolbar">
+                  <div class="tb tb--style-info" role="toolbar" aria-label="Обратная связь">
+                    <button type="button" class="tb__btn" id="siteExtBack" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
+                    <button type="button" class="tb__btn" id="siteExtSettings" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
+                    <button type="button" class="tb__btn tb__btn--delete" id="siteExtDelete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
+                    <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
+                  </div>
+                </div>
+            </div>
+            <button type="button" class="site-plus site-plus--up"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
+            <button type="button" class="site-plus site-plus--down"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
+            <div class="wg__toolbar"><div class="tb tb--style-info" role="toolbar" aria-label="Секция" data-section-cmds></div></div>
+          </section>
           <section class="wg site-about" id="siteAbout" aria-label="О ресторане Мили">
             <div class="site-about__image"><img src="assets/img/site/about.png" alt="Глобус в интерьере ресторана Мили"><span></span></div>
             <div class="site-about__content"><div><h2>Что такое «Мили»?</h2><p>Это множество дорог, расходящихся по странам мира. Это уникальные традиции мест, хранящих историю веков.</p></div><button type="button" class="site-about__button">Подробнее о нас</button></div>
@@ -214,13 +250,16 @@
             <section class="wg site-blank__section" id="siteBlankSection">
               <div class="wg site-empty site-blank__cell" id="siteBlankCell">
               </div>
-              <!-- Виджет в секции: карточка товара (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2695:72015) или форма обратной связи (2654:44316), рендер макета вместо пустой ячейки. Выделение и тулбар — .wg и .tb из ui-kit, команды — 2695:71293 -->
+              <!-- Виджет в секции: карточка товара (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2695:72015) или форма обратной связи (2654:44316) вместо пустой ячейки: карточка — рендер макета, форма — поля и чекбоксы из ui-kit, ширина по зоне контента, крестик только в окне. Выделение и тулбар — .wg и .tb из ui-kit, команды — 2695:71293 -->
               <div class="wg site-product" id="siteProduct" hidden>
-                <div class="wg__content"><img class="site-product__img" src="assets/img/site/product-card.png?v=2" width="756" height="768" alt="Карточка товара" draggable="false"></div>
+                <div class="wg__content">
+                  <img class="site-product__img" src="assets/img/site/product-card.png?v=2" width="756" height="768" alt="Карточка товара" draggable="false">
+                  <div class="site-feedback" data-site-feedback></div>
+                </div>
                 <div class="wg__toolbar">
                   <div class="tb tb--style-info" role="toolbar" aria-label="Карточка товара">
                     <button type="button" class="tb__btn" id="siteProductBack" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
-                    <button type="button" class="tb__btn" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
+                    <button type="button" class="tb__btn" id="siteProductSettings" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
                     <button type="button" class="tb__btn tb__btn--delete" id="siteProductDelete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
                     <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
                   </div>
@@ -317,6 +356,66 @@
         <div class="sales-popup__head"><strong>Точки продаж</strong><button class="btn btn--filled btn--style-pale btn--size-m btn--icon" type="button" data-sales-add aria-label="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button><span class="sales-spacer"></span><button class="sales-icon" id="salesReset" type="button" aria-label="Сбросить точки продаж"><span class="ico24">&#xE629;</span></button><button class="sales-done" id="salesDone" type="button" aria-label="Сохранить точки продаж"><span class="ico">&#xE75E;</span></button><button class="sales-icon" id="salesClose" type="button" aria-label="Отменить настройку точек продаж"><img src="assets/img/close-link.svg" width="24" height="24" alt=""></button></div>
         <div class="sales-popup__body"><div class="sales-rows" id="salesPopupRows"></div></div>
       </section>
+      <!-- Панель настроек обратной связи (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2648:45307): выезжает справа поверх сцены, форма — общий шаблон, палитры — PropertyEditor. Правый столбец — картинка из макета -->
+      <div class="fbp-scrim" id="fbScrim" hidden>
+        <section class="fbp" id="fbPanel" aria-label="Настройки обратной связи">
+          <header class="fbp__head">
+            <div class="input fbp__title"><div class="input__body"><div class="input__field"><input class="input__control" id="fbTitle" type="text" aria-label="Название виджета"></div></div></div>
+            <button type="button" class="pe__done fbp__done" aria-label="Сохранить и выйти">&#xe75e;</button>
+            <div class="fbp__tabs"><span class="fbp__tab is-on">Оформление</span><span class="fbp__tab">Интеграция</span><span class="fbp__tab">Настройки</span></div>
+          </header>
+          <div class="fbp__body">
+            <div class="fbp__top">
+              <div class="fbp__card"><div class="site-feedback" id="fbForm" data-site-feedback></div></div>
+              <div class="fbp__side">
+                <div class="fbp__line"><b class="fbp__label">Стиль</b><button type="button" class="btn btn--link btn--style-link"><span class="btn__caption">Основной стиль</span></button></div>
+                <div class="fbp__colors">
+                  <div class="fbp__color" data-pe-row="accent"><button type="button" class="pe__swatch" data-pe-color="#f6733c" data-pe-title="Акценты" aria-label="Цвет акцентов"></button>Акценты</div>
+                  <div class="fbp__color" data-pe-row="bg"><button type="button" class="pe__swatch" data-pe-color="#f3f3f3" data-pe-title="Фон" aria-label="Цвет фона"></button>Фон</div>
+                  <div class="fbp__color" data-pe-row="head"><button type="button" class="pe__swatch" data-pe-color="#000000" data-pe-title="Заголовки" aria-label="Цвет заголовков"></button>Заголовки</div>
+                  <div class="fbp__color" data-pe-row="text"><button type="button" class="pe__swatch" data-pe-color="#000000" data-pe-title="Текст" aria-label="Цвет текста"></button>Текст</div>
+                </div>
+                <div class="fbp__line"><b class="fbp__label">Поля</b><button type="button" class="btn btn--filled btn--style-pale btn--size-m btn--icon" aria-label="Добавить поле"><span class="btn__icon">&#xE95D;</span></button></div>
+                <div class="fbp__chips" id="fbChips">
+                  <button type="button" class="fbp__chip" data-fb-chip="name">Имя</button>
+                  <button type="button" class="fbp__chip" data-fb-chip="phone">Телефон</button>
+                  <button type="button" class="fbp__chip" data-fb-chip="email">E-mail</button>
+                  <button type="button" class="fbp__chip" data-fb-chip="company">Компания</button>
+                  <button type="button" class="fbp__chip" data-fb-chip="desc">Описание</button>
+                </div>
+              </div>
+            </div>
+            <div class="fbp__show">
+              Показывать
+              <div class="tumbler" id="fbShow" role="radiogroup" aria-label="Показывать">
+                <button type="button" class="tumbler__seg" role="radio" data-fb-show="float">Плавающая кнопка</button>
+                <button type="button" class="tumbler__seg" role="radio" data-fb-show="button">Статичная кнопка</button>
+                <button type="button" class="tumbler__seg" role="radio" data-fb-show="section">Секция</button>
+              </div>
+              <button type="button" class="btn btn--link btn--style-link" data-fb-for="float"><span class="btn__caption">всегда</span></button>
+            </div>
+            <div class="fbp__place" data-fb-for="float">
+              <div class="pe__rows fbp__pos"><div data-pos-editor></div></div>
+              <button type="button" class="btn btn--link btn--style-link fbp__message"><span class="btn__icon">&#xE95D;</span><span class="btn__caption">Добавьте привлекающее сообщение</span></button>
+            </div>
+            <label class="fbp__text" data-fb-for="button">
+              Текст кнопки
+              <span class="input input--size-m"><span class="input__body"><span class="input__field"><input class="input__control" id="fbText" aria-label="Текст кнопки"></span></span></span>
+            </label>
+            <div class="fbp__button">
+              <button type="button" class="btn btn--filled btn--style-primary btn--size-5xl btn--icon site-float__button" data-fb-for="float" aria-label="Кнопка обратной связи"><span class="btn__icon">&#xEB45;</span></button>
+              <button type="button" class="btn btn--filled btn--style-primary btn--size-5xl site-link__button" data-fb-for="button"><span class="btn__caption" id="fbCaption"></span></button>
+              <div class="fbp__animation" data-fb-for="float button">
+                <button type="button" class="btn btn--filled btn--style-pale btn--size-m btn--icon" aria-label="Предыдущая анимация"><span class="btn__icon">&#xE9A9;</span></button>
+                <button type="button" class="btn btn--filled btn--style-pale btn--size-m btn--icon" aria-label="Следующая анимация"><span class="btn__icon">&#xE9AB;</span></button>
+                <button type="button" class="btn btn--link btn--style-link"><span class="btn__caption">Анимация</span></button>
+              </div>
+            </div>
+          </div>
+          <aside class="fbp__rail"><button type="button" class="pe__close fbp__close" aria-label="Закрыть"></button></aside>
+        </section>
+      </div>
+
       <section class="sales-picker" id="salesPicker" role="dialog" aria-modal="true" aria-labelledby="salesPickerTitle" hidden>
         <div class="sales-picker__main"><div class="sales-picker__head"><strong id="salesPickerTitle">Точки продаж</strong><span class="sales-spacer"></span><button class="sales-icon sales-filter" id="salesFilter" type="button" aria-label="Показать только отмеченные" aria-pressed="false"><span class="ico24">&#xE94C;</span></button><button class="sales-done" id="salesPickerDone" type="button" aria-label="Подтвердить выбор"><span class="ico">&#xE75E;</span></button></div><div class="sales-picker__search"><input class="sales-checkbox" id="salesSelectAll" type="checkbox" aria-label="Выбрать все точки продаж"><input id="salesSearch" type="search" placeholder="Найти" aria-label="Поиск точек продаж"><button id="salesCount" type="button" aria-label="Показать только отмеченные точки" aria-pressed="false"></button></div><div class="sales-picker__list" id="salesPickerList"></div></div>
         <div class="sales-picker__rail"><button class="sales-icon" id="salesPickerClose" type="button" aria-label="Отменить выбор"><img src="assets/img/sales-close.svg" width="28" height="28" alt=""></button><span class="sales-icon sales-list-settings" title="Настройки списка"><span class="ico24">&#xEB66;</span></span><span class="sales-spacer"></span><span class="rp-help" aria-label="Помощь"><img src="assets/img/help.svg" width="12" height="16" alt=""></span></div>

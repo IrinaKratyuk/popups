@@ -26,7 +26,6 @@
     device: 'monitor',
     scenarios: [
       { group: 'Работа с каталогом', items: [
-        { id: 'no-catalog', title: 'Без каталога' },
         { id: 'catalog-add', title: 'Добавление каталога' },
         { id: 'catalog-setup', title: 'Настройка каталога' },
         { id: 'product-card', title: 'Карточка товара', disabled: true },
@@ -43,17 +42,21 @@
         ] },
         { id: 'window-link', title: 'Связь кнопки с окном' },
       ] },
-      { group: 'Режим просмотра', items: [
-        { id: 'view-catalog', title: 'В каталоге и по кнопке', disabled: true },
-      ] },
       { group: 'Внешние виджеты', items: [
-        { id: 'ext-float', title: 'С плавающей кнопкой' },
-        { id: 'ext-button', title: 'На обычной кнопке', disabled: true, variants: [
-          { id: 'add', title: 'Добавление окна' },
-          { id: 'widget', title: 'Окно с виджетом' },
-          { id: 'link', title: 'Связь с окном' },
+        { id: 'ext-add', title: 'Добавление внешнего виджета' },
+        // Состояния после добавления: вариант — где стоит виджет
+        { id: 'ext-added', title: 'Виджет добавлен', variants: [
+          { id: 'float', title: 'Плавающая кнопка' },
+          { id: 'button', title: 'Статичная кнопка' },
+          { id: 'section', title: 'В секции' },
         ] },
-        { id: 'ext-body', title: 'В теле страницы', disabled: true },
+        // Открытая страница «Обратная связь»: вариант — режим открытия, как у новой страницы
+        { id: 'ext-page', title: 'Обратная связь', variants: [
+          { id: 'page', title: 'На странице' },
+          { id: 'window', title: 'В окне' },
+          { id: 'both', title: 'Страница и окно' },
+        ] },
+        { id: 'ext-link', title: 'Связь кнопки с окном' },
       ] },
     ],
     team: [
@@ -66,6 +69,7 @@
     onScale: (s) => { scale = s; },
     onChange: ({ scenario, variant }) => {
       stage.dataset.scenario = scenario;
+      stage.dataset.variant = variant ?? '';
       if (scenSyncing) return;
       rsCloseParams();
       scenApply(scenario, variant);
@@ -158,6 +162,7 @@
     wsClose();
     secClose();
     btnSetClose();
+    fbClose();
   }
 
   // ---------- Правый сайдбар (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 148:15451) ----------
@@ -499,6 +504,7 @@
     ['Обратная связь', 'Позволяет получить данные для связи с клиентом', 350, 'feedback', true, CONTAIN],
     ['Онлайн-запись', 'Дает возможность быстро записаться на услугу к нужному мастеру', 412, 'booking', true, CONTAIN],
   ]);
+  const shopFeedback = $('#rsOuter [data-widget="feedback"]').closest('.rs-w');
   const shopFeedbackPin = el('span', 'pin', '<img src="assets/img/pin-cursor.svg" width="15" height="15" alt="">');
   shopFeedbackPin.setAttribute('aria-hidden', 'true');
   $('#rsOuter [data-widget="feedback"]').append(shopFeedbackPin);
@@ -526,15 +532,25 @@
     extPicker.hidden = true;
     extPinSync();
   }
+  // Обратная связь ставится только с «Меню»: на других страницах у виджета нет ни клика, ни точки клика
+  function extOnMenu() {
+    const page = lsPage(lsActive);
+    return !!page && !page.blank && !page.home;
+  }
   function extPinSync() {
-    shopFeedbackPin.hidden = !extPicker.hidden || !siteFloat.hidden;
+    shopFeedbackPin.hidden = !extPicker.hidden || stage.dataset.scenario !== 'ext-add' || !extOnMenu();
   }
   $('#rsOuter').addEventListener('click', (e) => {
     const preview = e.target.closest('[data-widget]');
-    if (preview) extPickerOpen(preview);
+    if (!preview || (preview.dataset.widget === 'feedback' && !extOnMenu())) return;
+    extPickerOpen(preview);
   });
   $('#extPickerList').addEventListener('click', (e) => {
-    if (e.target.closest('.ext-card:first-child .ext-card__pv')) siteFloatAdd();
+    if (!e.target.closest('.ext-card:first-child .ext-card__pv')) return;
+    btnSetClose();
+    siteClearSelection();
+    siteFloatAdd();
+    scenSet('ext-added', 'float');
   });
   $('#extPickerClose').addEventListener('click', extPickerClose);
   document.addEventListener('mousedown', (e) => { if (!e.target.closest('#extPicker, #rsOuter [data-widget]')) extPickerClose(); });
@@ -546,6 +562,18 @@
   for (const cell of document.querySelectorAll('.site-empty')) cell.prepend($('#siteEmptyContent').content.cloneNode(true));
   for (const tb of document.querySelectorAll('[data-section-cmds]')) tb.append($('#sectionCmds').content.cloneNode(true));
   for (const tb of document.querySelectorAll('[data-button-cmds]')) tb.append($('#buttonCmds').content.cloneNode(true));
+  for (const form of document.querySelectorAll('[data-site-feedback]')) {
+    form.append($('#siteFeedbackForm').content.cloneNode(true));
+    if (form.id === 'fbForm') continue; // в панели настроек виджет уже выбран
+    // Первый клик только выбирает виджет: поле не получает фокус, чекбокс не переключается. Работать с формой можно у выбранного виджета
+    const widget = form.closest('.wg');
+    let selecting = false;
+    form.addEventListener('mousedown', (e) => {
+      selecting = !widget.classList.contains('is-active');
+      if (selecting) e.preventDefault();
+    }, true);
+    form.addEventListener('click', (e) => { if (selecting) e.preventDefault(); }, true);
+  }
   for (const footer of document.querySelectorAll('[data-site-footer]')) footer.append($('#siteFooter').content.cloneNode(true));
   const siteSection = $('#siteSection');
   const siteCatalog = $('#siteCatalog');
@@ -556,6 +584,8 @@
   const siteBlankSection = $('#siteBlankSection');
   const siteBlankCell = $('#siteBlankCell');
   const siteProduct = $('#siteProduct');
+  const siteExt = $('#siteExt');
+  const siteExtWidget = $('#siteExtWidget');
 
   // Fixed привязан к масштабируемой сцене и выходит из overflow прокручиваемого контента.
   // Оставляем настоящий тулбар внутри виджета: выделение, ховер и обработчики кнопок сохраняются.
@@ -602,11 +632,6 @@
       lsSelect(menu.id);
     }
     catalogAdded = true;
-    if (stage.dataset.scenario === 'no-catalog') {
-      scenSyncing = true;
-      frame.select('catalog-add');
-      scenSyncing = false;
-    }
     shopCatalog.hidden = true;
     if (lsCardPageId == null) lsAddCardPage();
     siteCatalogShow(true);
@@ -620,7 +645,7 @@
     salesSaved = [];
     salesRender();
     scenSyncing = true;
-    frame.select('no-catalog');
+    frame.select('catalog-add');
     scenSyncing = false;
     shopCatalog.hidden = false;
     lsRemoveCardPage();
@@ -639,6 +664,10 @@
   const siteTumbler = $('#chDevice');
   const siteView = $('#chView');
   let siteShown = null;
+  // На открытой странице ничего не выделено: выделение появляется только кликом
+  function siteClearSelection() {
+    for (const widget of [siteCatalog, siteFloat, siteLinkWidget, siteProduct, siteBlankSection, siteExt, siteExtWidget]) widget.classList.remove('is-active');
+  }
   function siteShowPage(page) {
     const isBoth = page.mode === 'both';
     const view = page.view ?? 'page';
@@ -663,6 +692,8 @@
     wsClose();
     secClose();
     btnSetClose();
+    siteClearSelection();
+    siteFloat.hidden = siteFloatPage !== page.id;
     wsPage = page;
     secApply(page.section, siteBlankSection);
     wsPaintFill(siteBlankSection, page.sectionFill, '', BG_DEFAULT);
@@ -672,8 +703,8 @@
       wsPaintFill(siteBlankBody, null);
     }
     siteProductRender(!!(page.product || page.feedback));
-    if (page.product || page.feedback) siteProduct.classList.add('is-active');
     siteSelectWindow(false);
+    extPinSync();
   }
 
   // Карточка товара: клик в магазине ставит её в зону контента секции новой страницы вместо пустой ячейки и выделяет, из магазина она пропадает.
@@ -681,14 +712,14 @@
   function siteProductSyncShop() {
     shopProduct.hidden = lsPages.some((p) => p.product);
   }
-  const siteProductImg = $('.site-product__img');
-  const SITE_PRODUCT_SRC = siteProductImg.getAttribute('src');
+  // Обратная связь добавлена — в магазине её больше нет, на всех страницах; удаление возвращает к сценарию добавления и в магазин
+  function shopFeedbackSync() {
+    shopFeedback.hidden = stage.dataset.scenario !== 'ext-add';
+  }
   function siteProductRender(on) {
     siteProduct.hidden = !on;
     siteProduct.classList.toggle('site-product--feedback', !!wsPage.feedback);
-    siteBlankBody.classList.toggle('has-own-close', !!wsPage.feedback); // у формы свой крестик, крестик окна не нужен
-    siteProductImg.src = wsPage.feedback ? 'assets/img/shop/feedback.png' : SITE_PRODUCT_SRC;
-    siteProductImg.alt = wsPage.feedback ? 'Обратная связь' : 'Карточка товара';
+    siteBlankBody.classList.toggle('has-feedback', !!wsPage.feedback); // у формы свой крестик, крестик окна не нужен
     shopProductPin.hidden = on || siteBlank.hidden;
     siteBlankCell.hidden = on;
     siteBlankSection.classList.toggle('has-widget', on);
@@ -707,7 +738,6 @@
   }
   $('#siteProductDelete').addEventListener('click', () => {
     wsPage.product = false;
-    wsPage.feedback = false;
     siteProductSyncShop();
     siteProductRender(false);
     siteBlankSection.classList.add('is-active');
@@ -736,47 +766,76 @@
   $('.site-blank__back').addEventListener('click', () => siteSelectWindow(true));
 
   stage.addEventListener('mousedown', (e) => {
+    if (e.target.closest('#fbScrim')) return; // пока открыта панель обратной связи, выделение остаётся
     if (btnSet.hidden) siteFloat.classList.toggle('is-active', !!e.target.closest('#siteFloat')); // пока открыты настройки кнопки, выделение остаётся
     if (wsRoot.hidden && secRoot.hidden && !e.target.closest('#bgWin')) { // пока открыты настройки или окно «Фон», выделение остаётся
       const inSection = !!e.target.closest('#siteBlankSection');
       const inProduct = !!e.target.closest('#siteProduct');
       siteBlankSection.classList.toggle('is-active', inSection && !inProduct);
       siteProduct.classList.toggle('is-active', inProduct);
+      const inExt = !!e.target.closest('#siteExt');
+      const inExtWidget = !!e.target.closest('#siteExtWidget');
+      siteExt.classList.toggle('is-active', inExt && !inExtWidget);
+      siteExtWidget.classList.toggle('is-active', inExtWidget);
       const windowHit = !inSection && siteBlank.classList.contains('is-window') && !!e.target.closest('#siteBlankBody');
       siteSelectWindow(windowHit);
-      if (!(bgKey === 'section' ? inSection && !inProduct : windowHit)) bgClose(); // тулбар с командой скрылся
+      const sectionHit = secNode === siteExt ? inExt && !inExtWidget : inSection && !inProduct;
+      if (!(bgKey === 'section' ? sectionHit : windowHit)) bgClose(); // тулбар с командой скрылся
     }
-    if (siteCatalog.hidden || ['window-link', 'ext-float'].includes(stage.dataset.scenario)) return; // в этих сценариях выделена кнопка, клик мимо выделение не снимает
+    if (siteCatalog.hidden || ['window-link', 'ext-added', 'ext-link'].includes(stage.dataset.scenario)) return; // в этих сценариях выделена кнопка, клик мимо выделение не снимает
     if (!e.target.closest('#salesPopup, #salesPicker, #rsParams, .rp-btn')) siteCatalog.classList.toggle('is-active', !!e.target.closest('#siteCatalog'));
   });
 
-  // Секция с кнопкой: пока кнопка выделена, у секции пунктирная рамка родителя и кнопки «+ секция»
+  // Секция с кнопкой: пока кнопка выделена, у секции пунктирная рамка родителя
   const siteLink = $('#siteLink');
   const siteLinkWidget = $('#siteLinkWidget');
   function siteLinkSelect(on) {
     siteLinkWidget.classList.toggle('is-active', on);
-    siteLink.classList.toggle('wg--level-2', on);
-    siteLink.classList.toggle('is-active', on);
   }
-  // Плавающая кнопка: первая плашка окна внешних виджетов ставит её и выделяет, вместе с ней в списке появляется страница-окно «Обратная связь». «Удалить» убирает обе.
+  // Родитель выделенного виджета — .wg--level-2 из кита: только пунктир, кнопки «+ секция» есть лишь у активной секции. Общее правило для всех секций, как бы ни поставилось выделение
+  const SITE_PARENTS = [siteSection, siteLink, siteBlankSection, siteExt];
+  function siteParentsSync() {
+    for (const parent of SITE_PARENTS) {
+      const on = !!parent.querySelector('.wg.is-active');
+      if (parent.classList.contains('wg--level-2') !== on) parent.classList.toggle('wg--level-2', on);
+    }
+  }
+  new MutationObserver(siteParentsSync).observe(siteContent, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  // Плавающая кнопка: первая плашка окна внешних виджетов ставит её на открытую страницу и выделяет, вместе с ней в списке появляется страница-окно «Обратная связь». «Удалить» убирает обе.
+  // Кнопка видна только на странице, куда её добавили; удаление этой страницы удаляет и кнопку.
   // Тулбар и настройки — те же, что у секции с кнопкой, но без «Назад»: у плавающей кнопки нет родителя.
   const siteFloat = $('#siteFloat');
+  let siteFloatPage = null; // id страницы, на которой стоит кнопка
   $('[data-btn-cmd="back"]', siteFloat).remove();
   function siteFloatAdd() {
-    if (siteFloat.hidden) lsAddFloatPage();
+    siteFloatPage = lsActive;
+    if (!lsPage(lsFloatPageId)) lsAddFloatPage();
     siteFloat.hidden = false;
     siteFloat.classList.add('is-active');
     extPickerClose();
   }
   function siteFloatRemove() {
-    if (btnSetWidget === siteFloat) btnSetClose();
+    siteFloatPage = null;
     siteFloat.hidden = true;
     siteFloat.classList.remove('is-active');
     lsRemoveFloatPage();
     extPinSync();
   }
-  $('[data-btn-cmd="delete"]', siteFloat).addEventListener('click', siteFloatRemove);
-  // Сценарий «С плавающей кнопкой» открывается на конце каталога
+  // Удаление добавленного виджета возвращает к сценарию добавления
+  $('[data-btn-cmd="delete"]', siteFloat).addEventListener('click', () => {
+    siteFloatRemove();
+    scenSet('ext-add');
+  });
+  $('[data-btn-cmd="delete"]', siteLinkWidget).addEventListener('click', () => {
+    if (stage.dataset.scenario.startsWith('ext-')) frame.select('ext-add');
+  });
+  $('#siteExtDelete').addEventListener('click', () => frame.select('ext-add'));
+  // «Назад» поднимает на уровень секции
+  $('#siteExtBack').addEventListener('click', () => {
+    siteExtWidget.classList.remove('is-active');
+    siteExt.classList.add('is-active');
+  });
+  // Сценарии внешних виджетов открываются на конце каталога
   function siteScrollEnd() {
     const end = stageRect(siteSection);
     const box = stageRect(siteContent);
@@ -806,13 +865,20 @@
     const ico = pos
       ? `<svg class="pos__ico" width="13" height="14" viewBox="0 0 13 14" aria-hidden="true">${POS_ICONS[pos[0]]}</svg>`
       : '<img class="pos__ico" src="assets/img/pos/22.svg" width="13" height="14" alt="">';
-    return `<div class="pos__cell${pos ? '' : ' is-selected'}" style="${vars}"><img class="pos__dot" src="assets/img/pos/dot.svg" width="3" height="3" alt="">${ico}</div>`;
+    return `<div class="pos__cell" style="${vars}"><img class="pos__dot" src="assets/img/pos/dot.svg" width="3" height="3" alt="">${ico}</div>`;
   }).join('');
   function posEditorFill(root) {
     $('[data-pos-editor]', root).replaceWith($('#posEditor').content.cloneNode(true));
     $('.pos__grid', root).innerHTML = POS_GRID;
   }
-  function posEditorRender(root, mode, shown = true) {
+  const POS_CENTER = 4;
+  // Номер ячейки под кликом или -1. Значение хранит окно и передаёт в posEditorRender
+  function posCellAt(target) {
+    const cell = target.closest('.pos__cell');
+    return cell ? [...cell.parentElement.children].indexOf(cell) : -1;
+  }
+  function posEditorRender(root, mode, shown = true, selected = POS_CENTER) {
+    root.querySelectorAll('.pos__cell').forEach((cell, i) => cell.classList.toggle('is-selected', i === selected));
     root.querySelectorAll('[data-pos-mode]').forEach((seg) => {
       const on = seg.dataset.posMode === mode;
       seg.classList.toggle('is-on', on);
@@ -876,7 +942,7 @@
 
   // Настройки кнопки: в сценарии открыты сразу, закрываются и снова открываются шестерёнкой тулбара. Стоят слева от кнопки, чтобы она и тулбар оставались видны.
   // Правки сразу видны, галочка сохраняет, крестик и Esc возвращают прежние, сброс — исходные. «Действие» в тулбаре — только с ховером.
-  const BTN_DEFAULTS = () => ({ text: 'Товар', pageId: null, mode: 'window', pos: 'screen' });
+  const BTN_DEFAULTS = () => ({ text: stage.dataset.scenario.startsWith('ext-') ? 'Обратная связь' : 'Товар', pageId: null, mode: 'window', pos: 'screen', cell: POS_CENTER });
   const btnSet = $('#btnSet');
   posEditorFill(btnSet);
   const btnSetOpenMode = openModeFill(btnSet, ['page', 'window'], {
@@ -889,8 +955,7 @@
   const btnSetSub = $('#btnSetSub');
   const btnSetSubList = $('#btnSetSubList');
   const siteLinkCaption = $('.site-link__button .btn__caption');
-  let btnSetWidget = siteLinkWidget; // виджет, из которого открыты настройки
-  const btnSetGear = () => $('[data-btn-cmd="settings"]', btnSetWidget);
+  const btnSetGear = () => $('[data-btn-cmd="settings"]', siteLinkWidget);
   let btnSetSaved = BTN_DEFAULTS();
   let btnSetDraft = BTN_DEFAULTS();
 
@@ -905,7 +970,7 @@
       peMoveTo(btnSet, btnSet.offsetLeft, btnSet.offsetTop);
       return;
     }
-    const r = stageRect(btnSetWidget);
+    const r = stageRect(siteLinkWidget);
     btnSet.style.left = Math.round(r.left - btnSet.offsetWidth - 12) + 'px';
     btnSet.style.top = Math.round(Math.min(r.top, stage.offsetHeight - btnSet.offsetHeight - 8)) + 'px';
   }
@@ -918,7 +983,7 @@
     btnSetPicked.hidden = !page;
     $('#btnSetPage').textContent = page?.name ?? '';
     btnSetOpenMode.row.hidden = !page;
-    posEditorRender(btnSet, btnSetDraft.pos, !!page && btnSetDraft.mode === 'window');
+    posEditorRender(btnSet, btnSetDraft.pos, !!page && btnSetDraft.mode === 'window', btnSetDraft.cell);
     btnSetOpenMode.set(btnSetDraft.mode);
     // Верх окна стоит на месте: при смене значения оно растёт и уменьшается снизу, а за край сцены не выходит
     if (!btnSet.hidden) peMoveTo(btnSet, btnSet.offsetLeft, btnSet.offsetTop);
@@ -965,9 +1030,8 @@
     btnSetGear().setAttribute('aria-pressed', 'false');
     btnSetPaintCaption(btnSetSaved);
   }
-  function btnSetOpen(widget = siteLinkWidget) {
+  function btnSetOpen() {
     popupsClose();
-    btnSetWidget = widget;
     btnSetMoved = false;
     btnSetDraft = { ...btnSetSaved };
     btnSet.hidden = false;
@@ -1013,6 +1077,11 @@
       btnSetDraft.pos = pos.dataset.posMode;
       btnSetRender();
     }
+    const cell = posCellAt(e.target);
+    if (cell >= 0) {
+      btnSetDraft.cell = cell;
+      btnSetRender();
+    }
   });
   // Другой пункт первого уровня сворачивает список страниц, уход на сам список его оставляет
   btnSetMenu.addEventListener('mouseover', (e) => {
@@ -1032,13 +1101,133 @@
     btnSetRender();
   });
   document.addEventListener('mousedown', (e) => { if (!e.target.closest('#btnSetMenu, .btnset__action, .btnset__list')) btnSetMenuClose(); });
-  for (const widget of [siteLinkWidget, siteFloat]) $('[data-btn-cmd="settings"]', widget).addEventListener('click', () => { if (btnSet.hidden) btnSetOpen(widget); else btnSetClose(); });
+  // В сценарии «Виджет добавлен» кнопка — это обратная связь: шестерёнка открывает её панель
+  btnSetGear().addEventListener('click', () => {
+    if (stage.dataset.scenario === 'ext-added') fbOpen();
+    else if (btnSet.hidden) btnSetOpen();
+    else btnSetClose();
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (!btnSetMenu.hidden) btnSetMenuClose();
     else if (btnSetOpenMode.isOpen) { btnSetOpenMode.close(); btnSetOpenMode.button.focus(); }
     else btnSetClose();
   });
+
+  // Панель настроек обратной связи (Figma 2648:45307): открывается шестерёнкой виджета, где бы он ни стоял. Правки видны только в панели,
+  // галочка применяет их к сайту и ставит виджет на выбранное место, крестик и Esc отменяют. «Основной стиль», «+» у полей, «всегда», сообщение и анимация пока только с ховером.
+  const FB_DEFAULTS = () => ({
+    title: 'Обратная связь', text: 'Обратная связь', cell: 8, // положение кнопки: ячейка общего редактора, 8 — справа снизу
+    colors: { accent: '#f6733c', bg: '#f3f3f3', head: '#000000', text: '#000000' },
+    fields: { name: true, phone: true, email: true, company: true, desc: false },
+  });
+  const FB_VARS = { accent: '--fb-accent', bg: '--fb-bg', head: '--fb-head', text: '--fb-text' };
+  const fbScrim = $('#fbScrim');
+  const fbPanel = $('#fbPanel');
+  posEditorFill(fbPanel);
+  const fbForm = $('#fbForm');
+  const fbTitle = $('#fbTitle');
+  const fbText = $('#fbText');
+  let fbSaved = FB_DEFAULTS();
+  let fbDraft = null;
+  let fbEditor = null;
+  let fbKeep = false; // сохранение само переключает сценарий: сохранённое не сбрасываем
+
+  const fbClone = (data) => ({ ...data, colors: { ...data.colors }, fields: { ...data.fields } });
+  // Цвета — переменными на сцене и на панели: исходный цвет переменную убирает, форма остаётся такой, как в общих стилях
+  function fbPaintVars(node, colors) {
+    const base = FB_DEFAULTS().colors;
+    for (const key in FB_VARS) {
+      if (colors[key] === base[key]) node.style.removeProperty(FB_VARS[key]);
+      else node.style.setProperty(FB_VARS[key], colors[key]);
+    }
+  }
+  function fbPaintForm(form, data) {
+    $('.site-feedback__title .input__control', form).value = data.title;
+    form.querySelectorAll('[data-fb-field]').forEach((field) => { field.hidden = !data.fields[field.dataset.fbField]; });
+  }
+  function fbPaintSite() {
+    fbPaintVars(stage, fbSaved.colors);
+    for (const form of document.querySelectorAll('.site-feedback')) if (form !== fbForm) fbPaintForm(form, fbSaved);
+    siteFloat.dataset.col = fbSaved.cell % 3;
+    siteFloat.dataset.row = Math.floor(fbSaved.cell / 3);
+    if (stage.dataset.scenario === 'ext-added') siteLinkCaption.textContent = fbSaved.text;
+  }
+  function fbRender() {
+    fbPaintVars(fbPanel, fbDraft.colors);
+    fbPaintForm(fbForm, fbDraft);
+    if (fbTitle.value !== fbDraft.title) fbTitle.value = fbDraft.title;
+    if (fbText.value !== fbDraft.text) fbText.value = fbDraft.text;
+    $('#fbCaption').textContent = fbDraft.text.trim() || FB_DEFAULTS().text;
+    fbPanel.querySelectorAll('[data-fb-chip]').forEach((chip) => {
+      chip.classList.toggle('is-on', fbDraft.fields[chip.dataset.fbChip]);
+      chip.setAttribute('aria-pressed', fbDraft.fields[chip.dataset.fbChip]);
+    });
+    fbPanel.querySelectorAll('[data-fb-show]').forEach((seg) => {
+      seg.classList.toggle('is-on', seg.dataset.fbShow === fbDraft.show);
+      seg.setAttribute('aria-checked', seg.dataset.fbShow === fbDraft.show);
+    });
+    posEditorRender(fbPanel, 'screen', true, fbDraft.cell);
+    fbPanel.querySelectorAll('[data-fb-for]').forEach((node) => { node.hidden = !node.dataset.fbFor.split(' ').includes(fbDraft.show); });
+  }
+  function fbClose() {
+    fbEditor?.destroy();
+    fbEditor = null;
+    fbDraft = null;
+    fbScrim.hidden = true;
+  }
+  function fbOpen() {
+    popupsClose();
+    const { scenario, variant } = stage.dataset;
+    fbDraft = { ...fbClone(fbSaved), show: scenario === 'ext-added' ? variant || 'float' : 'float' };
+    fbPanel.querySelectorAll('[data-pe-row]').forEach((row) => { $('[data-pe-color]', row).dataset.peColor = fbDraft.colors[row.dataset.peRow]; });
+    fbScrim.hidden = false;
+    fbEditor = PropertyEditor.mount(fbPanel, {
+      onChange: ({ colors }) => { fbDraft.colors = colors; fbRender(); },
+      onDone: fbSave,
+      onClose: fbClose,
+    });
+    fbRender();
+  }
+  function fbSave() {
+    const { show, ...data } = fbDraft;
+    const base = FB_DEFAULTS();
+    fbSaved = { ...data, title: data.title.trim() || base.title, text: data.text.trim() || base.text };
+    fbClose();
+    fbKeep = true;
+    if (stage.dataset.scenario !== 'ext-added' || stage.dataset.variant !== show) frame.select('ext-added', show);
+    fbKeep = false;
+    fbPaintSite();
+  }
+  function fbScenarioReset() {
+    fbClose();
+    if (!fbKeep) fbSaved = FB_DEFAULTS();
+    fbPaintSite();
+  }
+  fbTitle.addEventListener('input', () => { fbDraft.title = fbTitle.value; fbRender(); });
+  $('.site-feedback__title .input__control', fbForm).addEventListener('input', (e) => { fbDraft.title = e.target.value; fbRender(); });
+  fbText.addEventListener('input', () => { fbDraft.text = fbText.value; fbRender(); });
+  fbPanel.addEventListener('click', (e) => {
+    const chip = e.target.closest('[data-fb-chip]');
+    const seg = e.target.closest('[data-fb-show]');
+    const cell = posCellAt(e.target);
+    if (chip) fbDraft.fields[chip.dataset.fbChip] = !fbDraft.fields[chip.dataset.fbChip];
+    else if (seg) fbDraft.show = seg.dataset.fbShow;
+    else if (cell >= 0) fbDraft.cell = cell;
+    else return;
+    fbRender();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fbClose(); });
+  // Палитра кита открывается от образца и не знает о границах панели: если не умещается, смещается влево
+  new MutationObserver((records) => {
+    for (const { addedNodes } of records) for (const node of addedNodes) {
+      if (!node.classList?.contains('pe__pop')) continue;
+      node.style.left = Math.min(node.offsetLeft, $('.fbp__body', fbPanel).offsetWidth - node.offsetWidth - 8) + 'px';
+    }
+  }).observe(fbPanel, { childList: true });
+  $('[data-btn-cmd="settings"]', siteFloat).addEventListener('click', fbOpen);
+  $('#siteExtSettings').addEventListener('click', fbOpen);
+  $('#siteProductSettings').addEventListener('click', () => { if (wsPage.feedback) fbOpen(); });
 
   // Настройки окна: открываются по левому верхнему углу окна, шестерёнка в это время активна. Правки сразу видны на холсте, галочка сохраняет их в страницу,
   // крестик и Esc возвращают прежнее, сброс — исходные значения. Клик мимо не закрывает. Размер и оформление — PropertyEditor из ui-kit, отступы — свои поля.
@@ -1115,8 +1304,8 @@
   // Поля отступов из черновика и фактический размер в «по контенту» и «заполнить»: окно меняется уже после отрисовки PropertyEditor.
   // Значения цветов с прозрачностью он не пишет: дописываем сами, как в макете
   function wsRender() {
-    const { pad, pe, posMode } = wsDraft;
-    posEditorRender(wsRoot, posMode);
+    const { pad, pe, posMode, posCell } = wsDraft;
+    posEditorRender(wsRoot, posMode, true, posCell);
     wsRoot.querySelectorAll('[data-pe-dim]').forEach((dim) => {
       if (dim.classList.contains('pe__dim--auto')) dim.querySelector('input').placeholder = wsActualSize(dim.dataset.peDim);
     });
@@ -1245,6 +1434,9 @@
     if (posMode) {
       wsDraft.posMode = posMode.dataset.posMode;
       wsRender();
+    } else if (posCellAt(e.target) >= 0) {
+      wsDraft.posCell = posCellAt(e.target);
+      wsRender();
     } else if (e.target.closest('.pe__reset')) { // свой сброс: PropertyEditor вернул бы значения на момент открытия
       e.stopPropagation();
       wsMount(WS_DEFAULTS);
@@ -1271,10 +1463,11 @@
   const secRoot = $('#sec');
   peDraggable(secRoot);
   // Команды тулбара секции работают одинаково у всех секций: «Настройки» открывает это окно, «Фон» — окно «Фон».
-  // Данные секции новой страницы лежат в странице.
-  const SEC_NODES = [siteBlankSection];
+  // Данные секции новой страницы лежат в странице, секции с формой — в своём объекте.
+  const SEC_NODES = [siteBlankSection, siteExt];
   let secNode = siteBlankSection;
-  const secData = () => wsPage;
+  const siteExtData = {};
+  const secData = () => (secNode === siteExt ? siteExtData : wsPage);
   const secNameInput = $('#secName');
   const secWidth = $('#secWidth');
   const secWidthMenu = $('#secWidthMenu');
@@ -1810,6 +2003,10 @@
     if (id === lsActive) lsActive = lsPages[Math.max(0, at - 1)].id;
     if (!lsVisibleCount()) lsPage(lsActive).off = false; // хотя бы одна страница остаётся видимой
     lsRender();
+    if (id === siteFloatPage) {
+      siteFloatRemove();
+      scenSet('ext-add');
+    }
   }
 
   // Копия встаёт под исходную и сразу открывается. Адрес не копируем: он у каждой страницы свой.
@@ -2107,42 +2304,69 @@
       lsActive = 2;
       lsCardPageId = null;
       sitePlaceCatalog();
-      if (['no-catalog', 'catalog-add', 'catalog-setup'].includes(scenario)) {
+      if (['catalog-add', 'catalog-setup'].includes(scenario)) {
         catalogAdded = scenario === 'catalog-setup';
         if (!catalogAdded) salesSaved = [];
         shopCatalog.hidden = catalogAdded;
         siteCatalogShow(catalogAdded);
-        siteCatalog.classList.toggle('is-active', catalogAdded);
         salesRender();
       }
       salesRender();
       if (scenario === 'window-link') lsPages.push({ id: lsNextId++, name: 'Товар', off: false, blank: true, mode: 'window', product: true, fixed: true });
-      if (scenario === 'ext-float') lsAddCardPage();
+      if (scenario.startsWith('ext-')) lsAddCardPage();
     }
     if (scenario === 'window-create') $('#lsAdd').append(lsAddPin);
     else lsAddPin.remove();
     lsRender();
-    if (scenario === 'catalog-setup') salesOpen();
-    const isLink = scenario === 'window-link';
-    siteLinkSelect(isLink);
+    if (scenario === 'catalog-setup') {
+      siteCatalog.classList.add('is-active');
+      salesOpen();
+    }
+    const isLink = scenario === 'window-link' || scenario === 'ext-link';
+    const extAt = scenario === 'ext-added' ? mode ?? 'float' : null; // где стоит добавленный внешний виджет
+    siteLinkSelect(isLink || extAt === 'button');
+    siteExtWidget.classList.toggle('is-active', extAt === 'section');
+    const extPageMode = scenario === 'ext-page' ? mode ?? 'page' : null;
     siteFloatRemove();
+    if (extAt === 'float' || extPageMode) siteFloatAdd();
+    else if (extAt === 'button' || scenario === 'ext-link') lsAddFloatPage();
     extPickerClose();
     btnSetReset();
-    if (isLink) {
-      siteLinkScroll();
-      btnSetOpen();
-    } else if (scenario === 'ext-float') siteScrollEnd();
+    fbScenarioReset();
+    shopFeedbackSync();
+    scenScroll();
+    if (isLink) btnSetOpen();
+    if (extPageMode) {
+      lsPage(lsFloatPageId).mode = extPageMode;
+      lsActive = lsFloatPageId;
+      lsRender();
+    }
+  }
+  // Сценарий открывается на своём виджете
+  function scenScroll() {
+    const { scenario, variant } = stage.dataset;
+    if (scenario === 'window-link' || scenario === 'ext-link' || (scenario === 'ext-added' && variant === 'button')) siteLinkScroll();
+    else if (scenario === 'ext-added' && variant === 'section') siteContent.scrollTop += stageRect(siteExt).top - stageRect(siteContent).top - 60;
+    else if (scenario.startsWith('ext-') && scenario !== 'ext-page') siteScrollEnd();
     else siteContent.scrollTop = 0;
+  }
+  // Панель показывает новый сценарий, а состояние на сцене уже готово
+  function scenSet(scenario, variant) {
+    scenSyncing = true;
+    frame.select(scenario, variant);
+    scenSyncing = false;
+    extPinSync();
+    shopFeedbackSync();
   }
 
   // Панель показывает состояние открытой страницы, как бы та ни открылась: из списка, после сохранения или удаления.
   function scenSync() {
     const page = lsPage(lsActive);
-    const keepScenario = ['no-catalog', 'catalog-add', 'catalog-setup', 'window-link', 'ext-float'].includes(stage.dataset.scenario);
+    const keepScenario = ['catalog-add', 'catalog-setup', 'window-link', 'ext-add', 'ext-added', 'ext-page', 'ext-link'].includes(stage.dataset.scenario);
     // страницы сценария с готовой карточкой (fixed) — не новые
     const isNew = page.blank && !page.fixed;
     const scenario = isNew ? 'new' : keepScenario ? stage.dataset.scenario : 'window-create';
-    const mode = isNew ? page.mode : null;
+    const mode = isNew || (scenario === 'ext-page' && page.feedback) ? page.mode : keepScenario ? frame.value.variant : null;
     if (scenario === frame.value.scenario && mode === frame.value.variant) return;
     scenSyncing = true;
     frame.select(scenario, mode);
@@ -2153,9 +2377,8 @@
   scenApply(stage.dataset.scenario);
   // каталог выше секции с кнопкой дорисовывается вместе с картинками
   window.addEventListener('load', () => {
-    if (stage.dataset.scenario === 'ext-float') siteScrollEnd();
-    if (stage.dataset.scenario !== 'window-link') return;
-    siteLinkScroll();
+    if (!['window-link', 'ext-add', 'ext-added', 'ext-link'].includes(stage.dataset.scenario)) return;
+    scenScroll();
     if (!btnSet.hidden) btnSetPlace();
   });
 })();

@@ -83,7 +83,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ch-zoom__btn .btn__icon { padding-bottom: 2px; }
 .ch-zoom__val { --s-text: #656c87; height: 24px; }
 .ch-save { display: flex; align-items: center; gap: 14px; }
-.ch-done .btn__icon { padding-bottom: 2px; }
+.ch-done { --btn-is: 20px; --btn-if: "cbuc-icons"; } /* галочка сохранения, как в accordion-setup и interface-prototype */
 
 /* ---------- Контент ---------- */
 /* между сайдбарами: слева колонка 366 или линии 52, справа панель с тулбаром 412 или только тулбар 54 */
@@ -142,9 +142,23 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-section.has-widget, .site-blank__section.has-widget { height: auto; } /* виджет стоит в зоне контента, отступы секции остаются; высота — по виджету */
 .site-product { cursor: default; }
 .site-product__img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
-/* форма обратной связи (Figma 2654:44316): рендер 400×397 выше рамки виджета на 10 */
-.site-product--feedback > .wg__content { height: 376px; }
-.site-product--feedback .site-product__img { flex: none; width: 400px; height: 397px; margin-top: -10px; object-fit: cover; }
+/* форма обратной связи (Figma 2654:44316): поля и чекбоксы из кита, ширина — по зоне контента. Своего фона нет: он у окна или секции */
+.site-product--feedback .site-product__img, .site-product:not(.site-product--feedback) .site-feedback { display: none; }
+.site-feedback { display: flex; flex-direction: column; }
+.site-feedback .input { --in-h: 40px; font-size: 16px; }
+.site-feedback__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.site-feedback .site-feedback__title { flex: 0 1 300px; --in-h: 33px; font-size: 20px; font-weight: 600; }
+.site-feedback__close { --btn-is: 24px; --btn-if: "cbuc-icons24"; flex: none; }
+.site-blank:not(.is-window) .site-feedback__close, .site-ext .site-feedback__close { display: none; }
+.site-feedback__actions { display: flex; align-items: center; justify-content: space-between; margin: 30px 0 14px; padding-left: 8px; }
+.site-feedback__attach { --btn-is: 24px; --btn-if: "cbuc-icons24"; --s-icon: var(--text-unaccented_text-color); }
+.site-feedback__send { --btn-h: 28px; --btn-is: 16px; --btn-if: "cbuc-icons24"; flex: none; border-radius: 50%; }
+.site-feedback__check { --cb-fg: var(--text-unaccented_text-color); align-self: flex-start; max-width: calc(100% - 8px); margin: 0 0 6px 8px; font-size: 12px; }
+.site-feedback__check .checkbox__box { align-self: flex-start; }
+.site-feedback__check .checkbox__caption { white-space: normal; }
+.site-feedback .input__control::placeholder { color: var(--text-unaccented_text-color); }
+.site-feedback__link { color: var(--link); cursor: pointer; }
+.site-feedback__link:hover { text-decoration: underline; }
 .site-blank:not(.is-window) .site-blank__back, .site-blank:not(.is-window) .site-blank__close, .site-blank.is-window > .site-header { display: none; }
 
 /* вид «в окне» (Figma 2167:87296): окно 800×836 по центру контента, обводка родителя — .wg--level-2 из кита; тулбар и крестик выходят за контент */
@@ -153,7 +167,12 @@ ul { list-style: none; margin: 0; padding: 0; }
 .is-window > .site-blank__body { width: 800px; margin: 12px auto 0; padding: 12px; background: #fff; border-radius: 10px; box-shadow: var(--win-shadow); }
 .is-window > .site-blank__body::after { border-radius: 2px; }
 .site-blank__close.mw-menu__close { top: 12px; }
-.has-own-close > .site-blank__close { display: none; }
+.has-feedback > .site-blank__close { display: none; }
+/* форма в окне 424: виджет на всю секцию 400, отступы — внутри формы, Figma 2654:44319 */
+.is-window > .has-feedback > .site-blank__section { padding: 0; }
+.is-window > .has-feedback .site-feedback { padding: 8px 12px 23px; }
+/* страница с формой создаётся автоматически: удалить виджет и секцию нельзя */
+.has-feedback .tb__btn--delete { display: none; }
 
 /* кнопка «+ секция» (Figma rHabzni5OI5D4fxBLQdj2m 4590:7239): на линии рамки, видна у выделенной секции */
 .site-plus { position: absolute; z-index: 1; left: calc(50% - .5px); transform: translateX(-50%); display: none; align-items: center; gap: 4px; padding: 4px 12px; background: var(--border-info_border-color); border: 1px solid var(--border-info_border-color); border-radius: 50px; font-size: 12px; letter-spacing: -.1692px; color: var(--text-contrast_text-color); white-space: nowrap; }
@@ -161,15 +180,22 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-plus--up { top: -13px; }
 .site-plus--down { bottom: -13px; }
 .wg.is-active > .site-plus { display: flex; }
+/* родитель — пунктир цветом акцента, как в макете (Figma 2654:44386): в ките 60 %, на уменьшенной сцене его не видно.
+   Он же — при наведении на виджет внутри родителя (пустая ячейка виджетом не считается: её ховер — это ховер секции).
+   Наведение на самого родителя — сплошная рамка кита */
+.wg.wg--level-2:not(:hover), .wg:not(.is-active):has(.wg:not(.site-empty):hover) { --wg-bd: var(--wg-accent); --wg-bd-style: dashed; }
 .site-plus__ico { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-family: "cbuc-icons"; font-size: 16px; line-height: 1; color: var(--icon-contrast_icon-color); }
 
 /* секция с кнопкой (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2863:49443): кнопка 120×48 по правому краю карточек каталога, рамка виджета на 1px шире кнопки */
-.stage:not([data-scenario="window-link"]) .site-link, .site.is-home .site-link { display: none; }
+.stage:not([data-scenario="window-link"], [data-scenario="ext-link"], [data-scenario="ext-added"][data-variant="button"]) .site-link, .site.is-home .site-link { display: none; }
+.stage:not([data-scenario="ext-added"][data-variant="section"]) .site-ext, .site.is-home .site-ext { display: none; }
+.site-ext { flex: none; padding: 32px var(--site-gutter); cursor: default; }
+.site-ext__widget { cursor: default; }
 .site-link { flex: none; flex-direction: row; align-items: center; justify-content: flex-end; height: 110px; padding-right: 31px; cursor: default; }
 .site-link__widget { flex: none; }
 .wg.site-link__widget.is-active { z-index: 12; } /* тулбар шире области сайта и выходит на магазин справа */
 .site-link__widget > .wg__content { padding: 1px; overflow: visible; }
-.site-link__button { width: 120px; }
+.site-link__button { min-width: 120px; }
 .site-link__color { box-sizing: border-box; width: 20px; height: 20px; border: 1px solid var(--border-unaccented_border-color); border-radius: 50%; background: var(--background-contrast-primary_color); }
 /* плавающая кнопка (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2648:62449): поверх страницы, на 83 от правого края области сайта и 38 от низа, с прокруткой не двигается */
 .wg.site-float, .wg.site-float.is-active { position: fixed; z-index: 12; right: 495px; bottom: 38px; width: 48px; height: 48px; }
@@ -344,6 +370,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .pos-anchor__cell:nth-child(n+3) img { top: 4px; }
 /* сетка положения: точка заменяется значком при наведении, значок выбранного положения виден всегда */
 .pos__grid { position: relative; width: 154px; height: 66px; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); background: var(--background-contrast-pale_color); border-radius: 8px; }
+.pos__cell { cursor: pointer; }
 .pos__dot, .pos__ico { position: absolute; display: block; pointer-events: none; }
 .pos__dot { left: calc(50% + var(--dot-x)); top: calc(50% + var(--dot-y)); transform: translate(-50%, -50%); }
 .pos__ico { left: calc(50% + var(--x)); top: calc(50% + var(--y)); transform: translate(-50%, -50%) var(--t); fill: #ccc; visibility: hidden; }
@@ -362,7 +389,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sec__fill.is-none { padding: 0; background: none; }
 .sec__fill.is-none .pe__swatch { border: 0; background: url("assets/img/fill-none.svg") center / 24px no-repeat; }
 /* ширина контента из настроек секции; без настройки контент занимает всю секцию */
-.site-blank__section > .wg, .site-section > .wg { width: 100%; max-width: var(--sec-content-w, none); margin-inline: auto; }
+.site-blank__section > .wg, .site-section > .wg, .site-ext > .wg { width: 100%; max-width: var(--sec-content-w, none); margin-inline: auto; }
 
 .mw-menu.ls-mode { width: 200px; }
 .ls-mode .mw-menu__list { padding-top: 8px; }
@@ -423,7 +450,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* ховер ячеек и превью — рамка «Виджета магазина» из Builder-components */
 .rs-cell:hover, .rs-item:hover { box-shadow: inset 0 0 0 1px rgba(123, 98, 248, .4); }
 .rs-ext { padding-top: 8px; }
-.stage[data-scenario="ext-float"] .rs-ext:not(.rs-ext--outer), .stage:not([data-scenario="ext-float"]) .rs-ext--outer { display: none; }
+.stage[data-scenario^="ext-"] .rs-ext:not(.rs-ext--outer), .stage:not([data-scenario^="ext-"]) .rs-ext--outer { display: none; }
 .rs-ext__title { padding: 8px 0; font-size: 16px; font-weight: 600; letter-spacing: -.2256px; }
 .rs-widgets { display: flex; flex-direction: column; gap: 16px; }
 .rs-w[hidden] { display: none; }
@@ -731,3 +758,59 @@ ul { list-style: none; margin: 0; padding: 0; }
   content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
   background: var(--fill-tint), var(--fill-img) center / cover; background-blend-mode: soft-light, normal; opacity: var(--fill-op); filter: var(--fill-filter);
 }
+
+/* ---------- Панель настроек обратной связи (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2648:45307) ---------- */
+.fbp-scrim { position: absolute; inset: 0; z-index: 45; background: rgba(0, 0, 0, .44); }
+.fbp-scrim[hidden] { display: none; }
+.fbp { position: absolute; right: 0; top: 0; bottom: 0; width: 734px; background: #f8f8f8; box-shadow: -6px 0 22px rgba(0, 0, 0, .11), -2px 0 8px rgba(0, 0, 0, .02); font-size: 14px; line-height: 1.4; letter-spacing: -.1974px; color: var(--text-text-color); }
+.fbp [hidden] { display: none !important; }
+.fbp__head { position: absolute; left: 0; top: 0; width: 680px; height: 78px; }
+.fbp__title { position: absolute; left: 16px; top: 7px; width: 267px; --in-h: 28px; font-size: 20px; font-weight: 600; }
+.fbp__done.pe__done { position: absolute; left: 648px; top: 7px; width: 32px; height: 32px; font-size: 20px; }
+.fbp__tabs { position: absolute; right: 2px; top: 46px; display: flex; }
+.fbp__tab { height: 32px; margin: 0 12px; padding-top: 3px; display: flex; align-items: center; font-size: 15px; letter-spacing: -.2115px; color: var(--text-secondary_text-color); }
+.fbp__tab.is-on { font-weight: 600; color: var(--text-primary_text-color); box-shadow: inset 0 -3px var(--extra-marker_color); border-radius: 0 0 4px 4px; }
+.fbp__body { position: absolute; left: 0; top: 78px; bottom: 0; width: 680px; padding: 16px; overflow: hidden auto; scrollbar-width: none; background: #fff; border-radius: 0 8px 0 0; }
+.fbp__top { display: flex; align-items: flex-start; gap: 21px; margin-bottom: 26px; }
+.fbp__card { flex: none; width: 399px; padding: 16px 24px 22px; background: var(--fb-bg, #f3f3f3); border-radius: 20px; box-shadow: 0 2px 12px rgba(0, 0, 0, .08); }
+.fbp__card .site-feedback { background: none; }
+.fbp__card .site-feedback__head { margin-right: -3px; }
+.fbp__card .input[data-fb-field] { margin-right: 22px; }
+.fbp__side { flex: 1 0 0; min-width: 0; }
+.fbp__line { display: flex; align-items: center; gap: 8px; min-height: 28px; }
+.fbp__label { font-weight: 600; }
+.fbp__colors { display: grid; grid-template-columns: 120px 1fr; gap: 6px 0; margin: 8px 0 8px; }
+.fbp__color { display: flex; align-items: center; gap: 8px; }
+.fbp__color .pe__swatch { width: 26px; height: 26px; flex: none; }
+.fbp__chips { display: flex; flex-wrap: wrap; gap: 12px; max-width: 180px; margin-top: 8px; }
+.fbp__chip { height: 24px; padding: 0 13px; border: 0; border-radius: 12px; background: var(--background-contrast-pale_color); color: var(--text-label_contrast_text-color); font: inherit; font-weight: 500; cursor: pointer; }
+.fbp__chip.is-on { background: #0a1520; color: #fff; }
+.fbp__show { display: flex; align-items: center; gap: 6px; height: 32px; margin-bottom: 7px; } /* высота не зависит от ссылки «всегда» */
+.fbp__place, .fbp__text { height: 66px; } /* одна высота: кнопка под блоком не прыгает при смене «Показывать» */
+.fbp__place { display: flex; align-items: flex-end; gap: 14px; }
+.fbp__pos { flex: none; }
+.fbp__message { gap: 4px; }
+.fbp__text { display: flex; align-items: flex-start; gap: 8px; line-height: 24px; }
+.fbp__text .input { flex: 0 1 240px; }
+.fbp__button { display: flex; align-items: center; gap: 16px; margin-top: 18px; padding-left: 104px; }
+.fbp__animation { display: flex; align-items: center; gap: 8px; }
+.fbp__rail { position: absolute; right: 0; top: 0; bottom: 0; width: 54px; background: url("assets/img/feedback/panel-bg.png") -694px -12px no-repeat; }
+.fbp__close.pe__close { position: absolute; left: 12px; top: 7px; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; } /* сам крестик — на картинке столбца */
+.fbp__close.pe__close:hover { background: rgba(0, 0, 0, .06); }
+
+/* Цвета из панели обратной связи: пока переменных нет, всё как в общих стилях */
+.site-float__button, .site-link__button, .site-feedback__send { --s-fill: var(--fb-accent, var(--background-contrast-primary_color)); --s-fill-h: var(--fb-accent, var(--background-contrast-primary_hover_color)); --s-fill-a: var(--fb-accent, var(--background-contrast-primary_active_color)); }
+.site-feedback { background: var(--fb-bg, none); }
+.site-feedback__title .input__control { color: var(--fb-head, inherit); }
+.site-feedback .input[data-fb-field] .input__control { color: var(--fb-text, var(--text-text-color)); }
+.site-feedback .input[data-fb-field] .input__control::placeholder { color: var(--fb-text, var(--text-unaccented_text-color)); }
+.site-feedback__check { --cb-fg: var(--fb-text, var(--text-unaccented_text-color)); }
+.site-feedback .input[hidden] { display: none; }
+/* Положение плавающей кнопки — ячейка общего редактора: col и row, правый нижний угол — обычное место. Отступы от краёв области сайта те же, что у него */
+.wg.site-float { --float-left: 366px; --float-right: 412px; }
+.stage.is-ls-collapsed .wg.site-float { --float-left: 52px; }
+.stage.is-rs-closed .wg.site-float { --float-right: 54px; }
+.stage .wg.site-float[data-col="0"] { left: calc(var(--float-left) + 32px); right: auto; }
+.stage .wg.site-float[data-col="1"] { left: calc((1600px + var(--float-left) - var(--float-right)) / 2 - 24px); right: auto; }
+.stage .wg.site-float[data-row="0"] { top: 82px; bottom: auto; }
+.stage .wg.site-float[data-row="1"] { top: 448px; bottom: auto; }
