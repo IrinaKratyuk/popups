@@ -478,6 +478,19 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-picker__rail { width: 52px; border-left: 2px solid #0000000a; display: flex; flex-direction: column; align-items: center; padding: 7px 10px 6px 12px; gap: 7px; }
 .sales-picker__rail .sales-icon { width: 32px; height: 32px; }
 
+/* Прайсы — стек-панель Figma 2560:103488. */
+.sales-picker--prices .sales-picker__head { padding-left: 0; gap: 0; }
+.sales-picker--prices .sales-picker__head > strong,
+.sales-picker--prices .sales-picker__head > .sales-spacer { display: none; }
+.sales-picker--prices .sales-picker__search { flex: 1; padding-right: 0; }
+.sales-picker--prices .sales-filter { margin-left: 12px; margin-right: 12px; }
+.sales-picker--prices .sales-option { gap: 3px; min-height: 32px; padding: 4px 12px 4px 4px; font-size: 15px; letter-spacing: -.2115px; }
+.sales-picker--prices .sales-option input:checked { opacity: 1; }
+.price-picker__divider { margin: 12px 20px; height: 1px; background: #eaeaea; }
+.price-picker__group { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 32px; padding: 4px 20px; font-size: 15px; letter-spacing: -.2115px; text-align: left; }
+.price-picker__group .ico { color: #8991a9; font-size: 12px; }
+.price-picker__group:hover { background: var(--menu-item-hover); }
+
 /* переключатель: включён — акцентный (Figma), выключен — подобран */
 .rp-switch { width: 24px; height: 24px; display: flex; align-items: center; }
 .rp-switch::before { content: ""; width: 24px; height: 16px; border-radius: 8px; background: var(--border) radial-gradient(circle 6px at 8px 8px, #fff 5.5px, transparent 6px); transition: background-color .12s; }

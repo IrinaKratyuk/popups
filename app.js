@@ -190,7 +190,10 @@
   ].map((group) => ({ ...group, points: group.names.map((name, i) => ({ id: group.id + '-' + i, name, price: i ? 'Меню Престо' : 'Меню A la carte' })) }));
   const SALES = [...ROOT_SALES, ...SALES_GROUPS.flatMap((group) => group.points)];
   const salesExpanded = new Set();
-  const PRICES = ['Меню A la carte', 'Меню Престо'];
+  const PRICES = ['Меню A la carte', 'Меню Престо', 'Прайс для кофейни', 'Демо прайс', 'Прайс в ресторане на Московском'];
+  const PRICE_CURRENT = 'Из текущей точки продаж';
+  const PRICE_GROUPS = ['Мили', 'Столовая в Костроме', 'Столовые в Ярославле', 'Мили'];
+  let priceGroup = null;
   const salesPopup = $('#salesPopup');
   const salesPicker = $('#salesPicker');
   let catalogAdded = false;
@@ -200,7 +203,7 @@
   let salesPickerMode = null;
   let salesOnlySelected = false;
   let salesFocus = null;
-  const salesCopy = (rows) => rows.map((row) => ({ ...row }));
+  const salesCopy = (rows) => rows.map((row) => ({ ...row, prices: row.prices?.slice() }));
   const salesCurrent = () => salesDraft || salesSaved;
 
   function salesRenderRows(root, rows) {
@@ -278,7 +281,14 @@
     salesPickerMode = pointId || 'points';
     salesOnlySelected = false;
     const rows = salesCurrent();
-    salesSelection = new Set(pointId ? [rows.find((row) => row.id === pointId).price] : rows.map((row) => row.id));
+    const priceRow = pointId && rows.find((row) => row.id === pointId);
+    salesSelection = new Set(pointId ? (priceRow.prices || [priceRow.price]) : rows.map((row) => row.id));
+    priceGroup = null;
+    salesPicker.classList.toggle('sales-picker--prices', !!pointId);
+    const search = $('.sales-picker__search', salesPicker);
+    const head = $('.sales-picker__head', salesPicker);
+    if (pointId) head.prepend(search);
+    else $('.sales-picker__main', salesPicker).insertBefore(search, $('#salesPickerList'));
     $('#salesPickerTitle').textContent = pointId ? 'Прайсы' : 'Точки продаж';
     $('#salesSearch').value = '';
     $('#salesSearch').setAttribute('aria-label', pointId ? 'Поиск прайсов' : 'Поиск точек продаж');
@@ -296,12 +306,11 @@
     function optionRow(option) {
       const label = el('label', 'sales-option');
       const input = el('input');
-      input.type = isPrice ? 'radio' : 'checkbox';
+      input.type = 'checkbox';
       input.name = 'sales-selection';
       input.value = option.id;
       input.checked = salesSelection.has(option.id);
       input.addEventListener('change', () => {
-        if (isPrice) salesSelection.clear();
         if (input.checked) salesSelection.add(option.id);
         else salesSelection.delete(option.id);
         salesPickerHeader();
@@ -312,8 +321,29 @@
     }
     let count = 0;
     if (isPrice) {
-      if (!query && !salesOnlySelected) root.append(el('div', 'sales-picker__company', 'Мили'));
-      for (const name of PRICES) {
+      const current = { id: PRICE_CURRENT, name: PRICE_CURRENT };
+      if (matches(current)) { root.append(optionRow(current)); count++; }
+      if (!query && !salesOnlySelected) {
+        root.append(el('div', 'price-picker__divider'));
+        if (priceGroup !== null) {
+          const back = el('button', 'price-picker__group', '<span class="ico">&#xE674;</span>');
+          back.type = 'button';
+          back.append(document.createTextNode('Все прайсы'));
+          back.addEventListener('click', () => { priceGroup = null; salesPickerRender(); });
+          root.append(back);
+        } else {
+          PRICE_GROUPS.forEach((name, index) => {
+            const group = el('button', 'price-picker__group');
+            group.type = 'button';
+            group.append(document.createTextNode(name), el('span', 'ico', '&#xEB89;'));
+            group.setAttribute('aria-label', 'Открыть группу ' + name);
+            group.addEventListener('click', () => { priceGroup = index; salesPickerRender(); });
+            root.append(group);
+          });
+        }
+      }
+      const names = priceGroup === null ? PRICES : priceGroup === 0 || priceGroup === 3 ? PRICES.slice(0, 2) : priceGroup === 1 ? ['Меню Престо', 'Демо прайс'] : ['Прайс для кофейни', 'Прайс в ресторане на Московском'];
+      for (const name of names) {
         const option = { id: name, name };
         if (matches(option)) { root.append(optionRow(option)); count++; }
       }
@@ -345,16 +375,19 @@
     $('#salesCount').setAttribute('aria-pressed', salesOnlySelected);
     $('#salesFilter').setAttribute('aria-pressed', salesOnlySelected);
     const all = $('#salesSelectAll');
-    all.hidden = salesPickerMode !== 'points';
-    all.checked = salesSelection.size === SALES.length;
-    all.indeterminate = salesSelection.size > 0 && salesSelection.size < SALES.length;
+    const options = salesPickerMode === 'points' ? SALES.map((point) => point.id) : [PRICE_CURRENT, ...PRICES];
+    all.setAttribute('aria-label', salesPickerMode === 'points' ? 'Выбрать все точки продаж' : 'Выбрать все прайсы');
+    $('#salesCount').setAttribute('aria-label', salesPickerMode === 'points' ? 'Показать только отмеченные точки' : 'Показать только отмеченные прайсы');
+    all.hidden = false;
+    all.checked = options.every((id) => salesSelection.has(id));
+    all.indeterminate = salesSelection.size > 0 && !all.checked;
   }
   for (const button of [$('#salesCount'), $('#salesFilter')]) button.addEventListener('click', () => {
     salesOnlySelected = !salesOnlySelected;
     salesPickerRender();
   });
   $('#salesSelectAll').addEventListener('change', (e) => {
-    salesSelection = new Set(e.target.checked ? SALES.map((point) => point.id) : []);
+    salesSelection = new Set(e.target.checked ? (salesPickerMode === 'points' ? SALES.map((point) => point.id) : [PRICE_CURRENT, ...PRICES]) : []);
     salesPickerRender();
   });
   $('#salesPickerDone').addEventListener('click', () => {
@@ -364,7 +397,10 @@
       for (const point of SALES) if (salesSelection.has(point.id) && !rows.some((row) => row.id === point.id)) rows.push({ id: point.id, price: point.price });
     } else {
       const row = rows.find((row) => row.id === salesPickerMode);
-      if (row && salesSelection.size) row.price = [...salesSelection][0];
+      if (row) {
+        row.prices = [...salesSelection];
+        row.price = row.prices.join(', ') || 'Выбрать прайс';
+      }
     }
     // Подтверждение выбора добавляет точки на сайт сразу, в том числе при переходе к его параметрам.
     salesSaved = salesCopy(rows);
