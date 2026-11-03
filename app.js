@@ -26,9 +26,9 @@
     device: 'monitor',
     scenarios: [
       { group: 'Работа с каталогом', items: [
-        { id: 'no-catalog', title: 'Без каталога', disabled: true },
-        { id: 'catalog-add', title: 'Добавление каталога', disabled: true },
-        { id: 'catalog-setup', title: 'Настройка каталога', disabled: true },
+        { id: 'no-catalog', title: 'Без каталога' },
+        { id: 'catalog-add', title: 'Добавление каталога' },
+        { id: 'catalog-setup', title: 'Настройка каталога' },
         { id: 'product-card', title: 'Карточка товара', disabled: true },
       ] },
       { group: 'Работа с окнами/страницами', items: [
@@ -121,6 +121,7 @@
   // Одновременно открыто одно окно или меню: новое закрывает прежнее, несохранённые правки в нём отменяются, как крестиком.
   // Без родителя не работают и остаются с ним только меню режима открытия, меню и палитры PropertyEditor.
   function popupsClose() {
+    salesClose();
     rsCloseParams();
     lsCloseMenu();
     lsNewClose();
@@ -148,6 +149,7 @@
 
   function rsCloseParams() {
     if (!rsParamsOpen) return;
+    salesPickerCancel();
     rsParamsOpen = false;
     rsRender();
   }
@@ -160,16 +162,192 @@
         popupsClose();
         rsParamsOpen = open;
       }
-      else if (rsParamsOpen) { rsParamsOpen = false; rsPanel = name; }
-      else rsPanel = rsPanel === name ? null : name;
+      else if (rsParamsOpen) { popupsClose(); rsPanel = name; }
+      else { salesClose(); rsPanel = rsPanel === name ? null : name; }
       rsRender();
     });
   }
   $('#rsParamsClose').addEventListener('click', rsCloseParams);
   stage.addEventListener('mousedown', (e) => {
-    if (rsParamsOpen && !e.target.closest('#rsParams, .rp-btn')) rsCloseParams();
+    if (rsParamsOpen && !e.target.closest('#rsParams, #salesPicker, .rp-btn')) rsCloseParams();
   });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') rsCloseParams(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && salesPicker.hidden) rsCloseParams(); });
+
+  // Точки и прайсы — демоданные из сценария Figma. Изменения в окне хранятся в черновике до ✓.
+  const SALES = [
+    { id: 'mili', name: 'Ресторан “Мили”', price: 'Меню A la carte' },
+    { id: 'uglich', name: 'Ресторан “Мили” на Угличской', price: 'Меню Престо' },
+    { id: 'teremok', name: 'Теремок', price: 'Меню A la carte' },
+    { id: 'dvina', name: 'Хостел ДВИНА', price: 'Меню Престо' },
+  ];
+  const SALES_GROUPS = ['Тензор', 'Квеста Бухобслуживание', 'SabyHotel', 'Тинькофф', '01- Республика Адыгея', 'ИП Плюшкин'];
+  const PRICES = ['Меню A la carte', 'Меню Престо'];
+  const salesPopup = $('#salesPopup');
+  const salesPicker = $('#salesPicker');
+  let catalogAdded = true;
+  let salesSaved = [];
+  let salesDraft = null;
+  let salesSelection = new Set();
+  let salesPickerMode = null;
+  let salesFocus = null;
+  const salesCopy = (rows) => rows.map((row) => ({ ...row }));
+  const salesCurrent = () => salesDraft || salesSaved;
+
+  function salesRenderRows(root, rows) {
+    root.replaceChildren();
+    if (!rows.length) {
+      const empty = el('p', 'sales-empty');
+      empty.textContent = 'Добавьте ваши точки продаж, чтобы получать актуальную информацию о них';
+      root.append(empty);
+      return;
+    }
+    for (const [index, row] of rows.entries()) {
+      const item = el('div', 'sales-row');
+      const name = el('div', 'sales-row__name');
+      const label = el('span');
+      label.textContent = SALES.find((point) => point.id === row.id).name;
+      name.append(label);
+      if (!index) name.append(el('span', 'ico', '&#xEABA;'));
+      const price = el('button', 'sales-price');
+      price.type = 'button';
+      price.textContent = row.price;
+      price.dataset.salesPrice = row.id;
+      price.setAttribute('aria-label', 'Прайс: ' + label.textContent);
+      const actions = el('div', 'sales-row__actions');
+      if (index) {
+        const primary = el('button', '', '<span class="ico">&#xEABA;</span>');
+        primary.type = 'button';
+        primary.dataset.salesPrimary = row.id;
+        primary.setAttribute('aria-label', 'Основная точка: ' + label.textContent);
+        actions.append(primary);
+      }
+      const remove = el('button', '', '<span class="ico">&#xE65C;</span>');
+      remove.type = 'button';
+      remove.dataset.salesDelete = row.id;
+      remove.setAttribute('aria-label', 'Удалить точку: ' + label.textContent);
+      actions.append(remove);
+      item.append(name, price, actions);
+      root.append(item);
+    }
+  }
+  function salesRender() {
+    $('#salesSettings').hidden = !catalogAdded;
+    salesRenderRows($('#salesSettingsRows'), salesSaved);
+    salesRenderRows($('#salesPopupRows'), salesCurrent());
+  }
+  function salesPickerCancel() {
+    if (salesPicker.hidden) return;
+    salesPicker.hidden = true;
+    salesPickerMode = null;
+    salesFocus?.focus();
+  }
+  function salesClose() {
+    salesPickerCancel();
+    salesPopup.hidden = true;
+    salesDraft = null;
+  }
+  function salesOpen() {
+    popupsClose();
+    salesDraft = salesCopy(salesSaved);
+    salesRender();
+    salesPopup.hidden = false;
+    $('[data-sales-add]', salesPopup).focus();
+  }
+  function salesPickerOpen(pointId = null) {
+    salesFocus = document.activeElement;
+    salesPickerMode = pointId || 'points';
+    const rows = salesCurrent();
+    salesSelection = new Set(pointId ? [rows.find((row) => row.id === pointId).price] : rows.map((row) => row.id));
+    $('#salesPickerTitle').textContent = pointId ? 'Прайсы' : 'Точки продаж';
+    $('#salesSearch').value = '';
+    $('#salesSearch').setAttribute('aria-label', pointId ? 'Поиск прайсов' : 'Поиск точек продаж');
+    salesPicker.hidden = false;
+    salesPickerRender();
+    $('#salesSearch').focus();
+  }
+  function salesPickerRender() {
+    const root = $('#salesPickerList');
+    root.replaceChildren();
+    const query = $('#salesSearch').value.trim().toLocaleLowerCase('ru');
+    const isPrice = salesPickerMode !== 'points';
+    $('#salesCount').textContent = 'Отмечено ' + salesSelection.size;
+    if (!query) {
+      root.append(el('div', 'sales-picker__company', isPrice ? 'Мили' : 'Вся компания'));
+      const groups = isPrice ? ['Столовая Кострома', 'Столовая Питер', 'Столовые Ярославль', 'Столовая Новосибирск', 'Гастромаркет ЕКБ'] : SALES_GROUPS;
+      for (const group of groups) {
+        const details = el('details');
+        const summary = el('summary', 'sales-picker__group', '<span class="ico">&#xE96E;</span>');
+        summary.append(document.createTextNode(group));
+        const empty = el('p', 'sales-empty');
+        empty.textContent = isPrice ? 'Нет доступных прайсов' : 'Нет доступных точек продаж';
+        details.append(summary, empty);
+        root.append(details);
+      }
+    }
+    let count = 0;
+    for (const option of isPrice ? PRICES.map((name) => ({ id: name, name })) : SALES) {
+      if (!option.name.toLocaleLowerCase('ru').includes(query)) continue;
+      count++;
+      const label = el('label', 'sales-option');
+      const input = el('input');
+      input.type = isPrice ? 'radio' : 'checkbox';
+      input.name = 'sales-selection';
+      input.value = option.id;
+      input.checked = salesSelection.has(option.id);
+      input.addEventListener('change', () => {
+        if (isPrice) salesSelection.clear();
+        if (input.checked) salesSelection.add(option.id);
+        else salesSelection.delete(option.id);
+        $('#salesCount').textContent = 'Отмечено ' + salesSelection.size;
+      });
+      label.append(input, document.createTextNode(option.name));
+      root.append(label);
+    }
+    if (query && !count) root.append(el('p', 'sales-empty', 'Ничего не найдено'));
+  }
+  $('#salesPickerDone').addEventListener('click', () => {
+    let rows = salesCopy(salesCurrent());
+    if (salesPickerMode === 'points') {
+      rows = rows.filter((row) => salesSelection.has(row.id));
+      for (const point of SALES) if (salesSelection.has(point.id) && !rows.some((row) => row.id === point.id)) rows.push({ id: point.id, price: point.price });
+    } else {
+      const row = rows.find((row) => row.id === salesPickerMode);
+      if (row && salesSelection.size) row.price = [...salesSelection][0];
+    }
+    if (salesDraft) salesDraft = rows;
+    else salesSaved = rows;
+    salesPickerCancel();
+    salesRender();
+  });
+  $('#salesSearch').addEventListener('input', salesPickerRender);
+  $('#salesPickerClose').addEventListener('click', salesPickerCancel);
+  $('#salesClose').addEventListener('click', salesClose);
+  $('#salesDone').addEventListener('click', () => { salesSaved = salesCopy(salesDraft); salesClose(); salesRender(); });
+  $('#salesReset').addEventListener('click', () => { salesDraft = []; salesRender(); });
+  $('#siteCatalogSettings').addEventListener('click', salesOpen);
+  stage.addEventListener('click', (e) => {
+    if (e.target.closest('[data-sales-add]')) salesPickerOpen();
+    const price = e.target.closest('[data-sales-price]');
+    if (price) salesPickerOpen(price.dataset.salesPrice);
+    const remove = e.target.closest('[data-sales-delete]');
+    const primary = e.target.closest('[data-sales-primary]');
+    if (!remove && !primary) return;
+    let rows = salesCopy(salesCurrent());
+    if (remove) rows = rows.filter((row) => row.id !== remove.dataset.salesDelete);
+    else { const at = rows.findIndex((row) => row.id === primary.dataset.salesPrimary); rows.unshift(...rows.splice(at, 1)); }
+    if (salesDraft) salesDraft = rows;
+    else salesSaved = rows;
+    salesRender();
+  });
+  // Esc отменяет только верхнее окно; родитель остаётся открыт.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || (salesPicker.hidden && salesPopup.hidden)) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (!salesPicker.hidden) salesPickerCancel();
+    else salesClose();
+  }, true);
+  salesRender();
 
   // «Магазин»: статика с ховером
   $('#rsSmall').innerHTML = ['E6D3', 'EAC3', 'EAEE', 'EA80'].map((g) => `<div class="rs-cell"><span class="ico24">&#x${g};</span></div>`).join('');
@@ -216,13 +394,21 @@
   $('.rs-w__pv', shopProduct).append(shopProductPin);
 
   function siteAddCatalog() {
+    if (catalogAdded) return;
+    catalogAdded = true;
     shopCatalog.hidden = true;
-    if (stage.dataset.scenario === 'no-catalog') lsAddCardPage();
+    if (lsCardPageId == null) lsAddCardPage();
     siteSection.hidden = true;
     siteCatalog.hidden = false;
     siteCatalog.classList.add('is-active');
+    salesRender();
+    salesOpen();
   }
   function siteRemoveCatalog() {
+    salesClose();
+    catalogAdded = false;
+    salesSaved = [];
+    salesRender();
     shopCatalog.hidden = false;
     lsRemoveCardPage();
     siteCatalog.hidden = true;
@@ -335,7 +521,7 @@
       if (!(bgKey === 'section' ? inSection && !inProduct : windowHit)) bgClose(); // тулбар с командой скрылся
     }
     if (siteCatalog.hidden) return;
-    siteCatalog.classList.toggle('is-active', !!e.target.closest('#siteCatalog'));
+    if (!e.target.closest('#salesPopup, #salesPicker, #rsParams, .rp-btn')) siteCatalog.classList.toggle('is-active', !!e.target.closest('#siteCatalog'));
   });
 
   // Настройки окна: открываются по левому верхнему углу окна, шестерёнка в это время активна. Правки сразу видны на холсте, галочка сохраняет их в страницу,
@@ -993,6 +1179,7 @@
 
   // Сценарий «Создание окна с товаром»: каталог уже на странице и не выделен, страницы «Карточка товара» нет.
   function sitePlaceCatalog() {
+    catalogAdded = true;
     shopCatalog.hidden = true;
     siteSection.hidden = true;
     siteCatalog.hidden = false;
@@ -1351,6 +1538,7 @@
   // Сценарии панели — состояния страницы. «Новая страница»: открытая новая страница (или последняя, или созданная заново) получает режим сценария.
   // «Создание окна с товаром» возвращает исходные страницы, каталог и подсказку на плюсе.
   function scenApply(scenario, mode) {
+    popupsClose();
     lsNewClose();
     lsCloseMenu();
     lsFinishRename(false);
@@ -1370,14 +1558,26 @@
       lsCardPageId = null;
       sitePlaceCatalog();
       $('#lsAdd').append(lsAddPin);
+      if (['no-catalog', 'catalog-add', 'catalog-setup'].includes(scenario)) {
+        catalogAdded = scenario === 'catalog-setup';
+        if (!catalogAdded) salesSaved = [];
+        shopCatalog.hidden = catalogAdded;
+        siteSection.hidden = catalogAdded;
+        siteCatalog.hidden = !catalogAdded;
+        siteCatalog.classList.toggle('is-active', catalogAdded);
+        salesRender();
+      }
+      salesRender();
     }
     lsRender();
+    if (scenario === 'catalog-setup') salesOpen();
   }
 
   // Панель показывает состояние открытой страницы, как бы та ни открылась: из списка, после сохранения или удаления.
   function scenSync() {
     const page = lsPage(lsActive);
-    const scenario = page.blank ? 'new' : 'window-create';
+    const catalogScenario = ['no-catalog', 'catalog-add', 'catalog-setup'].includes(stage.dataset.scenario);
+    const scenario = page.blank ? 'new' : catalogScenario ? stage.dataset.scenario : 'window-create';
     const mode = page.blank ? page.mode : null;
     if (scenario === frame.value.scenario && mode === frame.value.variant) return;
     scenSyncing = true;

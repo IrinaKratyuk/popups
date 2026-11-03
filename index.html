@@ -143,7 +143,7 @@
                 <button type="button" class="tb__btn" aria-label="Расположение"><span class="tb__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="5" height="1" rx=".5"/><rect x="2" y="8" width="8" height="1" rx=".5"/><rect x="2" y="11" width="6" height="1" rx=".5"/><rect x="2" y="14" width="7" height="1" rx=".5"/><rect x="12.5" y="4.5" width="9" height="15" rx="1.5" fill="none" stroke="currentColor"/></svg></span></button>
                 <button type="button" class="tb__btn"><span class="tb__caption">Раздел</span></button>
                 <button type="button" class="tb__btn"><span class="tb__caption">Товар</span></button>
-                <button type="button" class="tb__btn" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
+                <button type="button" class="tb__btn" id="siteCatalogSettings" aria-label="Настройки каталога"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
                 <button type="button" class="tb__btn tb__btn--delete" id="siteCatalogDelete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
                 <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
               </div>
@@ -249,7 +249,21 @@
             <button class="btn btn--filled btn--style-pale btn--size-m" type="button">Google Tag Manager</button>
             </div>
           </div>
+          <section class="sales-settings" id="salesSettings" aria-label="Точки продаж сайта" hidden>
+            <div class="sales-settings__head"><div>Точки продаж <button class="btn btn--filled btn--style-pale btn--size-m btn--icon" type="button" data-sales-add aria-label="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span></button></div><span>Прайс</span></div>
+            <div class="sales-rows" id="salesSettingsRows"></div>
+          </section>
         </div>
+      </section>
+
+      <!-- Точки продаж: Figma 2560:97159, 2596:110271. Выбор — отдельная стек-панель 2596:108382. -->
+      <section class="sales-popup" id="salesPopup" role="dialog" aria-label="Настройка точек продаж" hidden>
+        <div class="sales-popup__head"><strong>Точки продаж</strong><button class="btn btn--filled btn--style-pale btn--size-m btn--icon" type="button" data-sales-add aria-label="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button><span class="sales-spacer"></span><button class="sales-icon" id="salesReset" type="button" aria-label="Сбросить точки продаж"><span class="ico24">&#xE629;</span></button><button class="sales-done" id="salesDone" type="button" aria-label="Сохранить точки продаж"><span class="ico">&#xE75E;</span></button><button class="sales-icon" id="salesClose" type="button" aria-label="Отменить настройку точек продаж"><img src="assets/img/close-link.svg" width="24" height="24" alt=""></button></div>
+        <div class="sales-popup__body"><div class="sales-rows" id="salesPopupRows"></div></div>
+      </section>
+      <section class="sales-picker" id="salesPicker" role="dialog" aria-modal="true" aria-labelledby="salesPickerTitle" hidden>
+        <div class="sales-picker__main"><div class="sales-picker__head"><strong id="salesPickerTitle">Точки продаж</strong><span class="sales-spacer"></span><button class="sales-done" id="salesPickerDone" type="button" aria-label="Подтвердить выбор"><span class="ico">&#xE75E;</span></button></div><div class="sales-picker__search"><input id="salesSearch" type="search" placeholder="Найти" aria-label="Поиск точек продаж"><span id="salesCount"></span></div><div class="sales-picker__list" id="salesPickerList"></div></div>
+        <div class="sales-picker__rail"><button class="sales-icon" id="salesPickerClose" type="button" aria-label="Отменить выбор"><img src="assets/img/close-tool.svg" width="28" height="28" alt=""></button><span class="sales-spacer"></span><img src="assets/img/help.svg" width="32" height="32" alt="Помощь"></div>
       </section>
 
       <!-- Тулбар правого сайдбара -->
