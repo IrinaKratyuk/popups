@@ -20,7 +20,7 @@
 </head>
 <body>
   <div class="viewport">
-    <div class="stage" id="stage" data-scenario="window-link">
+    <div class="stage" id="stage" data-scenario="ext-float">
 
       <!-- Шапка конструктора (Figma rHabzni5OI5D4fxBLQdj2m 5:28058): только ховер, без действий по клику -->
       <header class="ch">
@@ -73,6 +73,49 @@
       <!-- Контент -->
       <main class="content" id="content">
         <!-- Середина: сайт в конструкторе (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:63290). Ховер виджетов — .wg из ui-kit -->
+        <!-- Команды тулбара виджета «Секция» — один набор на все секции: вставляется в каждый [data-section-cmds] -->
+        <!-- Команды тулбара кнопки: один набор на секцию с кнопкой и плавающую кнопку -->
+        <template id="buttonCmds">
+          <button type="button" class="tb__btn" data-btn-cmd="back" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
+          <button type="button" class="tb__btn" aria-label="Стиль"><span class="tb__icon" aria-hidden="true">&#xebbb;</span></button>
+          <button type="button" class="tb__btn" aria-label="Цвет"><span class="tb__icon" aria-hidden="true"><span class="site-link__color"></span></span></button>
+          <button type="button" class="tb__btn" aria-label="Текст"><span class="tb__icon" aria-hidden="true">&#xeac9;</span></button>
+          <button type="button" class="tb__btn" aria-label="Размер"><span class="tb__icon" aria-hidden="true"><img src="assets/img/toolbar-size.svg" width="24" height="24" alt=""></span></button>
+          <button type="button" class="tb__btn" aria-label="Действие"><span class="tb__icon" aria-hidden="true">&#xeb7e;</span></button>
+          <button type="button" class="tb__btn" data-btn-cmd="settings" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
+          <button type="button" class="tb__btn tb__btn--delete" data-btn-cmd="delete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
+          <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
+        </template>
+        <template id="sectionCmds">
+          <button type="button" class="tb__btn" data-sec-cmd="fill" aria-label="Фон"><span class="tb__icon" aria-hidden="true">&#xe664;</span></button>
+          <button type="button" class="tb__btn" aria-label="Закрепить"><span class="tb__icon" aria-hidden="true">&#xe97c;</span></button>
+          <button type="button" class="tb__btn" data-sec-cmd="settings" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe75d;</span></button>
+          <button type="button" class="tb__btn tb__btn--delete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
+          <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
+        </template>
+        <!-- Заглушка пустой секции — одна на все секции: вставляется в каждый .site-empty -->
+        <template id="siteEmptyContent">
+          <div class="wg__content wg__empty">
+            <div class="wg__actions">
+              <button type="button" class="wg__action site-action--text"><span class="wg__action-caption">Текст</span></button>
+              <button type="button" class="wg__action wg__action--cols"><span class="wg__action-caption">Колонки</span></button>
+              <button type="button" class="wg__action wg__action--widget"><span class="wg__action-caption">Виджет</span></button>
+              <button type="button" class="wg__action site-action--template"><span class="wg__action-caption">Шаблон</span></button>
+              <button type="button" class="wg__action site-action--file"><span class="wg__action-caption">Из файла</span></button>
+            </div>
+          </div>
+        </template>
+        <!-- Футер (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2899:48815) — один на все страницы: вставляется в каждый [data-site-footer]. В окне его нет -->
+        <template id="siteFooter">
+          <img class="site-footer__logo" src="assets/img/site/footer-logo.svg" width="50" height="48" alt="">
+          <div class="site-footer__nav"><span class="site-menu">Меню</span><span class="site-menu">Заказы</span><span class="site-menu">О нас</span><span class="site-menu">Профиль</span></div>
+          <div class="site-footer__info">
+            <span class="site-footer__item site-footer__item--fixed"><span class="site-footer__ico" aria-hidden="true">&#xea52;</span>Санкт-Петербург</span>
+            <span class="site-footer__item site-footer__item--fixed"><span class="site-footer__ico" aria-hidden="true">&#xe68d;</span>с 10:00 до 01:00</span>
+            <span class="site-footer__item"><span class="site-footer__ico" aria-hidden="true">&#xe636;</span>+7 (4852) 12-13-14</span>
+          </div>
+          <div class="site-footer__terms">Пользовательское соглашение</div>
+        </template>
         <div class="site" id="site">
           <header class="wg wg--style-success site-header">
             <img class="site-logo" src="assets/img/site/logo.svg" width="61" height="46" alt="">
@@ -87,17 +130,8 @@
             </div>
           </div>
           <section class="wg site-section" id="siteSection">
-            <div class="wg site-empty">
-              <div class="wg__content wg__empty">
-                <div class="wg__actions">
-                  <button type="button" class="wg__action site-action--text"><span class="wg__action-caption">Текст</span></button>
-                  <button type="button" class="wg__action wg__action--cols"><span class="wg__action-caption">Колонки</span></button>
-                  <button type="button" class="wg__action wg__action--widget"><span class="wg__action-caption">Виджет</span></button>
-                  <button type="button" class="wg__action site-action--template"><span class="wg__action-caption">Шаблон</span></button>
-                  <button type="button" class="wg__action site-action--file"><span class="wg__action-caption">Из файла</span></button>
-                </div>
-              </div>
-            </div>
+            <div class="wg site-empty"></div>
+            <div class="wg__toolbar"><div class="tb tb--style-info" role="toolbar" aria-label="Секция" data-section-cmds></div></div>
           </section>
           <!-- Виджет каталога (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:84548): появляется вместо пустой секции по клику в магазине. Выделение и тулбар — .wg и .tb из ui-kit -->
           <div class="wg site-catalog" id="siteCatalog" hidden>
@@ -157,17 +191,7 @@
             <div class="wg site-link__widget" id="siteLinkWidget">
               <div class="wg__content"><button type="button" class="btn btn--filled btn--style-primary btn--size-5xl site-link__button"><span class="btn__caption">Товар</span></button></div>
               <div class="wg__toolbar">
-                <div class="tb tb--style-info" role="toolbar" aria-label="Кнопка">
-                  <button type="button" class="tb__btn" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
-                  <button type="button" class="tb__btn" aria-label="Стиль"><span class="tb__icon" aria-hidden="true">&#xebbb;</span></button>
-                  <button type="button" class="tb__btn" aria-label="Цвет"><span class="tb__icon" aria-hidden="true"><span class="site-link__color"></span></span></button>
-                  <button type="button" class="tb__btn" aria-label="Текст"><span class="tb__icon" aria-hidden="true">&#xeac9;</span></button>
-                  <button type="button" class="tb__btn" aria-label="Размер"><span class="tb__icon" aria-hidden="true"><img src="assets/img/toolbar-size.svg" width="24" height="24" alt=""></span></button>
-                  <button type="button" class="tb__btn" aria-label="Действие"><span class="tb__icon" aria-hidden="true">&#xeb7e;</span></button>
-                  <button type="button" class="tb__btn" id="siteLinkSettings" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
-                  <button type="button" class="tb__btn tb__btn--delete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
-                  <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
-                </div>
+                <div class="tb tb--style-info" role="toolbar" aria-label="Кнопка" data-button-cmds></div>
               </div>
             </div>
             <button type="button" class="site-plus site-plus--up"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
@@ -177,6 +201,7 @@
             <div class="site-about__image"><img src="assets/img/site/about.png" alt="Глобус в интерьере ресторана Мили"><span></span></div>
             <div class="site-about__content"><div><h2>Что такое «Мили»?</h2><p>Это множество дорог, расходящихся по странам мира. Это уникальные традиции мест, хранящих историю веков.</p></div><button type="button" class="site-about__button">Подробнее о нас</button></div>
           </section>
+          <footer class="wg wg--style-success site-footer" data-site-footer></footer>
         </div>
         <!-- Новая страница: на странице — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:28596, в окне — 2167:87296. Секция и пустой виджет — .wg из ui-kit, кнопка «+ секция» — Figma rHabzni5OI5D4fxBLQdj2m 4590:7239 -->
         <div class="site-blank" id="siteBlank" hidden>
@@ -187,16 +212,9 @@
           </header>
           <div class="site-blank__body" id="siteBlankBody">
             <section class="wg site-blank__section" id="siteBlankSection">
-              <div class="wg site-blank__cell" id="siteBlankCell">
-                <div class="wg__content wg__empty">
-                  <div class="wg__actions">
-                    <button type="button" class="wg__action wg__action--cols"><span class="wg__action-caption">Колонки</span></button>
-                    <button type="button" class="wg__action wg__action--widget"><span class="wg__action-caption">Виджет</span></button>
-                    <button type="button" class="wg__action wg__action--rows"><span class="wg__action-caption">Строки</span></button>
-                  </div>
-                </div>
+              <div class="wg site-empty site-blank__cell" id="siteBlankCell">
               </div>
-              <!-- Карточка товара (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2695:72015): рендер макета внутри секции, вместо пустой ячейки. Выделение и тулбар — .wg и .tb из ui-kit, команды — 2695:71293 -->
+              <!-- Виджет в секции: карточка товара (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2695:72015) или форма обратной связи (2654:44316), рендер макета вместо пустой ячейки. Выделение и тулбар — .wg и .tb из ui-kit, команды — 2695:71293 -->
               <div class="wg site-product" id="siteProduct" hidden>
                 <div class="wg__content"><img class="site-product__img" src="assets/img/site/product-card.png?v=2" width="756" height="768" alt="Карточка товара" draggable="false"></div>
                 <div class="wg__toolbar">
@@ -211,12 +229,8 @@
               <button type="button" class="site-plus site-plus--up"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
               <button type="button" class="site-plus site-plus--down"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
               <div class="wg__toolbar">
-                <div class="tb tb--style-info" role="toolbar" aria-label="Секция">
+                <div class="tb tb--style-info" role="toolbar" aria-label="Секция" data-section-cmds>
                   <button type="button" class="tb__btn site-blank__back" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
-                  <button type="button" class="tb__btn" id="sectionFill" aria-label="Фон"><span class="tb__icon" aria-hidden="true">&#xe664;</span></button>
-                  <button type="button" class="tb__btn" id="secOpen" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe75d;</span></button>
-                  <button type="button" class="tb__btn tb__btn--delete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
-                  <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
                 </div>
               </div>
             </section>
@@ -228,6 +242,12 @@
               </div>
             </div>
           </div>
+          <footer class="wg wg--style-success site-footer" data-site-footer></footer>
+        </div>
+        <!-- Плавающая кнопка (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2648:62449): ставится первой плашкой окна внешних виджетов, стоит поверх страницы и не прокручивается с ней -->
+        <div class="wg site-float" id="siteFloat" hidden>
+          <div class="wg__content"><button type="button" class="btn btn--filled btn--style-primary btn--size-5xl btn--icon site-float__button" aria-label="Обратная связь"><span class="btn__icon">&#xEB45;</span></button></div>
+          <div class="wg__toolbar"><div class="tb tb--style-info" role="toolbar" aria-label="Кнопка" data-button-cmds></div></div>
         </div>
       </main>
 
@@ -243,6 +263,10 @@
           <div class="rs-ext">
             <div class="rs-ext__title">Расширенные</div>
             <div class="rs-widgets" id="rsWidgets"></div>
+          </div>
+          <div class="rs-ext rs-ext--outer">
+            <div class="rs-ext__title">Внешние</div>
+            <div class="rs-widgets" id="rsOuter"></div>
           </div>
         </div>
       </section>
@@ -298,6 +322,16 @@
         <div class="sales-picker__rail"><button class="sales-icon" id="salesPickerClose" type="button" aria-label="Отменить выбор"><img src="assets/img/sales-close.svg" width="28" height="28" alt=""></button><span class="sales-icon sales-list-settings" title="Настройки списка"><span class="ico24">&#xEB66;</span></span><span class="sales-spacer"></span><span class="rp-help" aria-label="Помощь"><img src="assets/img/help.svg" width="12" height="16" alt=""></span></div>
       </section>
 
+      <!-- Окно внешних виджетов (Figma 2894:48645): открывается по центру по клику на внешний виджет в магазине -->
+      <section class="ext-picker" id="extPicker" role="dialog" aria-labelledby="extPickerTitle" hidden>
+        <div class="ext-picker__head">
+          <strong class="ext-picker__title" id="extPickerTitle"></strong>
+          <button class="btn btn--same btn--style-unaccented btn--size-m ext-picker__default" type="button">По умолчанию</button>
+        </div>
+        <button class="mw-menu__close" type="button" id="extPickerClose" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
+        <div class="ext-picker__list" id="extPickerList"></div>
+      </section>
+
       <!-- Тулбар правого сайдбара -->
       <aside class="right-panel">
         <div class="right-panel__cmds">
@@ -338,10 +372,7 @@
           </div>
           <div class="pe__card">
             <div class="pe__rows">
-              <div class="pe__row">
-                <span class="pe__label">Режим открытия</span>
-                <button class="btn btn--link btn--style-link btn--size-m ls-new__access" type="button" id="lsMode" aria-haspopup="menu" aria-expanded="false">На странице</button>
-              </div>
+              <div data-open-mode></div>
             </div>
           </div>
           <div class="pe__card">
@@ -355,16 +386,6 @@
             </div>
           </div>
           <div class="pe__chips"><button type="button" class="chips chips--optional" data-pe-chip="seo"><span class="chips__caption">SEO</span></button></div>
-        </div>
-        <!-- Меню режима открытия (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:20980) -->
-        <div class="mw-menu ls-mode" id="lsModeMenu" role="menu" aria-label="Открывать" hidden>
-          <div class="mw-menu__list">
-            <div class="ls-mode__head">Открывать</div>
-            <button class="mw-menu__item ls-mode__item is-selected" type="button" role="menuitemradio" aria-checked="true" data-mode="page"><span class="ls-mode__toggle"></span><span class="mw-menu__text">На странице</span></button>
-            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="window"><span class="ls-mode__toggle"></span><span class="mw-menu__text">В окне</span></button>
-            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="both"><span class="ls-mode__toggle"></span><span class="mw-menu__text">Страница и окно</span></button>
-          </div>
-          <button class="mw-menu__close" type="button" id="lsModeClose" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
         </div>
         <div class="mw-menu ls-mode ls-access" id="lsAccessMenu" role="menu" aria-label="Доступ" hidden>
           <div class="mw-menu__list">
@@ -456,6 +477,22 @@
         </div>
       </section>
 
+      <!-- Свойство «Открывать» — одно на все окна: настройки страницы и настройки кнопки. Правится только здесь, в openModeFill и стилях .open-mode*. Окно задаёт только список вариантов. Меню — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:20980 -->
+      <template id="openMode">
+              <div class="pe__row open-mode">
+                <span class="pe__label">Открывать</span>
+                <button class="btn btn--link btn--style-link btn--size-m open-mode__value" type="button" aria-haspopup="menu" aria-expanded="false"></button>
+              </div>
+        <div class="mw-menu ls-mode open-mode__menu" role="menu" aria-label="Открывать" hidden>
+          <div class="mw-menu__list">
+            <div class="ls-mode__head">Открывать</div>
+            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="window"><span class="ls-mode__toggle"></span><span class="mw-menu__text">В новом окне</span></button>
+            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="page"><span class="ls-mode__toggle"></span><span class="mw-menu__text">На странице</span></button>
+            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="both"><span class="ls-mode__toggle"></span><span class="mw-menu__text">В окне и на странице</span></button>
+          </div>
+          <button class="mw-menu__close" type="button" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
+        </div>
+      </template>
       <!-- Редактор положения — один на все окна: настройки окна и настройки кнопки. Правится только здесь, в posEditor* и стилях .pos* -->
       <template id="posEditor">
               <!-- Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2489:25551. Переключатель «От элемента / На экране» пока убран, режим всегда «На экране» -->
@@ -510,10 +547,7 @@
                   <button type="button" class="btnset__list btnset__list--font" aria-label="Выбрать из списка">&#xea90;</button>
                 </div>
               </div>
-              <div class="pe__row" data-btnset-row="page" hidden>
-                <span class="pe__label">Режим</span>
-                <div class="pe__row-body"><div class="tumbler" role="radiogroup" aria-label="Режим"><button type="button" class="tumbler__seg" role="radio" data-btnset-mode="page">Страница</button><button type="button" class="tumbler__seg" role="radio" data-btnset-mode="window">Окно</button></div></div>
-              </div>
+              <div data-open-mode></div>
               <div data-pos-editor></div>
             </div>
           </div>

@@ -94,19 +94,31 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 /* сайт в конструкторе (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:63290): цвета и шрифт — самого сайта, не токены кита */
 .site { display: flex; flex-direction: column; }
+/* боковой отступ контента — один на все секции сайта, кроме баннера: он на всю ширину */
+.content { --site-gutter: 32px; }
 /* шапка — один виджет: ховер .wg--style-success из ui-kit на всю шапку, элементы внутри без своей рамки */
-.site-header { height: 68px; flex-direction: row; align-items: center; padding: 0 32px; font-family: "Montserrat", sans-serif; font-size: 18px; color: #47382f; white-space: nowrap; }
+.site-header { height: 68px; flex-direction: row; align-items: center; padding: 0 var(--site-gutter); font-family: "Montserrat", sans-serif; font-size: 18px; color: #47382f; white-space: nowrap; }
 .site-logo { flex: none; display: block; margin-right: 16px; }
 .site-header__center { flex: 1; min-width: 0; display: flex; }
 .site-menu { height: 32px; padding: 3px 12px 0; display: flex; align-items: center; }
-.site:not(.is-home) .site-banner, .stage:not([data-scenario="window-link"]) .site:not(.is-home) .site-about, .site.is-home .site-section, .site.is-home .site-catalog { display: none; }
+/* футер (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2899:48815) — один виджет, как шапка: всегда последний, сразу за последней секцией */
+.site-footer { flex: none; align-items: center; padding: 32px 80px 0; font-family: "Montserrat", sans-serif; font-size: 16px; letter-spacing: .64px; color: #47382f; white-space: nowrap; }
+.site-footer__logo { flex: none; display: block; width: 50.149px; height: 48px; margin-bottom: 28px; }
+.site-footer__nav { display: flex; gap: 4px; margin-bottom: 34px; font-size: 18px; letter-spacing: 0; }
+.site-footer__info { width: 100%; max-width: 1200px; display: flex; align-items: center; justify-content: space-between; }
+.site-footer__item { height: 32px; display: flex; align-items: center; gap: 12px; }
+.site-footer__item--fixed { width: 172px; }
+.site-footer__ico { flex: none; width: 24px; height: 24px; padding-bottom: 1px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: "cbuc-icons"; font-size: 20px; line-height: 1; letter-spacing: 0; }
+.site-footer__terms { height: 64px; margin-top: 40px; display: flex; align-items: center; }
+.site-blank.is-window > .site-footer { display: none; }
+.site:not(.is-home) .site-banner, .site:not(.is-home) .site-about, .site.is-home .site-section, .site.is-home .site-catalog { display: none; }
 .site-banner { height: 166px; background: #f5f4f5; }
 .site-banner .wg__content { position: relative; height: 100%; }
 .site-banner img { position: absolute; max-width: none; }
 .site-banner__img { left: 4.54%; top: -11.27%; width: 86.42%; height: 249.85%; }
 .site-banner__flip { left: -110.98%; top: -113.89%; width: 118.29%; height: 216.54%; transform: rotate(180deg); } /* в макете картинка отражена: левая полоса */
 .site-banner__veil { position: absolute; z-index: 1; inset: 0; background: rgba(34, 22, 16, .66); }
-.site-section { height: 350px; padding: 32px 80px; }
+.site-section { height: 350px; padding: 32px var(--site-gutter); }
 /* ховер секции — рамка .wg из ui-kit (info 60 %) на всю секцию */
 .site-empty { flex: 1; min-height: 0; }
 /* пустая секция сама не подсвечивается: ховер только у команд внутри */
@@ -123,17 +135,16 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-empty .wg__action--widget::before { width: 32px; height: 32px; font-family: "cbuc-icons"; font-size: 32px; }
 
 /* виджет каталога (Figma 2547:84548): вид — как на сайте, выделение и тулбар — из кита */
-/* новая страница (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:28596): шапка сайта и выделенная пустая секция */
+/* новая страница (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:28596): шапка сайта и пустая секция, при создании ничего не выделено */
 .site-blank { min-height: 100%; background: #fff; }
 .site-blank > .site-header { background: linear-gradient(rgba(255, 255, 255, .5), rgba(255, 255, 255, .5)), #f3f3f3; }
-.site-blank__section { height: 350px; padding: 32px 120px; cursor: default; }
-.site-blank__cell { flex: 1; min-height: 0; }
-.site-blank__section.has-widget { height: auto; padding: 0; } /* секция по виджету: как «Сайт» в макете */
+.site-blank__section { height: 350px; padding: 32px var(--site-gutter); cursor: default; }
+.site-blank__section.has-widget { height: auto; } /* виджет стоит в зоне контента, отступы секции остаются; высота — по виджету */
 .site-product { cursor: default; }
 .site-product__img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
-/* пустая секция сама не подсвечивается: ховер только у команд внутри */
-.wg.site-blank__cell:hover { --wg-bd: transparent; }
-.site-blank__cell .wg__empty { background: rgba(218, 218, 218, .12); border-radius: 4px; }
+/* форма обратной связи (Figma 2654:44316): рендер 400×397 выше рамки виджета на 10 */
+.site-product--feedback > .wg__content { height: 376px; }
+.site-product--feedback .site-product__img { flex: none; width: 400px; height: 397px; margin-top: -10px; object-fit: cover; }
 .site-blank:not(.is-window) .site-blank__back, .site-blank:not(.is-window) .site-blank__close, .site-blank.is-window > .site-header { display: none; }
 
 /* вид «в окне» (Figma 2167:87296): окно 800×836 по центру контента, обводка родителя — .wg--level-2 из кита; тулбар и крестик выходят за контент */
@@ -142,6 +153,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .is-window > .site-blank__body { width: 800px; margin: 12px auto 0; padding: 12px; background: #fff; border-radius: 10px; box-shadow: var(--win-shadow); }
 .is-window > .site-blank__body::after { border-radius: 2px; }
 .site-blank__close.mw-menu__close { top: 12px; }
+.has-own-close > .site-blank__close { display: none; }
 
 /* кнопка «+ секция» (Figma rHabzni5OI5D4fxBLQdj2m 4590:7239): на линии рамки, видна у выделенной секции */
 .site-plus { position: absolute; z-index: 1; left: calc(50% - .5px); transform: translateX(-50%); display: none; align-items: center; gap: 4px; padding: 4px 12px; background: var(--border-info_border-color); border: 1px solid var(--border-info_border-color); border-radius: 50px; font-size: 12px; letter-spacing: -.1692px; color: var(--text-contrast_text-color); white-space: nowrap; }
@@ -159,6 +171,13 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-link__widget > .wg__content { padding: 1px; overflow: visible; }
 .site-link__button { width: 120px; }
 .site-link__color { box-sizing: border-box; width: 20px; height: 20px; border: 1px solid var(--border-unaccented_border-color); border-radius: 50%; background: var(--background-contrast-primary_color); }
+/* плавающая кнопка (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2648:62449): поверх страницы, на 83 от правого края области сайта и 38 от низа, с прокруткой не двигается */
+.wg.site-float, .wg.site-float.is-active { position: fixed; z-index: 12; right: 495px; bottom: 38px; width: 48px; height: 48px; }
+.stage.is-rs-closed .wg.site-float { right: 137px; }
+.site-float[hidden], .content.is-window .site-float { display: none; }
+.site-float > .wg__content { overflow: visible; }
+.site-float__button { --btn-is: 24px; --btn-if: "cbuc-icons24"; }
+.site-float__button .btn__icon { padding-bottom: 2px; }
 /* окно настроек кнопки (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2863:49501) */
 .btnset { position: absolute; z-index: 20; width: 350px; }
 .btnset__text { flex-direction: row; align-items: flex-start; gap: 8px; }
@@ -195,7 +214,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .btnset-menu__sub .pin { left: auto; right: 12px; top: 4px; }
 .site[hidden], .site-blank[hidden], .site-section[hidden], .site-catalog[hidden], .site-blank__cell[hidden], .site-product[hidden] { display: none; }
 .site-catalog { flex: none; border-radius: 4px; cursor: default; }
-.site-catalog > .wg__content { padding: 0 32px 24px; gap: 6px; overflow: visible; }
+.site-catalog > .wg__content { padding: 0 var(--site-gutter) 24px; gap: 6px; overflow: visible; }
 .site-catalog__top { display: flex; justify-content: flex-end; padding: 12px 0; }
 .site-catalog__find { width: 184px; height: 36px; display: flex; align-items: center; padding: 0 4px 0 12px; background: #fff; border: 1px solid #e5e7eb; border-radius: 28px; font-size: 14px; letter-spacing: -.1974px; color: rgba(137, 145, 169, .6); }
 .site-catalog__body { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -223,7 +242,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-card__buy .ico24 { padding-bottom: 4px; color: #f47843; }
 
 /* Секция после каталога — Figma 2824:74343. */
-.site-about { flex: none; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 80px; min-height: 450px; padding: 0 80px; background: #f9f4ef; border-radius: 2px; font-family: 'Montserrat', sans-serif; color: #47382f; }
+.site-about { flex: none; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 80px; min-height: 450px; padding: 0 var(--site-gutter); background: #f9f4ef; border-radius: 2px; font-family: 'Montserrat', sans-serif; color: #47382f; }
 .site-about__image { position: relative; align-self: start; margin-top: 96px; height: 250px; overflow: hidden; border-radius: 10px; }
 .site-about__image img { width: 100%; height: 100%; object-fit: cover; object-position: bottom; opacity: .95; }
 .site-about__image > span { position: absolute; inset: 0; background: #22161036; pointer-events: none; }
@@ -287,7 +306,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ls-new__main { gap: 8px; }
 .ls-new__addr { min-width: 0; display: flex; align-items: baseline; }
 .ls-new__addr .input { flex: 1; }
-.ls-new__access { justify-self: start; }
+.ls-new__access, .open-mode__value { justify-self: start; }
 .ls-new__index { align-self: flex-start; height: 24px; display: flex; align-items: center; gap: 6px; color: var(--text-label_text-color); }
 .ls-new__index:hover span:first-child { text-decoration: underline; }
 .ls-new__seo { display: flex; flex-direction: column; gap: 4px; }
@@ -343,13 +362,14 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sec__fill.is-none { padding: 0; background: none; }
 .sec__fill.is-none .pe__swatch { border: 0; background: url("assets/img/fill-none.svg") center / 24px no-repeat; }
 /* ширина контента из настроек секции; без настройки контент занимает всю секцию */
-.site-blank__section > .wg { width: 100%; max-width: var(--sec-content-w, none); margin-inline: auto; }
+.site-blank__section > .wg, .site-section > .wg { width: 100%; max-width: var(--sec-content-w, none); margin-inline: auto; }
 
 .mw-menu.ls-mode { width: 200px; }
 .ls-mode .mw-menu__list { padding-top: 8px; }
 .ls-mode__head, .ls-menu__head { height: 28px; display: flex; align-items: center; padding-left: 12px; font-size: 14px; letter-spacing: 1.25px; text-transform: uppercase; color: var(--text-label_text-color); }
 .ls-mode__head { padding-left: 22px; } /* 8 px отступ пункта + 14 px место радиомаркера: заголовок выровнен по тексту */
 .mw-menu.ls-access { width: 280px; }
+.mw-menu.open-mode__menu { width: 220px; }
 .ls-mode__toggle { flex: none; width: 14px; height: 32px; display: flex; align-items: center; justify-content: center; padding-right: 2px; }
 .ls-mode__toggle::before { content: ""; width: 7px; height: 7px; border-radius: 50%; visibility: hidden; }
 .ls-mode__item:hover .ls-mode__toggle::before { visibility: visible; border: 1px solid var(--border-border-color); background: var(--background-background-color); }
@@ -403,6 +423,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* ховер ячеек и превью — рамка «Виджета магазина» из Builder-components */
 .rs-cell:hover, .rs-item:hover { box-shadow: inset 0 0 0 1px rgba(123, 98, 248, .4); }
 .rs-ext { padding-top: 8px; }
+.stage[data-scenario="ext-float"] .rs-ext:not(.rs-ext--outer), .stage:not([data-scenario="ext-float"]) .rs-ext--outer { display: none; }
 .rs-ext__title { padding: 8px 0; font-size: 16px; font-weight: 600; letter-spacing: -.2256px; }
 .rs-widgets { display: flex; flex-direction: column; gap: 16px; }
 .rs-w[hidden] { display: none; }
@@ -418,6 +439,20 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-w__plus { position: absolute; z-index: 1; left: 50%; top: calc(50% + .5px); width: 36px; height: 36px; padding-bottom: 1px; transform: translate(-50%, -50%); border-radius: 18px; background: #eeebff; color: #5a49ab; opacity: 0; transition: opacity .12s; }
 .rs-w__pv:hover .rs-w__plus { opacity: 1; }
 .rs-w__pv > .pin { z-index: 2; left: calc(50% - 12px); top: calc(50% - 12px); }
+
+/* окно внешних виджетов (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2894:48645) */
+.ext-picker { position: absolute; z-index: 30; left: 50%; top: 50%; width: 495px; transform: translate(-50%, -50%); display: flex; flex-direction: column; gap: 10px; padding: 10px 12px 12px; background: #fff; border-radius: 12px; box-shadow: var(--win-shadow); user-select: none; }
+.ext-picker[hidden] { display: none; }
+.ext-picker__head { height: 24px; display: flex; align-items: center; justify-content: space-between; padding-right: 16px; }
+.ext-picker__title { padding-bottom: 3px; font-size: 15px; font-weight: 600; letter-spacing: -.2115px; }
+.ext-picker__default { width: 123px; }
+.ext-picker__list { display: flex; gap: 15px; padding-top: 6px; }
+.ext-card { flex: none; width: 147px; }
+.ext-card__name { font-size: 15px; letter-spacing: -.2115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ext-card__desc { height: 16px; margin-top: 4px; display: block; line-height: 16px; font-size: 12px; letter-spacing: -.1692px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* плашка — превью магазина .rs-w__pv: свои только размер, скругление и рамка в покое */
+.ext-card__pv { height: 140px; margin-top: 8px; padding: 1px; border-radius: 12px; }
+.ext-card__pv::after { border-color: #d2d6da; border-radius: 12px; }
 
 /* данные */
 .rs-head--data { min-height: 46px; padding: 10px 12px; gap: 8px; }

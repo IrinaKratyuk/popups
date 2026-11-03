@@ -47,7 +47,7 @@
         { id: 'view-catalog', title: 'В каталоге и по кнопке', disabled: true },
       ] },
       { group: 'Внешние виджеты', items: [
-        { id: 'ext-float', title: 'С плавающей кнопкой', disabled: true },
+        { id: 'ext-float', title: 'С плавающей кнопкой' },
         { id: 'ext-button', title: 'На обычной кнопке', disabled: true, variants: [
           { id: 'add', title: 'Добавление окна' },
           { id: 'widget', title: 'Окно с виджетом' },
@@ -490,13 +490,63 @@
     ['Текстовый виджет', 'Позволяет редактировать и просматривать текст', 159, 'text', false, 'left:-1.18%;top:-5.37%;width:104.72%;height:110.07%'],
     ['Уведомления', 'Виджет для отображения уведомлений по категориям', 267, 'notifications', false, 'left:-2.12%;top:-3.35%;width:105.66%;height:107.43%'],
   ];
-  $('#rsWidgets').innerHTML = SHOP_WIDGETS.map(([name, desc, h, img, white, pos]) =>
+  const shopWidgetsHtml = (list) => list.map(([name, desc, h, img, white, pos]) =>
     `<div class="rs-w" style="height:${h}px"><div><div class="rs-w__name">${name}</div><div class="rs-w__desc">${desc}</div></div>` +
     `<div class="rs-w__pv${white ? ' rs-w__pv--white' : ''}" data-widget="${img}"><div class="rs-w__img"><img src="assets/img/shop/${img}.png" alt="" style="${pos}"></div><span class="ico24 rs-w__plus">&#xEAE9;</span></div></div>`).join('');
+  $('#rsWidgets').innerHTML = shopWidgetsHtml(SHOP_WIDGETS);
+  // Внешние виджеты — вместо расширенных в сценарии «С плавающей кнопкой»
+  $('#rsOuter').innerHTML = shopWidgetsHtml([
+    ['Обратная связь', 'Позволяет получить данные для связи с клиентом', 350, 'feedback', true, CONTAIN],
+    ['Онлайн-запись', 'Дает возможность быстро записаться на услугу к нужному мастеру', 412, 'booking', true, CONTAIN],
+  ]);
+  const shopFeedbackPin = el('span', 'pin', '<img src="assets/img/pin-cursor.svg" width="15" height="15" alt="">');
+  shopFeedbackPin.setAttribute('aria-hidden', 'true');
+  $('#rsOuter [data-widget="feedback"]').append(shopFeedbackPin);
+
+  // Окно внешних виджетов: клик по внешнему виджету открывает его варианты по центру, клик по другому — меняет содержимое.
+  // Закрывается крестиком, Esc и кликом мимо. Пин виджета виден, только пока окно закрыто и кнопка ещё не поставлена.
+  const EXT_SALES = 'Мили, ООО, подразделение, г. Ярославль';
+  const EXT_VARIANTS = {
+    feedback: [['Обратная связь', 'Без точек продаж'], ['Данные для связи', EXT_SALES], ['Обратная связь', 'Без точек продаж']],
+    booking: [['Онлайн-запись', 'Без точек продаж'], ['Онлайн-запись', EXT_SALES], ['Онлайн-запись', 'Без точек продаж']],
+  };
+  const extPicker = $('#extPicker');
+  function extPickerOpen(preview) {
+    const img = preview.dataset.widget;
+    $('#extPickerTitle').textContent = $('.rs-w__name', preview.closest('.rs-w')).textContent;
+    // Плашка — то же превью, что в магазине (.rs-w__pv): ховер с плюсом общий, пин — на первой
+    $('#extPickerList').innerHTML = EXT_VARIANTS[img].map(([name, desc], i) =>
+      `<div class="ext-card"><div class="ext-card__name">${name}</div><div class="ext-card__desc">${desc}</div>` +
+      `<div class="rs-w__pv ext-card__pv"><div class="rs-w__img"><img src="assets/img/shop/${img}.png" alt="" style="${CONTAIN}" draggable="false"></div><span class="ico24 rs-w__plus">&#xEAE9;</span>` +
+      `${i ? '' : '<span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span>'}</div></div>`).join('');
+    extPicker.hidden = false;
+    extPinSync();
+  }
+  function extPickerClose() {
+    extPicker.hidden = true;
+    extPinSync();
+  }
+  function extPinSync() {
+    shopFeedbackPin.hidden = !extPicker.hidden || !siteFloat.hidden;
+  }
+  $('#rsOuter').addEventListener('click', (e) => {
+    const preview = e.target.closest('[data-widget]');
+    if (preview) extPickerOpen(preview);
+  });
+  $('#extPickerList').addEventListener('click', (e) => {
+    if (e.target.closest('.ext-card:first-child .ext-card__pv')) siteFloatAdd();
+  });
+  $('#extPickerClose').addEventListener('click', extPickerClose);
+  document.addEventListener('mousedown', (e) => { if (!e.target.closest('#extPicker, #rsOuter [data-widget]')) extPickerClose(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') extPickerClose(); });
 
   // Виджет на фрейме: клик по «Каталогу» в магазине ставит его вместо пустой секции и выделяет,
   // каталог пропадает из магазина, появляется страница «Карточка товара». Удаление виджета возвращает всё обратно.
   // Выделение — .is-active у .wg: снимается кликом мимо, клик по виджету ставит снова. «Удалить» в тулбаре возвращает пустую секцию.
+  for (const cell of document.querySelectorAll('.site-empty')) cell.prepend($('#siteEmptyContent').content.cloneNode(true));
+  for (const tb of document.querySelectorAll('[data-section-cmds]')) tb.append($('#sectionCmds').content.cloneNode(true));
+  for (const tb of document.querySelectorAll('[data-button-cmds]')) tb.append($('#buttonCmds').content.cloneNode(true));
+  for (const footer of document.querySelectorAll('[data-site-footer]')) footer.append($('#siteFooter').content.cloneNode(true));
   const siteSection = $('#siteSection');
   const siteCatalog = $('#siteCatalog');
   const siteContent = $('#content');
@@ -581,7 +631,7 @@
   });
   $('#siteCatalogDelete').addEventListener('click', siteRemoveCatalog);
 
-  // Новая страница (blank) — вместо сайта пустая секция, она сразу выделена. «В окне» — внутри окна и с неактивным адаптивом, иначе — под шапкой сайта.
+  // Новая страница (blank) — вместо сайта пустая секция, на ней ничего не выделено. «В окне» — внутри окна и с неактивным адаптивом, иначе — под шапкой сайта.
   // «Страница и окно» — переключатель в шапке показывает страницу (по умолчанию) или окно, выбор запоминается в странице.
   const siteTumbler = $('#chDevice');
   const siteView = $('#chView');
@@ -611,25 +661,31 @@
     secClose();
     btnSetClose();
     wsPage = page;
-    secApply(page.section);
+    secApply(page.section, siteBlankSection);
     wsPaintFill(siteBlankSection, page.sectionFill, '', BG_DEFAULT);
     if (isWindow) wsApply(page.win ?? WS_DEFAULTS);
     else {
       siteBlankBody.removeAttribute('style');
       wsPaintFill(siteBlankBody, null);
     }
+    siteProductRender(!!(page.product || page.feedback));
+    if (page.product || page.feedback) siteProduct.classList.add('is-active');
     siteSelectWindow(false);
-    siteProductRender(!!page.product);
-    (page.product ? siteProduct : siteBlankSection).classList.add('is-active');
   }
 
-  // Карточка товара: клик в магазине ставит её в секцию новой страницы вместо пустой ячейки и выделяет, из магазина она пропадает.
+  // Карточка товара: клик в магазине ставит её в зону контента секции новой страницы вместо пустой ячейки и выделяет, из магазина она пропадает.
   // На странице с контентом клик ничего не делает. «Удалить» в тулбаре возвращает пустую ячейку и виджет в магазин, удаление страницы с карточкой — тоже.
   function siteProductSyncShop() {
     shopProduct.hidden = lsPages.some((p) => p.product);
   }
+  const siteProductImg = $('.site-product__img');
+  const SITE_PRODUCT_SRC = siteProductImg.getAttribute('src');
   function siteProductRender(on) {
     siteProduct.hidden = !on;
+    siteProduct.classList.toggle('site-product--feedback', !!wsPage.feedback);
+    siteBlankBody.classList.toggle('has-own-close', !!wsPage.feedback); // у формы свой крестик, крестик окна не нужен
+    siteProductImg.src = wsPage.feedback ? 'assets/img/shop/feedback.png' : SITE_PRODUCT_SRC;
+    siteProductImg.alt = wsPage.feedback ? 'Обратная связь' : 'Карточка товара';
     shopProductPin.hidden = on || siteBlank.hidden;
     siteBlankCell.hidden = on;
     siteBlankSection.classList.toggle('has-widget', on);
@@ -637,16 +693,18 @@
     siteBlankSection.classList.remove('is-active');
   }
   function siteAddProduct() {
-    if (siteBlank.hidden || wsPage.product) return;
+    if (siteBlank.hidden || wsPage.product || wsPage.feedback) return;
     wsPage.product = true;
     siteProductSyncShop();
     siteProductRender(true);
     if (!secRoot.hidden) siteBlankSection.classList.add('is-active'); // пока открыты настройки секции, выделена секция
     else if (wsRoot.hidden) siteProduct.classList.add('is-active'); // пока открыты настройки окна, выделено окно
     else wsRender();
+    if (wsRoot.hidden) siteSelectWindow(false);
   }
   $('#siteProductDelete').addEventListener('click', () => {
     wsPage.product = false;
+    wsPage.feedback = false;
     siteProductSyncShop();
     siteProductRender(false);
     siteBlankSection.classList.add('is-active');
@@ -665,15 +723,17 @@
     siteShowPage(page);
   });
 
-  // Рамка окна: пунктир родителя, пока выделена секция; выделенное окно — обычный активный .wg со своим тулбаром.
+  // Рамка окна: пунктир родителя, пока выделена секция или виджет в ней; выделенное окно — обычный активный .wg со своим тулбаром.
   function siteSelectWindow(on) {
-    siteBlankBody.classList.toggle('wg--level-2', siteBlank.classList.contains('is-window') && !on);
+    const inner = siteBlankSection.classList.contains('is-active') || siteProduct.classList.contains('is-active');
+    siteBlankBody.classList.toggle('wg--level-2', siteBlank.classList.contains('is-window') && !on && inner);
     siteBlankBody.classList.toggle('is-active', on);
     if (on) siteBlankSection.classList.remove('is-active');
   }
   $('.site-blank__back').addEventListener('click', () => siteSelectWindow(true));
 
   stage.addEventListener('mousedown', (e) => {
+    if (btnSet.hidden) siteFloat.classList.toggle('is-active', !!e.target.closest('#siteFloat')); // пока открыты настройки кнопки, выделение остаётся
     if (wsRoot.hidden && secRoot.hidden && !e.target.closest('#bgWin')) { // пока открыты настройки или окно «Фон», выделение остаётся
       const inSection = !!e.target.closest('#siteBlankSection');
       const inProduct = !!e.target.closest('#siteProduct');
@@ -683,7 +743,7 @@
       siteSelectWindow(windowHit);
       if (!(bgKey === 'section' ? inSection && !inProduct : windowHit)) bgClose(); // тулбар с командой скрылся
     }
-    if (siteCatalog.hidden || stage.dataset.scenario === 'window-link') return; // в сценарии с кнопкой выделена она, клик мимо выделение не снимает
+    if (siteCatalog.hidden || ['window-link', 'ext-float'].includes(stage.dataset.scenario)) return; // в этих сценариях выделена кнопка, клик мимо выделение не снимает
     if (!e.target.closest('#salesPopup, #salesPicker, #rsParams, .rp-btn')) siteCatalog.classList.toggle('is-active', !!e.target.closest('#siteCatalog'));
   });
 
@@ -694,6 +754,30 @@
     siteLinkWidget.classList.toggle('is-active', on);
     siteLink.classList.toggle('wg--level-2', on);
     siteLink.classList.toggle('is-active', on);
+  }
+  // Плавающая кнопка: первая плашка окна внешних виджетов ставит её и выделяет, вместе с ней в списке появляется страница-окно «Обратная связь». «Удалить» убирает обе.
+  // Тулбар и настройки — те же, что у секции с кнопкой, но без «Назад»: у плавающей кнопки нет родителя.
+  const siteFloat = $('#siteFloat');
+  $('[data-btn-cmd="back"]', siteFloat).remove();
+  function siteFloatAdd() {
+    if (siteFloat.hidden) lsAddFloatPage();
+    siteFloat.hidden = false;
+    siteFloat.classList.add('is-active');
+    extPickerClose();
+  }
+  function siteFloatRemove() {
+    if (btnSetWidget === siteFloat) btnSetClose();
+    siteFloat.hidden = true;
+    siteFloat.classList.remove('is-active');
+    lsRemoveFloatPage();
+    extPinSync();
+  }
+  $('[data-btn-cmd="delete"]', siteFloat).addEventListener('click', siteFloatRemove);
+  // Сценарий «С плавающей кнопкой» открывается на конце каталога
+  function siteScrollEnd() {
+    const end = stageRect(siteCatalog);
+    const box = stageRect(siteContent);
+    siteContent.scrollTop += end.top + end.height - box.top - box.height;
   }
   // в макете секция на этой высоте области сайта
   function siteLinkScroll() {
@@ -736,11 +820,65 @@
     });
   }
 
+  // Свойство «Открывать» — одно на все окна: настройки страницы и настройки кнопки. Разметка в <template id="openMode">, поведение здесь. Окно задаёт только список вариантов, отдельных копий заводить нельзя.
+  // Меню: заголовок на уровне строки, текст пунктов — под значением. Клик мимо и Esc закрывают только меню.
+  function openModeFill(root, modes, { onOpen, onChange } = {}) {
+    const parts = $('#openMode').content.cloneNode(true);
+    const row = $('.open-mode', parts);
+    const button = $('.open-mode__value', parts);
+    const menu = $('.open-mode__menu', parts);
+    menu.querySelectorAll('[data-mode]').forEach((item) => { if (!modes.includes(item.dataset.mode)) item.remove(); });
+    $('[data-open-mode]', root).replaceWith(row);
+    root.append(menu);
+    const close = () => {
+      menu.hidden = true;
+      button.setAttribute('aria-expanded', 'false');
+    };
+    const control = {
+      row,
+      button,
+      close,
+      get isOpen() { return !menu.hidden; },
+      get mode() { return menu.querySelector('.is-selected').dataset.mode; },
+      set(mode) {
+        menu.querySelectorAll('[data-mode]').forEach((item) => {
+          const on = item.dataset.mode === mode;
+          item.classList.toggle('is-selected', on);
+          item.setAttribute('aria-checked', on);
+          if (on) button.textContent = item.textContent;
+        });
+      },
+    };
+    button.addEventListener('click', () => {
+      if (!menu.hidden) { close(); return; }
+      onOpen?.();
+      const r = stageRect(button);
+      const box = stageRect(root);
+      menu.hidden = false;
+      menu.style.left = Math.round(r.left - box.left - 30) + 'px';
+      menu.style.top = Math.round(r.top + r.height / 2 - box.top - 22) + 'px';
+      button.setAttribute('aria-expanded', 'true');
+    });
+    menu.addEventListener('click', (e) => {
+      const item = e.target.closest('[data-mode]');
+      if (item) {
+        control.set(item.dataset.mode);
+        onChange?.(item.dataset.mode);
+      }
+      if (item || e.target.closest('.mw-menu__close')) close();
+    });
+    document.addEventListener('mousedown', (e) => { if (!menu.contains(e.target) && !button.contains(e.target)) close(); });
+    return control;
+  }
+
   // Настройки кнопки: в сценарии открыты сразу, закрываются и снова открываются шестерёнкой тулбара. Стоят слева от кнопки, чтобы она и тулбар оставались видны.
   // Правки сразу видны, галочка сохраняет, крестик и Esc возвращают прежние, сброс — исходные. «Действие» в тулбаре — только с ховером.
   const BTN_DEFAULTS = () => ({ text: 'Товар', pageId: null, mode: 'window', pos: 'screen' });
   const btnSet = $('#btnSet');
   posEditorFill(btnSet);
+  const btnSetOpenMode = openModeFill(btnSet, ['page', 'window'], {
+    onChange: (mode) => { btnSetDraft.mode = mode; btnSetRender(); },
+  });
   const btnSetText = $('#btnSetText');
   const btnSetEmpty = $('#btnSetEmpty');
   const btnSetPicked = $('#btnSetPicked');
@@ -748,7 +886,8 @@
   const btnSetSub = $('#btnSetSub');
   const btnSetSubList = $('#btnSetSubList');
   const siteLinkCaption = $('.site-link__button .btn__caption');
-  const siteLinkSettings = $('#siteLinkSettings');
+  let btnSetWidget = siteLinkWidget; // виджет, из которого открыты настройки
+  const btnSetGear = () => $('[data-btn-cmd="settings"]', btnSetWidget);
   let btnSetSaved = BTN_DEFAULTS();
   let btnSetDraft = BTN_DEFAULTS();
 
@@ -763,7 +902,7 @@
       peMoveTo(btnSet, btnSet.offsetLeft, btnSet.offsetTop);
       return;
     }
-    const r = stageRect(siteLinkWidget);
+    const r = stageRect(btnSetWidget);
     btnSet.style.left = Math.round(r.left - btnSet.offsetWidth - 12) + 'px';
     btnSet.style.top = Math.round(Math.min(r.top, stage.offsetHeight - btnSet.offsetHeight - 8)) + 'px';
   }
@@ -775,10 +914,11 @@
     btnSetEmpty.hidden = !!page;
     btnSetPicked.hidden = !page;
     $('#btnSetPage').textContent = page?.name ?? '';
-    btnSet.querySelectorAll('[data-btnset-row]').forEach((row) => { row.hidden = !page; });
+    btnSetOpenMode.row.hidden = !page;
     posEditorRender(btnSet, btnSetDraft.pos, !!page && btnSetDraft.mode === 'window');
-    btnSet.querySelectorAll('[data-btnset-mode]').forEach((seg) => seg.classList.toggle('is-on', seg.dataset.btnsetMode === btnSetDraft.mode));
-    if (!btnSet.hidden) btnSetPlace();
+    btnSetOpenMode.set(btnSetDraft.mode);
+    // Верх окна стоит на месте: при смене значения оно растёт и уменьшается снизу, а за край сцены не выходит
+    if (!btnSet.hidden) peMoveTo(btnSet, btnSet.offsetLeft, btnSet.offsetTop);
   }
 
   // Меню действий (Figma 2349:60397) по шагам: сначала список действий, наведение на «Открыть страницу сайта» раскрывает слева список страниц, выбор закрывает меню.
@@ -816,19 +956,22 @@
   function btnSetClose() {
     if (btnSet.hidden) return;
     btnSetMenuClose();
+    btnSetOpenMode.close();
     btnSet.hidden = true;
-    siteLinkSettings.classList.remove('is-selected');
-    siteLinkSettings.setAttribute('aria-pressed', 'false');
+    btnSetGear().classList.remove('is-selected');
+    btnSetGear().setAttribute('aria-pressed', 'false');
     btnSetPaintCaption(btnSetSaved);
   }
-  function btnSetOpen() {
+  function btnSetOpen(widget = siteLinkWidget) {
     popupsClose();
+    btnSetWidget = widget;
     btnSetMoved = false;
     btnSetDraft = { ...btnSetSaved };
     btnSet.hidden = false;
     btnSetRender();
-    siteLinkSettings.classList.add('is-selected');
-    siteLinkSettings.setAttribute('aria-pressed', 'true');
+    btnSetPlace();
+    btnSetGear().classList.add('is-selected');
+    btnSetGear().setAttribute('aria-pressed', 'true');
   }
   function btnSetReset() {
     btnSetClose();
@@ -862,11 +1005,11 @@
       btnSetRender();
       return;
     }
-    const mode = e.target.closest('[data-btnset-mode]');
     const pos = e.target.closest('[data-pos-mode]');
-    if (mode) btnSetDraft.mode = mode.dataset.btnsetMode;
-    if (pos) btnSetDraft.pos = pos.dataset.posMode;
-    if (mode || pos) btnSetRender();
+    if (pos) {
+      btnSetDraft.pos = pos.dataset.posMode;
+      btnSetRender();
+    }
   });
   // Другой пункт первого уровня сворачивает список страниц, уход на сам список его оставляет
   btnSetMenu.addEventListener('mouseover', (e) => {
@@ -886,10 +1029,11 @@
     btnSetRender();
   });
   document.addEventListener('mousedown', (e) => { if (!e.target.closest('#btnSetMenu, .btnset__action, .btnset__list')) btnSetMenuClose(); });
-  siteLinkSettings.addEventListener('click', () => { if (btnSet.hidden) btnSetOpen(); else btnSetClose(); });
+  for (const widget of [siteLinkWidget, siteFloat]) $('[data-btn-cmd="settings"]', widget).addEventListener('click', () => { if (btnSet.hidden) btnSetOpen(widget); else btnSetClose(); });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (!btnSetMenu.hidden) btnSetMenuClose();
+    else if (btnSetOpenMode.isOpen) { btnSetOpenMode.close(); btnSetOpenMode.button.focus(); }
     else btnSetClose();
   });
 
@@ -1123,7 +1267,11 @@
   const SEC_WIDTHS = { narrow: { name: 'Узкая', px: 1024 }, wide: { name: 'Широкая', px: 1280 }, full: { name: 'Во всю ширину', px: null } };
   const secRoot = $('#sec');
   peDraggable(secRoot);
-  const secOpenBtn = $('#secOpen');
+  // Команды тулбара секции работают одинаково у всех секций: «Настройки» открывает это окно, «Фон» — окно «Фон».
+  // Данные секции новой страницы лежат в странице.
+  const SEC_NODES = [siteBlankSection];
+  let secNode = siteBlankSection;
+  const secData = () => wsPage;
   const secNameInput = $('#secName');
   const secWidth = $('#secWidth');
   const secWidthMenu = $('#secWidthMenu');
@@ -1138,8 +1286,8 @@
   const secContentWidth = (sec) => sec.px ?? SEC_WIDTHS[sec.width].px;
 
   // Отступы, зазор и ширина контента на холсте; без значений — исходный вид секции
-  function secApply(sec) {
-    const s = siteBlankSection.style;
+  function secApply(sec, node = secNode) {
+    const s = node.style;
     s.padding = sec ? `${sec.pad.top}px ${sec.pad.right}px ${sec.pad.bottom}px ${sec.pad.left}px` : '';
     s.gap = sec ? sec.gap + 'px' : '';
     const w = sec && secContentWidth(sec);
@@ -1149,7 +1297,7 @@
 
   function secDefaults() {
     secApply(null);
-    const c = getComputedStyle(siteBlankSection);
+    const c = getComputedStyle(secNode);
     const pad = { split: false, top: parseInt(c.paddingTop, 10), right: parseInt(c.paddingRight, 10), bottom: parseInt(c.paddingBottom, 10), left: parseInt(c.paddingLeft, 10) };
     return { name: SEC_NAME, width: 'narrow', px: null, pad, gap: 0, fill: null };
   }
@@ -1184,8 +1332,9 @@
 
   function secCommit() {
     secDraft.name = secNameInput.value.trim() || SEC_NAME;
-    wsPage.section = secDraft;
-    wsPage.sectionFill = secDraft.fill;
+    const data = secData();
+    data.section = secDraft;
+    data.sectionFill = secDraft.fill;
   }
 
   function secMenuClose() {
@@ -1197,10 +1346,11 @@
     if (secRoot.hidden) return;
     secMenuClose();
     secRoot.hidden = true;
-    secOpenBtn.classList.remove('is-selected');
-    secOpenBtn.setAttribute('aria-pressed', 'false');
-    secApply(wsPage.section);
-    wsPaintFill(siteBlankSection, wsPage.sectionFill, '', BG_DEFAULT);
+    const btn = $('[data-sec-cmd="settings"]', secNode);
+    btn.classList.remove('is-selected');
+    btn.setAttribute('aria-pressed', 'false');
+    secApply(secData().section);
+    wsPaintFill(secNode, secData().sectionFill, '', BG_DEFAULT);
   }
 
   const secEditor = PropertyEditor.mount(secRoot, {
@@ -1208,22 +1358,22 @@
     onClose: secClose,
   });
 
-  secOpenBtn.addEventListener('click', () => {
+  for (const node of SEC_NODES) $('[data-sec-cmd="settings"]', node).addEventListener('click', (e) => {
     if (!secRoot.hidden) { secClose(); return; }
     popupsClose();
-    const saved = wsPage.section;
-    secDraft = { ...(saved ? structuredClone(saved) : secDefaults()), fill: wsPage.sectionFill ?? null };
+    secNode = node;
+    const saved = secData().section;
+    secDraft = { ...(saved ? structuredClone(saved) : secDefaults()), fill: secData().sectionFill ?? null };
     secEditor.reset();
     if (secDraft.fill) secRoot.querySelector('[data-pe-chip="background"]').click(); // заданный фон — строкой, иначе чипса
     secNameInput.value = secDraft.name;
     secNameInput.dispatchEvent(new Event('input', { bubbles: true }));
     secRender();
-    const r = stageRect(siteBlankSection);
+    const r = stageRect(secNode);
     secRoot.hidden = false;
-    secRoot.style.left = Math.round(r.left) + 'px';
-    secRoot.style.top = Math.round(r.top) + 'px';
-    secOpenBtn.classList.add('is-selected');
-    secOpenBtn.setAttribute('aria-pressed', 'true');
+    peMoveTo(secRoot, r.left, r.top);
+    e.currentTarget.classList.add('is-selected');
+    e.currentTarget.setAttribute('aria-pressed', 'true');
   });
 
   // Новый ввод сразу виден на холсте; Enter и уход с поля показывают значение, которое применилось
@@ -1250,7 +1400,7 @@
       secDraft = secDefaults();
       secEditor.reset();
       secApply(secDraft);
-      wsPaintFill(siteBlankSection, null, '', BG_DEFAULT);
+      wsPaintFill(secNode, null, '', BG_DEFAULT);
       secRender();
     } else if (e.target.closest('[data-sec-pad-split]')) {
       const { pad } = secDraft;
@@ -1264,7 +1414,7 @@
     } else if (e.target.closest('#secFill')) bgFromSettings(secFillBtn, 'section');
     else if (e.target.closest('[data-pe-clear]')) { // строку убирает PropertyEditor, фон на холсте снимаем сами
       secDraft.fill = null;
-      wsPaintFill(siteBlankSection, null, '', BG_DEFAULT);
+      wsPaintFill(secNode, null, '', BG_DEFAULT);
       secRender();
     }
   }, true);
@@ -1341,11 +1491,10 @@
   let bgAnchor = null; // команда тулбара, из которой открыто окно
   let bgSpot = null; // место окна, открытого из строки настроек: самой строки уже нет
   const bgBtn = $('#wsFill');
-  const bgSectionBtn = $('#sectionFill');
-  const BG_TOOLS = new Map([[bgBtn, 'background'], [bgSectionBtn, 'section']]); // команды тулбаров и что они настраивают
+  const BG_TOOLS = new Map([[bgBtn, 'background'], ...SEC_NODES.map((node) => [$('[data-sec-cmd="fill"]', node), 'section'])]); // команды тулбаров и что они настраивают
   const bgDoc = () => (wsPage.win ??= structuredClone(WS_DEFAULTS));
   // У секции фон по умолчанию не задан
-  const bgCur = () => (bgKey === 'section' ? wsPage.sectionFill ?? { kind: 'none' } : bgDoc().fills[bgKey]);
+  const bgCur = () => (bgKey === 'section' ? secData().sectionFill ?? { kind: 'none' } : bgDoc().fills[bgKey]);
 
   $('#bgPresets').innerHTML =
     BG_GRADS.map((c) => `<button class="cw-sw is-grad" type="button" data-grad="${c}" style="--c:${rgba(c, .1)}" aria-label="Градиент"></button>`).join('') +
@@ -1359,8 +1508,8 @@
 
   function bgStore(f) {
     if (bgKey === 'section') {
-      wsPage.sectionFill = f;
-      wsPaintFill(siteBlankSection, f, '', BG_DEFAULT);
+      secData().sectionFill = f;
+      wsPaintFill(secNode, f, '', BG_DEFAULT);
       return;
     }
     const doc = bgDoc();
@@ -1455,7 +1604,10 @@
   }
 
   bgBtn.addEventListener('click', () => bgToggle(bgBtn));
-  bgSectionBtn.addEventListener('click', () => bgToggle(bgSectionBtn));
+  for (const node of SEC_NODES) {
+    const btn = $('[data-sec-cmd="fill"]', node);
+    btn.addEventListener('click', () => { secNode = node; bgToggle(btn); });
+  }
 
   $('#bgDone').addEventListener('click', bgClose);
   $('#bgClose').addEventListener('click', bgClose);
@@ -1671,12 +1823,27 @@
   let lsCardPageId = null;
   function lsAddCardPage() {
     lsCardPageId = lsNextId++;
-    lsPages.push({ id: lsCardPageId, name: 'Карточка товара', off: false });
+    lsPages.push({ id: lsCardPageId, name: 'Карточка товара', off: false, blank: true, mode: 'page', product: true, fixed: true });
     lsRender();
   }
   function lsRemoveCardPage() {
     if (lsPage(lsCardPageId)) lsDelete(lsCardPageId); // её могли удалить вручную
     lsCardPageId = null;
+  }
+
+  // Страница «Обратная связь» — обычное окно (как «В окне»), размер и фон по виджету из макета 2654:44316. Создаётся с плавающей кнопкой и удаляется вместе с ней.
+  let lsFloatPageId = null;
+  function lsAddFloatPage() {
+    const win = structuredClone(WS_DEFAULTS);
+    win.pe.dims.w.px = 424;
+    win.fills.background.hex = win.pe.colors.background = '#f8f8f8';
+    lsFloatPageId = lsNextId++;
+    lsPages.push({ id: lsFloatPageId, name: 'Обратная связь', off: false, blank: true, mode: 'window', feedback: true, fixed: true, win });
+    lsRender();
+  }
+  function lsRemoveFloatPage() {
+    if (lsPage(lsFloatPageId)) lsDelete(lsFloatPageId); // её могли удалить вручную
+    lsFloatPageId = null;
   }
 
   // Панель поверх контента закрывается, когда мышь ушла, а меню и переименование закрыты.
@@ -1764,9 +1931,9 @@
     lsNewSeoEdited = page?.seo != null;
     lsNewIndex.querySelector('.rp-switch').classList.toggle('is-on', !!page?.noindex);
     lsNewIndex.setAttribute('aria-checked', !!page?.noindex);
-    lsModeClose();
+    lsOpenMode.close();
     lsAccessClose();
-    lsModeSelect(lsModeMenu.querySelector(`[data-mode="${page?.mode ?? 'page'}"]`));
+    lsOpenMode.set(page?.mode ?? 'page');
     lsAccessSelect(lsAccessMenu.querySelector(`[data-access="${page?.access ?? 'public'}"]`));
     lsNewSeoDescription.value = page?.seoDescription ?? '';
     lsDescriptionShow(page?.seoDescription != null);
@@ -1805,7 +1972,7 @@
 
   function lsNewClose() {
     if (lsNew.hidden) return;
-    lsModeClose();
+    lsOpenMode.close();
     lsAccessClose();
     lsNew.hidden = true;
     lsCollapseIfLeft();
@@ -1819,7 +1986,7 @@
       seo: lsNew.querySelector('[data-pe-row="seo"]').hidden ? null : lsNewSeoTitle.value,
       seoDescription: lsNew.querySelector('[data-pe-row="seo"]').hidden || lsSeoDescriptionField.hidden ? null : lsNewSeoDescription.value,
       access: lsAccessMenu.querySelector('.is-selected').dataset.access,
-      mode: lsModeMenu.querySelector('.is-selected').dataset.mode,
+      mode: lsOpenMode.mode,
     };
     if (lsNewPage) {
       Object.assign(lsNewPage, fields);
@@ -1832,39 +1999,7 @@
     lsNewClose();
   }
 
-  // Меню режима открытия: заголовок на уровне строки, текст пунктов — под значением. Клик мимо и Esc закрывают только меню.
-  const lsMode = $('#lsMode');
-  const lsModeMenu = $('#lsModeMenu');
-
-  function lsModeSelect(item) {
-    lsModeMenu.querySelectorAll('.ls-mode__item').forEach((el) => {
-      el.classList.toggle('is-selected', el === item);
-      el.setAttribute('aria-checked', el === item);
-    });
-    lsMode.textContent = item.textContent;
-  }
-
-  function lsModeOpen() {
-    lsAccessClose();
-    const r = stageRect(lsMode);
-    const box = stageRect(lsNew);
-    lsModeMenu.hidden = false;
-    lsModeMenu.style.left = Math.round(r.left - box.left - 30) + 'px';
-    lsModeMenu.style.top = Math.round(r.top + r.height / 2 - box.top - 22) + 'px';
-    lsMode.setAttribute('aria-expanded', 'true');
-  }
-
-  function lsModeClose() {
-    lsModeMenu.hidden = true;
-    lsMode.setAttribute('aria-expanded', 'false');
-  }
-
-  lsMode.addEventListener('click', () => { if (lsModeMenu.hidden) lsModeOpen(); else lsModeClose(); });
-  lsModeMenu.addEventListener('click', (e) => {
-    const item = e.target.closest('.ls-mode__item');
-    if (item) lsModeSelect(item);
-    if (item || e.target.closest('#lsModeClose')) lsModeClose();
-  });
+  const lsOpenMode = openModeFill(lsNew, ['page', 'window', 'both'], { onOpen: () => lsAccessClose() });
 
   // Доступ — настройка прототипа; здесь задаётся состояние страницы, серверной авторизации нет.
   const lsAccess = $('#lsAccess');
@@ -1883,7 +2018,7 @@
   }
   lsAccess.addEventListener('click', () => {
     if (!lsAccessMenu.hidden) { lsAccessClose(); return; }
-    lsModeClose();
+    lsOpenMode.close();
     const r = stageRect(lsAccess);
     const box = stageRect(lsNew);
     lsAccessMenu.style.left = Math.round(r.left - box.left - 30) + 'px';
@@ -1934,10 +2069,9 @@
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (!lsAccessMenu.hidden) { lsAccessClose(); lsAccess.focus(); }
-    else if (!lsModeMenu.hidden) { lsModeClose(); lsMode.focus(); }
+    else if (lsOpenMode.isOpen) { lsOpenMode.close(); lsOpenMode.button.focus(); }
     else lsNewClose();
   });
-  document.addEventListener('mousedown', (e) => { if (!e.target.closest('#lsModeMenu, #lsMode')) lsModeClose(); });
 
   // Клик мимо закрывает меню и сохраняет название.
   stage.addEventListener('mousedown', (e) => {
@@ -1955,7 +2089,10 @@
     lsCloseMenu();
     lsFinishRename(false);
     if (scenario === 'new') {
-      const active = lsPage(lsActive);
+      // страницы других сценариев (fixed) сюда не переходят: остаются только свои
+      lsPages = lsPages.filter((p) => !p.fixed);
+      lsCardPageId = null;
+      const active = lsPage(lsActive) ?? {};
       let page = active.blank ? active : lsPages.findLast((p) => p.blank);
       if (!page) {
         page = { id: lsNextId++, name: LS_NEW_NAME, off: false, blank: true };
@@ -1978,7 +2115,8 @@
         salesRender();
       }
       salesRender();
-      if (scenario === 'window-link') lsPages.push({ id: lsNextId++, name: 'Товар', off: false, blank: true, mode: 'window', product: true });
+      if (scenario === 'window-link') lsPages.push({ id: lsNextId++, name: 'Товар', off: false, blank: true, mode: 'window', product: true, fixed: true });
+      if (scenario === 'ext-float') lsAddCardPage();
     }
     if (scenario === 'window-create') $('#lsAdd').append(lsAddPin);
     else lsAddPin.remove();
@@ -1986,19 +2124,22 @@
     if (scenario === 'catalog-setup') salesOpen();
     const isLink = scenario === 'window-link';
     siteLinkSelect(isLink);
+    siteFloatRemove();
+    extPickerClose();
     btnSetReset();
     if (isLink) {
       siteLinkScroll();
       btnSetOpen();
-    } else siteContent.scrollTop = 0;
+    } else if (scenario === 'ext-float') siteScrollEnd();
+    else siteContent.scrollTop = 0;
   }
 
   // Панель показывает состояние открытой страницы, как бы та ни открылась: из списка, после сохранения или удаления.
   function scenSync() {
     const page = lsPage(lsActive);
-    const keepScenario = ['no-catalog', 'catalog-add', 'catalog-setup', 'window-link'].includes(stage.dataset.scenario);
-    // окно с товаром — часть сценария «Связь кнопки с окном»
-    const isNew = page.blank && !(stage.dataset.scenario === 'window-link' && page.product);
+    const keepScenario = ['no-catalog', 'catalog-add', 'catalog-setup', 'window-link', 'ext-float'].includes(stage.dataset.scenario);
+    // страницы сценария с готовой карточкой (fixed) — не новые
+    const isNew = page.blank && !page.fixed;
     const scenario = isNew ? 'new' : keepScenario ? stage.dataset.scenario : 'window-create';
     const mode = isNew ? page.mode : null;
     if (scenario === frame.value.scenario && mode === frame.value.variant) return;
@@ -2011,6 +2152,7 @@
   scenApply(stage.dataset.scenario);
   // каталог выше секции с кнопкой дорисовывается вместе с картинками
   window.addEventListener('load', () => {
+    if (stage.dataset.scenario === 'ext-float') siteScrollEnd();
     if (stage.dataset.scenario !== 'window-link') return;
     siteLinkScroll();
     if (!btnSet.hidden) btnSetPlace();
