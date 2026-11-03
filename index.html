@@ -131,61 +131,61 @@
           </div>
           <section class="wg site-section" id="siteSection">
             <div class="wg site-empty"></div>
+            <!-- Виджет каталога (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:84548): встаёт в зону контента секции вместо пустой ячейки по клику в магазине. Выделение и тулбар — .wg и .tb из ui-kit -->
+            <div class="wg site-catalog" id="siteCatalog" hidden>
+              <div class="wg__content">
+                <div class="site-catalog__top"><div class="site-catalog__find">Найти</div></div>
+                <div class="site-catalog__body">
+                  <div class="site-cats">
+                      <div class="site-cat"><img src="assets/img/site/catalog/cat-1.png" alt="" style="left:-8.73%;top:-.06%;width:132.08%;height:100%"><span class="site-cat__title">Основное меню</span></div>
+                      <div class="site-cat"><img src="assets/img/site/catalog/cat-2.png" alt="" style="left:-38.07%;top:.61%;width:144.47%;height:100%"><span class="site-cat__title">Авторская кухня</span></div>
+                      <div class="site-cat"><img src="assets/img/site/catalog/cat-3.png" alt="" style="left:-2.75%;top:0;width:151.8%;height:100%"><span class="site-cat__title">Кейтеринг</span></div>
+                  </div>
+                  <div class="site-h1 site-h1--main">Основное меню</div>
+                  <div class="site-cards">
+                      <div class="site-card">
+                        <div class="site-card__img"><img class="site-card__tall" src="assets/img/site/catalog/pepperoni-bg.png" alt=""><img class="site-card__cover" src="assets/img/site/catalog/pepperoni.png" alt=""></div>
+                        <div class="site-card__name">Пепперони</div>
+                        <div class="site-card__desc site-card__desc--lead">Пряные колбаски пепперони, моцарелла и томатный соус</div>
+                        <div class="site-card__foot"><span class="site-card__buy">650<span class="ico24">&#xEAE9;</span></span></div>
+                      </div>
+                      <div class="site-card">
+                        <div class="site-card__img"><img class="site-card__cover" src="assets/img/site/catalog/tuna.png" alt=""></div>
+                        <div class="site-card__name">Севиче из тунца</div>
+                        <div class="site-card__desc">Лосось, тунец и дорадо подаются с песто</div>
+                        <div class="site-card__foot"><span class="site-card__buy">1 350<span class="ico24">&#xEAE9;</span></span></div>
+                      </div>
+                      <div class="site-card">
+                        <div class="site-card__img"><img class="site-card__tall" src="assets/img/site/catalog/langoustine.png" alt=""></div>
+                        <div class="site-card__name">Севиче из лангустинов</div>
+                        <div class="site-card__desc">Лосось, тунец и дорадо подаются с песто</div>
+                        <div class="site-card__foot"><span class="site-card__buy">540<span class="ico24">&#xEAE9;</span></span></div>
+                      </div>
+                  </div>
+                  <div class="site-h1 site-h1--next">Авторская кухня</div>
+                  <div class="site-cards" id="chefDishes">
+                    <div class="site-card"><div class="site-card__img"><img class="site-card__cover" src="assets/img/site/catalog/tuna.png" alt="Тунец с песто"></div><div class="site-card__name">Тунец с песто</div><div class="site-card__desc">Нежный тунец, зелёный песто и свежие травы</div><div class="site-card__foot"><span class="site-card__buy">1 390<span class="ico24">&#xEAE9;</span></span></div></div>
+                    <div class="site-card"><div class="site-card__img"><img class="site-card__tall" src="assets/img/site/catalog/langoustine.png" alt="Лангустины от шефа"></div><div class="site-card__name">Лангустины от шефа</div><div class="site-card__desc">Лангустины с авторским соусом и микрозеленью</div><div class="site-card__foot"><span class="site-card__buy">890<span class="ico24">&#xEAE9;</span></span></div></div>
+                    <div class="site-card"><div class="site-card__img"><img class="site-card__cover" src="assets/img/site/catalog/pepperoni.png" alt="Пицца Мили"></div><div class="site-card__name">Пицца «Мили»</div><div class="site-card__desc">Пепперони, моцарелла и фирменный томатный соус</div><div class="site-card__foot"><span class="site-card__buy">790<span class="ico24">&#xEAE9;</span></span></div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="wg__toolbar">
+                <div class="tb tb--style-info" role="toolbar" aria-label="Виджет">
+                  <!-- набор команд — из макета (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:84576), кнопки — .tb__btn из ui-kit -->
+                  <button type="button" class="tb__btn" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
+                  <button type="button" class="tb__btn"><span class="tb__caption">Стиль</span><span class="tb__arrow" aria-hidden="true"></span></button>
+                  <button type="button" class="tb__btn" aria-label="Расположение"><span class="tb__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="5" height="1" rx=".5"/><rect x="2" y="8" width="8" height="1" rx=".5"/><rect x="2" y="11" width="6" height="1" rx=".5"/><rect x="2" y="14" width="7" height="1" rx=".5"/><rect x="12.5" y="4.5" width="9" height="15" rx="1.5" fill="none" stroke="currentColor"/></svg></span></button>
+                  <button type="button" class="tb__btn"><span class="tb__caption">Раздел</span></button>
+                  <button type="button" class="tb__btn"><span class="tb__caption">Товар</span></button>
+                  <button type="button" class="tb__btn" id="siteCatalogSettings" aria-label="Настройки каталога"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
+                  <button type="button" class="tb__btn tb__btn--delete" id="siteCatalogDelete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
+                  <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
+                </div>
+              </div>
+            </div>
             <div class="wg__toolbar"><div class="tb tb--style-info" role="toolbar" aria-label="Секция" data-section-cmds></div></div>
           </section>
-          <!-- Виджет каталога (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:84548): появляется вместо пустой секции по клику в магазине. Выделение и тулбар — .wg и .tb из ui-kit -->
-          <div class="wg site-catalog" id="siteCatalog" hidden>
-            <div class="wg__content">
-              <div class="site-catalog__top"><div class="site-catalog__find">Найти</div></div>
-              <div class="site-catalog__body">
-                <div class="site-cats">
-                    <div class="site-cat"><img src="assets/img/site/catalog/cat-1.png" alt="" style="left:-8.73%;top:-.06%;width:132.08%;height:100%"><span class="site-cat__title">Основное меню</span></div>
-                    <div class="site-cat"><img src="assets/img/site/catalog/cat-2.png" alt="" style="left:-38.07%;top:.61%;width:144.47%;height:100%"><span class="site-cat__title">Авторская кухня</span></div>
-                    <div class="site-cat"><img src="assets/img/site/catalog/cat-3.png" alt="" style="left:-2.75%;top:0;width:151.8%;height:100%"><span class="site-cat__title">Кейтеринг</span></div>
-                </div>
-                <div class="site-h1 site-h1--main">Основное меню</div>
-                <div class="site-cards">
-                    <div class="site-card">
-                      <div class="site-card__img"><img class="site-card__tall" src="assets/img/site/catalog/pepperoni-bg.png" alt=""><img class="site-card__cover" src="assets/img/site/catalog/pepperoni.png" alt=""></div>
-                      <div class="site-card__name">Пепперони</div>
-                      <div class="site-card__desc site-card__desc--lead">Пряные колбаски пепперони, моцарелла и томатный соус</div>
-                      <div class="site-card__foot"><span class="site-card__buy">650<span class="ico24">&#xEAE9;</span></span></div>
-                    </div>
-                    <div class="site-card">
-                      <div class="site-card__img"><img class="site-card__cover" src="assets/img/site/catalog/tuna.png" alt=""></div>
-                      <div class="site-card__name">Севиче из тунца</div>
-                      <div class="site-card__desc">Лосось, тунец и дорадо подаются с песто</div>
-                      <div class="site-card__foot"><span class="site-card__buy">1 350<span class="ico24">&#xEAE9;</span></span></div>
-                    </div>
-                    <div class="site-card">
-                      <div class="site-card__img"><img class="site-card__tall" src="assets/img/site/catalog/langoustine.png" alt=""></div>
-                      <div class="site-card__name">Севиче из лангустинов</div>
-                      <div class="site-card__desc">Лосось, тунец и дорадо подаются с песто</div>
-                      <div class="site-card__foot"><span class="site-card__buy">540<span class="ico24">&#xEAE9;</span></span></div>
-                    </div>
-                </div>
-                <div class="site-h1 site-h1--next">Авторская кухня</div>
-                <div class="site-cards" id="chefDishes">
-                  <div class="site-card"><div class="site-card__img"><img class="site-card__cover" src="assets/img/site/catalog/tuna.png" alt="Тунец с песто"></div><div class="site-card__name">Тунец с песто</div><div class="site-card__desc">Нежный тунец, зелёный песто и свежие травы</div><div class="site-card__foot"><span class="site-card__buy">1 390<span class="ico24">&#xEAE9;</span></span></div></div>
-                  <div class="site-card"><div class="site-card__img"><img class="site-card__tall" src="assets/img/site/catalog/langoustine.png" alt="Лангустины от шефа"></div><div class="site-card__name">Лангустины от шефа</div><div class="site-card__desc">Лангустины с авторским соусом и микрозеленью</div><div class="site-card__foot"><span class="site-card__buy">890<span class="ico24">&#xEAE9;</span></span></div></div>
-                  <div class="site-card"><div class="site-card__img"><img class="site-card__cover" src="assets/img/site/catalog/pepperoni.png" alt="Пицца Мили"></div><div class="site-card__name">Пицца «Мили»</div><div class="site-card__desc">Пепперони, моцарелла и фирменный томатный соус</div><div class="site-card__foot"><span class="site-card__buy">790<span class="ico24">&#xEAE9;</span></span></div></div>
-                </div>
-              </div>
-            </div>
-            <div class="wg__toolbar">
-              <div class="tb tb--style-info" role="toolbar" aria-label="Виджет">
-                <!-- набор команд — из макета (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:84576), кнопки — .tb__btn из ui-kit -->
-                <button type="button" class="tb__btn" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
-                <button type="button" class="tb__btn"><span class="tb__caption">Стиль</span><span class="tb__arrow" aria-hidden="true"></span></button>
-                <button type="button" class="tb__btn" aria-label="Расположение"><span class="tb__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="5" height="1" rx=".5"/><rect x="2" y="8" width="8" height="1" rx=".5"/><rect x="2" y="11" width="6" height="1" rx=".5"/><rect x="2" y="14" width="7" height="1" rx=".5"/><rect x="12.5" y="4.5" width="9" height="15" rx="1.5" fill="none" stroke="currentColor"/></svg></span></button>
-                <button type="button" class="tb__btn"><span class="tb__caption">Раздел</span></button>
-                <button type="button" class="tb__btn"><span class="tb__caption">Товар</span></button>
-                <button type="button" class="tb__btn" id="siteCatalogSettings" aria-label="Настройки каталога"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
-                <button type="button" class="tb__btn tb__btn--delete" id="siteCatalogDelete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
-                <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
-              </div>
-            </div>
-          </div>
           <!-- Секция с кнопкой (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2863:49443): видна в сценарии «Связь кнопки с окном». Виджет и тулбар — .wg и .tb, кнопка — .btn из ui-kit, команды тулбара пока только с ховером -->
           <section class="wg site-link" id="siteLink" aria-label="Секция с кнопкой">
             <div class="wg site-link__widget" id="siteLinkWidget">

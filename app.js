@@ -540,9 +540,9 @@
   document.addEventListener('mousedown', (e) => { if (!e.target.closest('#extPicker, #rsOuter [data-widget]')) extPickerClose(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') extPickerClose(); });
 
-  // Виджет на фрейме: клик по «Каталогу» в магазине ставит его вместо пустой секции и выделяет,
+  // Виджет на фрейме: клик по «Каталогу» в магазине ставит его в зону контента секции вместо пустой ячейки и выделяет,
   // каталог пропадает из магазина, появляется страница «Карточка товара». Удаление виджета возвращает всё обратно.
-  // Выделение — .is-active у .wg: снимается кликом мимо, клик по виджету ставит снова. «Удалить» в тулбаре возвращает пустую секцию.
+  // Выделение — .is-active у .wg: снимается кликом мимо, клик по виджету ставит снова. «Удалить» в тулбаре возвращает пустую ячейку.
   for (const cell of document.querySelectorAll('.site-empty')) cell.prepend($('#siteEmptyContent').content.cloneNode(true));
   for (const tb of document.querySelectorAll('[data-section-cmds]')) tb.append($('#sectionCmds').content.cloneNode(true));
   for (const tb of document.querySelectorAll('[data-button-cmds]')) tb.append($('#buttonCmds').content.cloneNode(true));
@@ -588,6 +588,11 @@
   shopProductPin.setAttribute('aria-hidden', 'true');
   $('.rs-w__pv', shopProduct).append(shopProductPin);
 
+  function siteCatalogShow(on) {
+    siteCatalog.hidden = !on;
+    $('.site-empty', siteSection).hidden = on;
+    siteSection.classList.toggle('has-widget', on);
+  }
   function siteAddCatalog() {
     if (catalogAdded) return;
     // С главной каталог ставится на «Меню»: страница открывается, а если её удалили — клик ничего не делает
@@ -604,8 +609,7 @@
     }
     shopCatalog.hidden = true;
     if (lsCardPageId == null) lsAddCardPage();
-    siteSection.hidden = true;
-    siteCatalog.hidden = false;
+    siteCatalogShow(true);
     siteCatalog.classList.add('is-active');
     salesRender();
     salesOpen();
@@ -620,9 +624,8 @@
     scenSyncing = false;
     shopCatalog.hidden = false;
     lsRemoveCardPage();
-    siteCatalog.hidden = true;
+    siteCatalogShow(false);
     siteCatalog.classList.remove('is-active');
-    siteSection.hidden = false;
   }
 
   $('#rsWidgets').addEventListener('click', (e) => {
@@ -775,7 +778,7 @@
   $('[data-btn-cmd="delete"]', siteFloat).addEventListener('click', siteFloatRemove);
   // Сценарий «С плавающей кнопкой» открывается на конце каталога
   function siteScrollEnd() {
-    const end = stageRect(siteCatalog);
+    const end = stageRect(siteSection);
     const box = stageRect(siteContent);
     siteContent.scrollTop += end.top + end.height - box.top - box.height;
   }
@@ -1681,8 +1684,7 @@
   function sitePlaceCatalog() {
     catalogAdded = true;
     shopCatalog.hidden = true;
-    siteSection.hidden = true;
-    siteCatalog.hidden = false;
+    siteCatalogShow(true);
     siteCatalog.classList.remove('is-active');
   }
   rsRender();
@@ -2109,8 +2111,7 @@
         catalogAdded = scenario === 'catalog-setup';
         if (!catalogAdded) salesSaved = [];
         shopCatalog.hidden = catalogAdded;
-        siteSection.hidden = catalogAdded;
-        siteCatalog.hidden = !catalogAdded;
+        siteCatalogShow(catalogAdded);
         siteCatalog.classList.toggle('is-active', catalogAdded);
         salesRender();
       }
