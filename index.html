@@ -15,12 +15,12 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/chips/chips.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.css">
   <!-- шрифт сайта в макете -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="viewport">
-    <div class="stage" id="stage" data-scenario="window-create">
+    <div class="stage" id="stage" data-scenario="no-catalog">
 
       <!-- Шапка конструктора (Figma rHabzni5OI5D4fxBLQdj2m 5:28058): только ховер, без действий по клику -->
       <header class="ch">
@@ -131,8 +131,11 @@
                     </div>
                 </div>
                 <div class="site-h1 site-h1--next">Авторская кухня</div>
-                <div class="site-h2">Сеты от шефа</div>
-                <div class="site-h2 site-h2--next">Фирменные деликатесы</div>
+                <div class="site-cards" id="chefDishes">
+                  <div class="site-card"><div class="site-card__img"><img class="site-card__cover" src="assets/img/site/catalog/tuna.png" alt="Тунец с песто"></div><div class="site-card__name">Тунец с песто</div><div class="site-card__desc">Нежный тунец, зелёный песто и свежие травы</div><div class="site-card__foot"><span class="site-card__buy">1 390<span class="ico24">&#xEAE9;</span></span></div></div>
+                  <div class="site-card"><div class="site-card__img"><img class="site-card__tall" src="assets/img/site/catalog/langoustine.png" alt="Лангустины от шефа"></div><div class="site-card__name">Лангустины от шефа</div><div class="site-card__desc">Лангустины с авторским соусом и микрозеленью</div><div class="site-card__foot"><span class="site-card__buy">890<span class="ico24">&#xEAE9;</span></span></div></div>
+                  <div class="site-card"><div class="site-card__img"><img class="site-card__cover" src="assets/img/site/catalog/pepperoni.png" alt="Пицца Мили"></div><div class="site-card__name">Пицца «Мили»</div><div class="site-card__desc">Пепперони, моцарелла и фирменный томатный соус</div><div class="site-card__foot"><span class="site-card__buy">790<span class="ico24">&#xEAE9;</span></span></div></div>
+                </div>
               </div>
             </div>
             <div class="wg__toolbar">
@@ -149,6 +152,10 @@
               </div>
             </div>
           </div>
+          <section class="wg site-about" id="siteAbout" aria-label="О ресторане Мили">
+            <div class="site-about__image"><img src="assets/img/site/about.png" alt="Глобус в интерьере ресторана Мили"><span></span></div>
+            <div class="site-about__content"><div><h2>Что такое «Мили»?</h2><p>Это множество дорог, расходящихся по странам мира. Это уникальные традиции мест, хранящих историю веков.</p></div><button type="button" class="site-about__button">Подробнее о нас</button></div>
+          </section>
         </div>
         <!-- Новая страница: на странице — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:28596, в окне — 2167:87296. Секция и пустой виджет — .wg из ui-kit, кнопка «+ секция» — Figma rHabzni5OI5D4fxBLQdj2m 4590:7239 -->
         <div class="site-blank" id="siteBlank" hidden>
@@ -227,6 +234,10 @@
         <div class="rs-fields">
           <div class="rs-field"><span class="ico rs-field__arrow">&#xEB89;</span><span class="rs-field__name">Владелец</span><span class="rs-field__val rs-field__val--link">Арсенал, ООО</span></div>
           <div class="rs-field"><span class="ico rs-field__arrow">&#xEB89;</span><span class="rs-field__name">Пользователь</span><span class="rs-field__val">Пользователь</span></div>
+          <div id="salesData" hidden>
+            <details class="rs-variable"><summary class="rs-field"><span class="ico rs-field__arrow">&#xEB89;</span><span class="rs-field__name">Точки продаж</span><button class="rs-field__val rs-field__val--link rs-variable__value" id="salesDataValue" type="button" aria-label="Выбрать точки продаж">Не выбраны</button></summary><div class="rs-variable__children" id="salesDataList"></div></details>
+            <details class="rs-variable"><summary class="rs-field"><span class="ico rs-field__arrow">&#xEB89;</span><span class="rs-field__name">Текущая точка</span><span class="rs-field__val">Точка продаж</span></summary><div class="rs-variable__children" id="salesDataCurrent"></div></details>
+          </div>
         </div>
       </section>
 

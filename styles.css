@@ -179,6 +179,16 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-card__buy { display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 12px; background: rgba(51, 51, 51, .05); border-radius: 39px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; color: #cc3d00; }
 .site-card__buy .ico24 { padding-bottom: 4px; color: #f47843; }
 
+/* Секция после каталога — Figma 2824:74343. */
+.site-about { flex: none; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 80px; min-height: 450px; padding: 0 80px; background: #f9f4ef; border-radius: 2px; font-family: 'Montserrat', sans-serif; color: #47382f; }
+.site-about__image { position: relative; align-self: start; margin-top: 96px; height: 250px; overflow: hidden; border-radius: 10px; }
+.site-about__image img { width: 100%; height: 100%; object-fit: cover; object-position: bottom; opacity: .95; }
+.site-about__image > span { position: absolute; inset: 0; background: #22161036; pointer-events: none; }
+.site-about__content { display: flex; flex-direction: column; align-items: flex-start; gap: 32px; }
+.site-about h2 { margin: 0 0 12px; font-size: 28px; font-weight: 500; }
+.site-about p { margin: 0; color: #47382fbf; font-size: 14px; line-height: 24px; letter-spacing: .56px; text-transform: uppercase; }
+.site-about__button { min-height: 48px; padding: 0 24px; border-radius: 100px; font-size: 14px; font-weight: 500; line-height: 24px; letter-spacing: .56px; text-transform: uppercase; background: linear-gradient(#ffffff33,#ffffff33), linear-gradient(#47382f1a,#47382f1a), #e8c37d; }
+
 /* ---------- Левый сайдбар (Figma rHabzni5OI5D4fxBLQdj2m 5:28393) ---------- */
 .ls-panel {
   position: absolute; z-index: 10; left: 8px; top: 44px; bottom: 8px; width: 350px;
@@ -381,6 +391,13 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-field__name { flex: 1; min-width: 0; font-size: 15px; letter-spacing: -.2115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rs-field__val { flex: none; padding-left: 12px; font-size: 14px; letter-spacing: -.1974px; color: #8991a9; }
 .rs-field__val--link { color: #2562aa; }
+#salesData[hidden] { display: none; }
+.rs-variable > summary { list-style: none; }
+.rs-variable > summary::-webkit-details-marker { display: none; }
+.rs-variable[open] > summary .rs-field__arrow { transform: rotate(90deg); }
+.rs-variable__value { max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
+.rs-variable__value:hover { text-decoration: underline; }
+.rs-variable__children { padding: 4px 12px 8px 28px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #8991a9; }
 
 /* окно «Параметры сайта» */
 .rs-params { position: absolute; z-index: 15; left: 946px; top: 44px; bottom: 8px; width: 600px; display: flex; flex-direction: column; background: #f8f8f8; border-radius: 8px; box-shadow: var(--win-shadow); }
@@ -398,7 +415,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* Точки продаж — те же кнопки, шрифты и подсказки ui-kit, что в остальных окнах. */
 .rs-params__body { display: flex; flex-direction: column; gap: 12px; }
 .sales-settings[hidden], .sales-popup[hidden], .sales-picker[hidden] { display: none; }
-.sales-settings__head { display: grid; grid-template-columns: 1fr 1fr; align-items: center; height: 40px; padding: 0 12px; gap: 10px; font-size: 14px; }
+.sales-settings__head { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; height: 40px; padding: 0 66px 0 12px; gap: 10px; font-size: 14px; }
 .sales-settings__head > div { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
 .sales-settings__head > span { color: #8991a9; }
 .sales-settings .btn--icon, .sales-popup .btn--icon { position: relative; width: 24px; height: 24px; padding: 0; }
@@ -411,7 +428,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-row__name > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sales-row__name .ico { color: #8991a9; flex: none; }
 .sales-price { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sales-price:hover { color: var(--link); text-decoration: underline; }
+.sales-price:hover { text-decoration: underline; }
 .sales-row__actions { position: absolute; right: 4px; display: none; background: var(--menu-item-hover); }
 .sales-row:hover .sales-row__actions, .sales-row:focus-within .sales-row__actions { display: flex; }
 .sales-row__actions button { width: 24px; height: 24px; }
@@ -441,6 +458,11 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-picker__list { flex: 1; min-height: 0; background: #fff; overflow: auto; padding: 5px 0 0; }
 .sales-picker__group { width: 100%; display: flex; align-items: center; min-height: 31px; padding: 0 16px 0 20px; gap: 4px; font-size: 16px; text-align: left; }
 .sales-picker__group .ico { color: #313e78; }
+.sales-picker__group .ico { transition: transform .12s; }
+.sales-picker__node[open] > .sales-picker__group .ico { transform: rotate(90deg); }
+.sales-picker__node > summary { list-style: none; }
+.sales-picker__node > summary::-webkit-details-marker { display: none; }
+.sales-picker__children .sales-option { padding-left: 24px; }
 .sales-picker__group:hover, .sales-option:hover { background: var(--menu-item-hover); }
 .sales-picker__company { display: flex; align-items: center; height: 31px; font-size: 16px; font-weight: 600; padding: 0 20px; letter-spacing: -.2256px; }
 .sales-option { display: flex; align-items: center; gap: 23px; min-height: 31px; padding: 4px 16px 3px 4px; font-size: 14px; letter-spacing: -.1974px; cursor: pointer; }

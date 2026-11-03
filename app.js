@@ -174,17 +174,26 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && salesPicker.hidden) rsCloseParams(); });
 
   // Точки и прайсы — демоданные из сценария Figma. Изменения в окне хранятся в черновике до ✓.
-  const SALES = [
+  const ROOT_SALES = [
     { id: 'mili', name: 'Ресторан “Мили”', price: 'Меню A la carte' },
     { id: 'uglich', name: 'Ресторан “Мили” на Угличской', price: 'Меню Престо' },
     { id: 'teremok', name: 'Теремок', price: 'Меню A la carte' },
     { id: 'dvina', name: 'Хостел ДВИНА', price: 'Меню Престо' },
   ];
-  const SALES_GROUPS = ['Тензор', 'Квеста Бухобслуживание', 'SabyHotel', 'Тинькофф', '01- Республика Адыгея', 'ИП Плюшкин'];
+  const SALES_GROUPS = [
+    { id: 'tensor', name: 'Тензор', names: ['Кафе «Московский проспект»', 'Столовая «На Угличской»'] },
+    { id: 'kvesta', name: 'Квеста Бухобслуживание', names: ['Кафе «На Свободе»', 'Столовая «Центральная»'] },
+    { id: 'hotel', name: 'SabyHotel', names: ['Ресторан «Волжская ривьера»', 'Лобби-бар «Панорама»'] },
+    { id: 'tbank', name: 'Тинькофф', names: ['Кафе «Перерыв»', 'Кофейня «Пятый этаж»'] },
+    { id: 'adygea', name: '01- Республика Адыгея', names: ['Ресторан «Майкоп»', 'Кафе «Адыгея»'] },
+    { id: 'plyushkin', name: 'ИП Плюшкин', names: ['Пекарня «У Плюшкина»', 'Кофейня «Булка и кофе»'] },
+  ].map((group) => ({ ...group, points: group.names.map((name, i) => ({ id: group.id + '-' + i, name, price: i ? 'Меню Престо' : 'Меню A la carte' })) }));
+  const SALES = [...ROOT_SALES, ...SALES_GROUPS.flatMap((group) => group.points)];
+  const salesExpanded = new Set();
   const PRICES = ['Меню A la carte', 'Меню Престо'];
   const salesPopup = $('#salesPopup');
   const salesPicker = $('#salesPicker');
-  let catalogAdded = true;
+  let catalogAdded = false;
   let salesSaved = [];
   let salesDraft = null;
   let salesSelection = new Set();
@@ -233,8 +242,18 @@
   }
   function salesRender() {
     $('#salesSettings').hidden = !catalogAdded;
+    $('#salesData').hidden = !catalogAdded;
     salesRenderRows($('#salesSettingsRows'), salesSaved);
     salesRenderRows($('#salesPopupRows'), salesCurrent());
+    const names = salesSaved.map((row) => SALES.find((point) => point.id === row.id).name);
+    $('#salesDataValue').textContent = names.join(', ') || 'Не выбраны';
+    $('#salesDataValue').title = names.join(', ');
+    $('#salesDataList').replaceChildren(...salesSaved.map((row, i) => {
+      const item = el('div');
+      item.textContent = names[i] + ' · ' + row.price;
+      return item;
+    }));
+    $('#salesDataCurrent').textContent = names[0] || 'Точка продаж не выбрана';
   }
   function salesPickerCancel() {
     if (salesPicker.hidden) return;
@@ -273,24 +292,8 @@
     const query = $('#salesSearch').value.trim().toLocaleLowerCase('ru');
     const isPrice = salesPickerMode !== 'points';
     salesPickerHeader();
-    if (!query && !salesOnlySelected) {
-      root.append(el('div', 'sales-picker__company', isPrice ? 'Мили' : 'Вся компания'));
-      const groups = isPrice ? ['Столовая Кострома', 'Столовая Питер', 'Столовые Ярославль', 'Столовая Новосибирск', 'Гастромаркет ЕКБ'] : SALES_GROUPS;
-      for (const group of groups) {
-        const details = el('details');
-        const summary = el('summary', 'sales-picker__group', '<span class="ico">&#xE96E;</span>');
-        summary.append(document.createTextNode(group));
-        const empty = el('p', 'sales-empty');
-        empty.textContent = isPrice ? 'Нет доступных прайсов' : 'Нет доступных точек продаж';
-        details.append(summary, empty);
-        root.append(details);
-      }
-    }
-    let count = 0;
-    for (const option of isPrice ? PRICES.map((name) => ({ id: name, name })) : SALES) {
-      if (!option.name.toLocaleLowerCase('ru').includes(query)) continue;
-      if (salesOnlySelected && !salesSelection.has(option.id)) continue;
-      count++;
+    const matches = (option) => option.name.toLocaleLowerCase('ru').includes(query) && (!salesOnlySelected || salesSelection.has(option.id));
+    function optionRow(option) {
       const label = el('label', 'sales-option');
       const input = el('input');
       input.type = isPrice ? 'radio' : 'checkbox';
@@ -305,7 +308,35 @@
         if (salesOnlySelected) salesPickerRender();
       });
       label.append(input, document.createTextNode(option.name));
-      root.append(label);
+      return label;
+    }
+    let count = 0;
+    if (isPrice) {
+      if (!query && !salesOnlySelected) root.append(el('div', 'sales-picker__company', 'Мили'));
+      for (const name of PRICES) {
+        const option = { id: name, name };
+        if (matches(option)) { root.append(optionRow(option)); count++; }
+      }
+    } else {
+      if (!query && !salesOnlySelected) root.append(el('div', 'sales-picker__company', 'Вся компания'));
+      for (const group of SALES_GROUPS) {
+        const groupMatches = group.name.toLocaleLowerCase('ru').includes(query);
+        const points = group.points.filter((point) => (groupMatches || point.name.toLocaleLowerCase('ru').includes(query)) && (!salesOnlySelected || salesSelection.has(point.id)));
+        if (!points.length) continue;
+        const details = el('details', 'sales-picker__node');
+        details.open = !!query || salesOnlySelected || salesExpanded.has(group.id);
+        const summary = el('summary', 'sales-picker__group', '<span class="ico">&#xE96E;</span>');
+        summary.append(document.createTextNode(group.name));
+        const children = el('div', 'sales-picker__children');
+        for (const point of points) { children.append(optionRow(point)); count++; }
+        details.append(summary, children);
+        details.addEventListener('toggle', () => {
+          if (details.open) salesExpanded.add(group.id);
+          else salesExpanded.delete(group.id);
+        });
+        root.append(details);
+      }
+      for (const point of ROOT_SALES) if (matches(point)) { root.append(optionRow(point)); count++; }
     }
     if (!count) root.append(el('p', 'sales-empty', 'Ничего не найдено'));
   }
@@ -335,12 +366,14 @@
       const row = rows.find((row) => row.id === salesPickerMode);
       if (row && salesSelection.size) row.price = [...salesSelection][0];
     }
-    if (salesDraft) salesDraft = rows;
-    else salesSaved = rows;
+    // Подтверждение выбора добавляет точки на сайт сразу, в том числе при переходе к его параметрам.
+    salesSaved = salesCopy(rows);
+    if (salesDraft) salesDraft = salesCopy(rows);
     salesPickerCancel();
     salesRender();
   });
   $('#salesSearch').addEventListener('input', salesPickerRender);
+  $('#salesDataValue').addEventListener('click', (e) => { e.preventDefault(); salesPickerOpen(); });
   $('#salesPickerClose').addEventListener('click', salesPickerCancel);
   $('#salesClose').addEventListener('click', salesClose);
   $('#salesDone').addEventListener('click', () => { salesSaved = salesCopy(salesDraft); salesClose(); salesRender(); });
@@ -441,6 +474,11 @@
   function siteAddCatalog() {
     if (catalogAdded) return;
     catalogAdded = true;
+    if (stage.dataset.scenario === 'no-catalog') {
+      scenSyncing = true;
+      frame.select('catalog-add');
+      scenSyncing = false;
+    }
     shopCatalog.hidden = true;
     if (lsCardPageId == null) lsAddCardPage();
     siteSection.hidden = true;
@@ -454,6 +492,9 @@
     catalogAdded = false;
     salesSaved = [];
     salesRender();
+    scenSyncing = true;
+    frame.select('no-catalog');
+    scenSyncing = false;
     shopCatalog.hidden = false;
     lsRemoveCardPage();
     siteCatalog.hidden = true;
@@ -1230,8 +1271,6 @@
     siteCatalog.hidden = false;
     siteCatalog.classList.remove('is-active');
   }
-  sitePlaceCatalog();
-
   rsRender();
 
   // ---------- Левый сайдбар (Figma rHabzni5OI5D4fxBLQdj2m 5:28393) ----------
@@ -1695,5 +1734,5 @@
   }
 
   lsSetCollapsed(lsReadCollapsed());
-  lsRender();
+  scenApply(stage.dataset.scenario);
 })();
