@@ -20,7 +20,7 @@
 </head>
 <body>
   <div class="viewport">
-    <div class="stage" id="stage" data-scenario="no-catalog">
+    <div class="stage" id="stage" data-scenario="window-link">
 
       <!-- Шапка конструктора (Figma rHabzni5OI5D4fxBLQdj2m 5:28058): только ховер, без действий по клику -->
       <header class="ch">
@@ -152,6 +152,27 @@
               </div>
             </div>
           </div>
+          <!-- Секция с кнопкой (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2863:49443): видна в сценарии «Связь кнопки с окном». Виджет и тулбар — .wg и .tb, кнопка — .btn из ui-kit, команды тулбара пока только с ховером -->
+          <section class="wg site-link" id="siteLink" aria-label="Секция с кнопкой">
+            <div class="wg site-link__widget" id="siteLinkWidget">
+              <div class="wg__content"><button type="button" class="btn btn--filled btn--style-primary btn--size-5xl site-link__button"><span class="btn__caption">Товар</span></button></div>
+              <div class="wg__toolbar">
+                <div class="tb tb--style-info" role="toolbar" aria-label="Кнопка">
+                  <button type="button" class="tb__btn" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
+                  <button type="button" class="tb__btn" aria-label="Стиль"><span class="tb__icon" aria-hidden="true">&#xebbb;</span></button>
+                  <button type="button" class="tb__btn" aria-label="Цвет"><span class="tb__icon" aria-hidden="true"><span class="site-link__color"></span></span></button>
+                  <button type="button" class="tb__btn" aria-label="Текст"><span class="tb__icon" aria-hidden="true">&#xeac9;</span></button>
+                  <button type="button" class="tb__btn" aria-label="Размер"><span class="tb__icon" aria-hidden="true"><img src="assets/img/toolbar-size.svg" width="24" height="24" alt=""></span></button>
+                  <button type="button" class="tb__btn" aria-label="Действие"><span class="tb__icon" aria-hidden="true">&#xeb7e;</span></button>
+                  <button type="button" class="tb__btn" id="siteLinkSettings" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button>
+                  <button type="button" class="tb__btn tb__btn--delete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
+                  <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="site-plus site-plus--up"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
+            <button type="button" class="site-plus site-plus--down"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
+          </section>
           <section class="wg site-about" id="siteAbout" aria-label="О ресторане Мили">
             <div class="site-about__image"><img src="assets/img/site/about.png" alt="Глобус в интерьере ресторана Мили"><span></span></div>
             <div class="site-about__content"><div><h2>Что такое «Мили»?</h2><p>Это множество дорог, расходящихся по странам мира. Это уникальные традиции мест, хранящих историю веков.</p></div><button type="button" class="site-about__button">Подробнее о нас</button></div>
@@ -368,33 +389,7 @@
         <div class="pe__body">
           <div class="pe__card">
             <div class="pe__rows">
-              <!-- Редактор положения (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2489:25551), тумблер — Figma nuC4KFMiS36uDWDUp9wKGl 11398:5771 -->
-              <div class="pe__row pe__row--style">
-                <span class="pe__label pe__label--style">Положение</span>
-                <div class="pe__row-body">
-                  <div class="tumbler" role="radiogroup" aria-label="Положение">
-                    <button type="button" class="tumbler__seg" role="radio" data-ws-pos-mode="element">От элемента</button>
-                    <button type="button" class="tumbler__seg" role="radio" data-ws-pos-mode="screen">На экране</button>
-                  </div>
-                </div>
-              </div>
-              <div class="pe__row pe__row--style" data-ws-pos-for="element">
-                <span class="pe__label pe__label--style"></span>
-                <div class="pe__row-body">
-                  <div class="ws-anchor">
-                    <div class="ws-anchor__cell is-selected"><i class="ws-anchor__box"></i><img src="assets/img/pos/anchor-on.svg" width="12" height="12" alt=""></div>
-                    <div class="ws-anchor__cell"><i class="ws-anchor__box"></i><img src="assets/img/pos/anchor.svg" width="12" height="12" alt=""></div>
-                    <div class="ws-anchor__cell"><i class="ws-anchor__box"></i><img src="assets/img/pos/anchor.svg" width="12" height="12" alt=""></div>
-                    <div class="ws-anchor__cell"><i class="ws-anchor__box"></i><img src="assets/img/pos/anchor.svg" width="12" height="12" alt=""></div>
-                  </div>
-                </div>
-              </div>
-              <div class="pe__row pe__row--style" data-ws-pos-for="screen">
-                <span class="pe__label pe__label--style"></span>
-                <div class="pe__row-body">
-                  <div class="ws-pos__grid"></div>
-                </div>
-              </div>
+              <div data-pos-editor></div>
             </div>
           </div>
           <div class="pe__card ws__card">
@@ -458,6 +453,108 @@
             <button type="button" class="chips chips--optional" data-pe-chip="shadow"><span class="chips__caption">Тень</span></button>
             <button type="button" class="chips chips--optional" data-pe-chip="border"><span class="chips__caption">Границы</span></button>
           </div>
+        </div>
+      </section>
+
+      <!-- Редактор положения — один на все окна: настройки окна и настройки кнопки. Правится только здесь, в posEditor* и стилях .pos* -->
+      <template id="posEditor">
+              <!-- Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2489:25551. Переключатель «От элемента / На экране» пока убран, режим всегда «На экране» -->
+              <div class="pe__row pe__row--style" data-pos-row data-pos-for="element">
+                <span class="pe__label pe__label--style">Положение</span>
+                <div class="pe__row-body">
+                  <div class="pos-anchor">
+                    <div class="pos-anchor__cell is-selected"><i class="pos-anchor__box"></i><img src="assets/img/pos/anchor-on.svg" width="12" height="12" alt=""></div>
+                    <div class="pos-anchor__cell"><i class="pos-anchor__box"></i><img src="assets/img/pos/anchor.svg" width="12" height="12" alt=""></div>
+                    <div class="pos-anchor__cell"><i class="pos-anchor__box"></i><img src="assets/img/pos/anchor.svg" width="12" height="12" alt=""></div>
+                    <div class="pos-anchor__cell"><i class="pos-anchor__box"></i><img src="assets/img/pos/anchor.svg" width="12" height="12" alt=""></div>
+                  </div>
+                </div>
+              </div>
+              <div class="pe__row pe__row--style" data-pos-row data-pos-for="screen">
+                <span class="pe__label pe__label--style">Положение</span>
+                <div class="pe__row-body">
+                  <div class="pos__grid"></div>
+                </div>
+              </div>
+      </template>
+
+      <!-- Настройки кнопки (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2863:49501): окно — .pe, поля и кнопки — .input и .btn из ui-kit. Меняется только текст, остальное пока с ховером -->
+      <section class="pe btnset" id="btnSet" aria-label="Настройки кнопки" hidden>
+        <header class="pe__head">
+          <span class="pe__name pe__name--static">Кнопка</span>
+          <div class="pe__cmds">
+            <button type="button" class="pe__reset" aria-label="Сбросить настройки">&#xe629;</button>
+            <button type="button" class="pe__done" aria-label="Сохранить и выйти">&#xe75e;</button>
+            <button type="button" class="pe__close" aria-label="Закрыть">&#xe66c;</button>
+          </div>
+        </header>
+        <div class="pe__body">
+          <div class="pe__card btnset__text">
+            <button type="button" class="btnset__icon" aria-label="Выбрать иконку"><img src="assets/img/btn-icon-pick.svg" width="18" height="18" alt=""></button>
+            <label class="input input--size-m"><span class="input__body"><span class="input__field"><input class="input__control" id="btnSetText" aria-label="Текст кнопки"></span></span></label>
+          </div>
+          <div class="pe__card">
+            <div class="pe__rows">
+              <div class="pe__row">
+                <span class="pe__label">По клику</span>
+                <div class="pe__row-body btnset__lookup" id="btnSetEmpty">
+                  <span class="btnset__hint">Адрес или</span>
+                  <button type="button" class="btn btn--link btn--underline btn--style-label btn--size-m btnset__action"><span class="btn__caption">действие</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
+                  <span class="pe__spacer"></span>
+                  <button type="button" class="btnset__list" aria-label="Выбрать из списка"><img src="assets/img/lookup-list.svg" width="12" height="9" alt=""></button>
+                </div>
+                <div class="pe__row-body btnset__lookup" id="btnSetPicked" hidden>
+                  <span>Открыть</span><i class="btnset__sep"></i><span class="btnset__page" id="btnSetPage"></span>
+                  <button type="button" class="btnset__clear" aria-label="Очистить">&#xe66c;</button>
+                  <span class="pe__spacer"></span>
+                  <button type="button" class="btnset__list btnset__list--font" aria-label="Выбрать из списка">&#xea90;</button>
+                </div>
+              </div>
+              <div class="pe__row" data-btnset-row="page" hidden>
+                <span class="pe__label">Режим</span>
+                <div class="pe__row-body"><div class="tumbler" role="radiogroup" aria-label="Режим"><button type="button" class="tumbler__seg" role="radio" data-btnset-mode="page">Страница</button><button type="button" class="tumbler__seg" role="radio" data-btnset-mode="window">Окно</button></div></div>
+              </div>
+              <div data-pos-editor></div>
+            </div>
+          </div>
+          <div class="pe__card">
+            <div class="pe__rows">
+              <div class="pe__row">
+                <span class="pe__label">Стиль</span>
+                <div class="pe__row-body"><button type="button" class="btn btn--filled btn--style-primary btn--size-m"><span class="btn__caption">Круглая</span></button><span class="pe__spacer"></span><button type="button" class="pe__arrow" aria-label="Все стили"></button></div>
+              </div>
+              <div class="pe__row">
+                <span class="pe__label">Цвет</span>
+                <div class="pe__row-body"><button type="button" class="pe__swatch btnset__color" aria-label="Цвет"></button></div>
+              </div>
+              <div class="pe__row">
+                <span class="pe__label">Шрифт</span>
+                <div class="pe__row-body"><button type="button" class="btn btn--link btn--style-link btn--size-m"><span class="btn__caption">Основной текст</span></button></div>
+              </div>
+              <div class="pe__row">
+                <span class="pe__label">Размер</span>
+                <div class="pe__row-body btnset__size">
+                  <button type="button" class="btn btn--filled btn--style-pale btn--size-m btn--icon" aria-label="Меньше"><span class="btn__icon"><img src="assets/img/size-minus.svg" width="12" height="12" alt=""></span></button>
+                  <button type="button" class="btn btn--filled btn--style-pale btn--size-m btn--icon" aria-label="Больше"><span class="btn__icon"><img src="assets/img/size-plus.svg" width="12" height="12" alt=""></span></button>
+                  <span class="pe__spacer"></span>
+                  <button type="button" class="pe__arrow" aria-label="Все размеры"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pe__chips">
+            <button type="button" class="chips chips--optional"><span class="chips__caption">Подсказка</span></button>
+            <button type="button" class="chips chips--optional"><span class="chips__caption">Горячая клавиша</span></button>
+          </div>
+        </div>
+        <div class="mw-menu btnset-menu" id="btnSetMenu" role="menu" aria-label="Действие по клику" hidden>
+          <div class="mw-menu__list">
+            <button class="mw-menu__item btnset-menu__item" type="button" role="menuitem" id="btnSetOpenPage"><span class="btnset-menu__ico" aria-hidden="true">&#xea49;</span><span class="mw-menu__text">Открыть страницу сайта</span><span class="btnset-menu__arrow" aria-hidden="true">&#xe9ab;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
+            <button class="mw-menu__item btnset-menu__item" type="button" role="menuitem"><span class="btnset-menu__ico" aria-hidden="true">&#xeb75;</span><span class="mw-menu__text">Пролистать к блоку</span><span class="btnset-menu__arrow" aria-hidden="true">&#xe9ab;</span></button>
+            <button class="btn btn--link btn--style-link btnset-menu__all" type="button"><span class="btn__caption">Все действия</span></button>
+          </div>
+          <button class="mw-menu__close" type="button" id="btnSetMenuClose" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
+          <div class="mw-menu btnset-menu__sub" id="btnSetSub" role="menu" aria-label="Страницы сайта" hidden><div class="mw-menu__list" id="btnSetSubList"></div></div>
         </div>
       </section>
 

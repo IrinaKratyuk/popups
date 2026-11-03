@@ -35,13 +35,13 @@
         { id: 'window-create', title: 'Создание окна с товаром' },
         { id: 'window-setup', title: 'Настройки окна', disabled: true, hidden: true },
         { id: 'window-switch', title: 'Переключение страница-окно', disabled: true, hidden: true },
-        { id: 'window-link', title: 'Связь кнопки с окном', disabled: true, hidden: true },
         // Состояния новой страницы: вариант — режим открытия
         { id: 'new', title: 'Новая страница', variants: [
           { id: 'page', title: 'На странице' },
           { id: 'window', title: 'В окне' },
           { id: 'both', title: 'Страница и окно' },
         ] },
+        { id: 'window-link', title: 'Связь кнопки с окном' },
       ] },
       { group: 'Режим просмотра', items: [
         { id: 'view-catalog', title: 'В каталоге и по кнопке', disabled: true },
@@ -118,6 +118,36 @@
     return { left: (r.left - s.left) / scale, top: (r.top - s.top) / scale, width: r.width / scale, height: r.height / scale };
   }
 
+  // Окна настроек (.pe) перетаскиваются за шапку и не выходят за края сцены. Следующее открытие ставит окно на обычное место.
+  // Слушаем само окно: шапку настроек окна пересоздаёт wsMount.
+  function peMoveTo(root, left, top) {
+    root.style.left = Math.round(Math.max(0, Math.min(left, stage.offsetWidth - root.offsetWidth))) + 'px';
+    root.style.top = Math.round(Math.max(0, Math.min(top, stage.offsetHeight - root.offsetHeight))) + 'px';
+  }
+  function peDraggable(root, onMove) {
+    root.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || !e.target.closest('.pe__head') || e.target.closest('button, input')) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const left = root.offsetLeft;
+      const top = root.offsetTop;
+      const move = (ev) => {
+        onMove?.();
+        peMoveTo(root, left + (ev.clientX - startX) / scale, top + (ev.clientY - startY) / scale);
+      };
+      const up = () => {
+        root.removeEventListener('pointermove', move);
+        root.removeEventListener('pointerup', up);
+        root.removeEventListener('pointercancel', up);
+      };
+      root.setPointerCapture(e.pointerId);
+      root.addEventListener('pointermove', move);
+      root.addEventListener('pointerup', up);
+      root.addEventListener('pointercancel', up);
+    });
+  }
+
   // Одновременно открыто одно окно или меню: новое закрывает прежнее, несохранённые правки в нём отменяются, как крестиком.
   // Без родителя не работают и остаются с ним только меню режима открытия, меню и палитры PropertyEditor.
   function popupsClose() {
@@ -127,6 +157,7 @@
     lsNewClose();
     wsClose();
     secClose();
+    btnSetClose();
   }
 
   // ---------- Правый сайдбар (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 148:15451) ----------
@@ -509,6 +540,12 @@
 
   function siteAddCatalog() {
     if (catalogAdded) return;
+    // С главной каталог ставится на «Меню»: страница открывается, а если её удалили — клик ничего не делает
+    if (lsPage(lsActive).home) {
+      const menu = lsPages.find((p) => !p.blank && !p.home);
+      if (!menu) return;
+      lsSelect(menu.id);
+    }
     catalogAdded = true;
     if (stage.dataset.scenario === 'no-catalog') {
       scenSyncing = true;
@@ -560,6 +597,9 @@
     siteView.hidden = !isBoth;
     for (const seg of siteView.children) seg.classList.toggle('is-on', seg.dataset.view === view);
     siteMain.hidden = isBlank;
+    // Главная — баннер и «О нас», на «Меню» — только секция с каталогом
+    siteMain.classList.toggle('is-home', !!page.home);
+    if (page.home) salesClose();
     siteBlank.hidden = !isBlank;
     siteTumbler.classList.toggle('is-off', isWindow);
     siteTumbler.querySelectorAll('.ch-seg').forEach((seg) => { seg.disabled = isWindow; });
@@ -569,6 +609,7 @@
     siteBlankBody.classList.toggle('wg', isWindow);
     wsClose();
     secClose();
+    btnSetClose();
     wsPage = page;
     secApply(page.section);
     wsPaintFill(siteBlankSection, page.sectionFill, '', BG_DEFAULT);
@@ -642,8 +683,214 @@
       siteSelectWindow(windowHit);
       if (!(bgKey === 'section' ? inSection && !inProduct : windowHit)) bgClose(); // тулбар с командой скрылся
     }
-    if (siteCatalog.hidden) return;
+    if (siteCatalog.hidden || stage.dataset.scenario === 'window-link') return; // в сценарии с кнопкой выделена она, клик мимо выделение не снимает
     if (!e.target.closest('#salesPopup, #salesPicker, #rsParams, .rp-btn')) siteCatalog.classList.toggle('is-active', !!e.target.closest('#siteCatalog'));
+  });
+
+  // Секция с кнопкой: пока кнопка выделена, у секции пунктирная рамка родителя и кнопки «+ секция»
+  const siteLink = $('#siteLink');
+  const siteLinkWidget = $('#siteLinkWidget');
+  function siteLinkSelect(on) {
+    siteLinkWidget.classList.toggle('is-active', on);
+    siteLink.classList.toggle('wg--level-2', on);
+    siteLink.classList.toggle('is-active', on);
+  }
+  // в макете секция на этой высоте области сайта
+  function siteLinkScroll() {
+    siteContent.scrollTop += stageRect(siteLink).top - stageRect(siteContent).top - 565;
+  }
+
+  // Редактор положения — один на все окна: настройки окна и настройки кнопки. Разметка в <template id="posEditor">, внешний вид в стилях .pos*,
+  // поведение в posEditorFill и posEditorRender. Любая правка редактора меняет его во всех окнах, отдельных копий заводить нельзя.
+  // Сетка положения «На экране»: значки из макета, по строкам. edge — столбики прижаты к краю, middle — по центру; у средней ячейки значок свой
+  const POS_ICONS = {
+    edge: '<rect y="5" width="3" height="9" rx="1.5"/><rect x="5" width="3" height="14" rx="1.5"/><rect x="10" y="7" width="3" height="7" rx="1.5"/>',
+    middle: '<rect y="2" width="3" height="10" rx="1.5"/><rect x="5" width="3" height="14" rx="1.5"/><rect x="10" y="2" width="3" height="10" rx="1.5"/>',
+  };
+  const POS_CELLS = [
+    ['edge', 'scaleY(-1)'], ['edge', 'scaleY(-1)'], ['edge', 'rotate(180deg)'],
+    ['middle', 'scaleY(-1)'], null, ['middle', 'rotate(180deg)'],
+    ['edge', 'scale(1)'], ['edge', 'scale(1)'], ['edge', 'scaleX(-1)'],
+  ];
+  const POS_GRID = POS_CELLS.map((pos, i) => {
+    const col = i % 3 - 1;
+    const row = Math.floor(i / 3) - 1;
+    const vars = `--x:${col * 57.5}px;--y:${row * 17.5}px;--dot-x:${col * 57}px;--dot-y:${row * 19.5}px;--t:${pos?.[1] ?? 'scale(1)'}`;
+    const ico = pos
+      ? `<svg class="pos__ico" width="13" height="14" viewBox="0 0 13 14" aria-hidden="true">${POS_ICONS[pos[0]]}</svg>`
+      : '<img class="pos__ico" src="assets/img/pos/22.svg" width="13" height="14" alt="">';
+    return `<div class="pos__cell${pos ? '' : ' is-selected'}" style="${vars}"><img class="pos__dot" src="assets/img/pos/dot.svg" width="3" height="3" alt="">${ico}</div>`;
+  }).join('');
+  function posEditorFill(root) {
+    $('[data-pos-editor]', root).replaceWith($('#posEditor').content.cloneNode(true));
+    $('.pos__grid', root).innerHTML = POS_GRID;
+  }
+  function posEditorRender(root, mode, shown = true) {
+    root.querySelectorAll('[data-pos-mode]').forEach((seg) => {
+      const on = seg.dataset.posMode === mode;
+      seg.classList.toggle('is-on', on);
+      seg.setAttribute('aria-checked', on);
+    });
+    root.querySelectorAll('[data-pos-row]').forEach((row) => {
+      row.hidden = !shown || (row.dataset.posFor != null && row.dataset.posFor !== mode);
+    });
+  }
+
+  // Настройки кнопки: в сценарии открыты сразу, закрываются и снова открываются шестерёнкой тулбара. Стоят слева от кнопки, чтобы она и тулбар оставались видны.
+  // Правки сразу видны, галочка сохраняет, крестик и Esc возвращают прежние, сброс — исходные. «Действие» в тулбаре — только с ховером.
+  const BTN_DEFAULTS = () => ({ text: 'Товар', pageId: null, mode: 'window', pos: 'screen' });
+  const btnSet = $('#btnSet');
+  posEditorFill(btnSet);
+  const btnSetText = $('#btnSetText');
+  const btnSetEmpty = $('#btnSetEmpty');
+  const btnSetPicked = $('#btnSetPicked');
+  const btnSetMenu = $('#btnSetMenu');
+  const btnSetSub = $('#btnSetSub');
+  const btnSetSubList = $('#btnSetSubList');
+  const siteLinkCaption = $('.site-link__button .btn__caption');
+  const siteLinkSettings = $('#siteLinkSettings');
+  let btnSetSaved = BTN_DEFAULTS();
+  let btnSetDraft = BTN_DEFAULTS();
+
+  function btnSetPaintCaption(data) {
+    siteLinkCaption.textContent = data.text.trim() || BTN_DEFAULTS().text;
+  }
+  // Перетащенное окно остаётся на месте, пока его не закроют; выросло — не уходит за край сцены
+  let btnSetMoved = false;
+  peDraggable(btnSet, () => { btnSetMoved = true; });
+  function btnSetPlace() {
+    if (btnSetMoved) {
+      peMoveTo(btnSet, btnSet.offsetLeft, btnSet.offsetTop);
+      return;
+    }
+    const r = stageRect(siteLinkWidget);
+    btnSet.style.left = Math.round(r.left - btnSet.offsetWidth - 12) + 'px';
+    btnSet.style.top = Math.round(Math.min(r.top, stage.offsetHeight - btnSet.offsetHeight - 8)) + 'px';
+  }
+  // Выбранная страница (Figma 2355:71525): «Открыть | страница», под ней режим, а у окна ещё редактор положения
+  function btnSetRender() {
+    const page = lsPage(btnSetDraft.pageId);
+    btnSetText.value = btnSetDraft.text;
+    btnSetPaintCaption(btnSetDraft);
+    btnSetEmpty.hidden = !!page;
+    btnSetPicked.hidden = !page;
+    $('#btnSetPage').textContent = page?.name ?? '';
+    btnSet.querySelectorAll('[data-btnset-row]').forEach((row) => { row.hidden = !page; });
+    posEditorRender(btnSet, btnSetDraft.pos, !!page && btnSetDraft.mode === 'window');
+    btnSet.querySelectorAll('[data-btnset-mode]').forEach((seg) => seg.classList.toggle('is-on', seg.dataset.btnsetMode === btnSetDraft.mode));
+    if (!btnSet.hidden) btnSetPlace();
+  }
+
+  // Меню действий (Figma 2349:60397) по шагам: сначала список действий, наведение на «Открыть страницу сайта» раскрывает слева список страниц, выбор закрывает меню.
+  function btnSetSubClose() {
+    btnSetSub.hidden = true;
+    $('#btnSetOpenPage').classList.remove('is-open');
+  }
+  function btnSetMenuClose() {
+    btnSetMenu.hidden = true;
+    btnSetSubClose();
+  }
+  function btnSetMenuOpen(anchor) {
+    const r = stageRect(anchor);
+    const box = stageRect(btnSet);
+    btnSetMenu.style.left = Math.round(r.left - box.left) + 'px';
+    btnSetMenu.style.top = Math.round(r.top - box.top - 8) + 'px';
+    btnSetMenu.hidden = false;
+  }
+  function btnSetSubOpen() {
+    btnSetSubList.replaceChildren(...lsPages.filter((p) => !p.off).map((p) => {
+      const selected = p.id === btnSetDraft.pageId;
+      const item = el('button', 'mw-menu__item ls-mode__item' + (selected ? ' is-selected' : ''), '<span class="ls-mode__toggle"></span><span class="mw-menu__text"></span>');
+      item.type = 'button';
+      item.setAttribute('role', 'menuitemradio');
+      item.setAttribute('aria-checked', selected);
+      item.dataset.page = p.id;
+      item.querySelector('.mw-menu__text').textContent = p.name;
+      if (p.product && btnSetDraft.pageId == null) item.insertAdjacentHTML('beforeend', '<span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span>');
+      return item;
+    }));
+    btnSetSub.hidden = false;
+    $('#btnSetOpenPage').classList.add('is-open');
+  }
+
+  function btnSetClose() {
+    if (btnSet.hidden) return;
+    btnSetMenuClose();
+    btnSet.hidden = true;
+    siteLinkSettings.classList.remove('is-selected');
+    siteLinkSettings.setAttribute('aria-pressed', 'false');
+    btnSetPaintCaption(btnSetSaved);
+  }
+  function btnSetOpen() {
+    popupsClose();
+    btnSetMoved = false;
+    btnSetDraft = { ...btnSetSaved };
+    btnSet.hidden = false;
+    btnSetRender();
+    siteLinkSettings.classList.add('is-selected');
+    siteLinkSettings.setAttribute('aria-pressed', 'true');
+  }
+  function btnSetReset() {
+    btnSetClose();
+    btnSetSaved = BTN_DEFAULTS();
+    btnSetPaintCaption(btnSetSaved);
+  }
+
+  PropertyEditor.mount(btnSet, {
+    onDone: () => { btnSetSaved = { ...btnSetDraft, text: btnSetDraft.text.trim() || BTN_DEFAULTS().text }; btnSetClose(); },
+    onClose: btnSetClose,
+  });
+  btnSetText.addEventListener('input', () => {
+    btnSetDraft.text = btnSetText.value;
+    btnSetPaintCaption(btnSetDraft);
+  });
+  btnSet.addEventListener('click', (e) => {
+    if (e.target.closest('.pe__reset')) {
+      btnSetDraft = BTN_DEFAULTS();
+      btnSetMenuClose();
+      btnSetRender();
+      return;
+    }
+    const opener = e.target.closest('.btnset__action, .btnset__list');
+    if (opener) {
+      if (btnSetMenu.hidden) btnSetMenuOpen(opener.closest('.btnset__lookup'));
+      else btnSetMenuClose();
+      return;
+    }
+    if (e.target.closest('.btnset__clear')) {
+      btnSetDraft.pageId = null;
+      btnSetRender();
+      return;
+    }
+    const mode = e.target.closest('[data-btnset-mode]');
+    const pos = e.target.closest('[data-pos-mode]');
+    if (mode) btnSetDraft.mode = mode.dataset.btnsetMode;
+    if (pos) btnSetDraft.pos = pos.dataset.posMode;
+    if (mode || pos) btnSetRender();
+  });
+  // Другой пункт первого уровня сворачивает список страниц, уход на сам список его оставляет
+  btnSetMenu.addEventListener('mouseover', (e) => {
+    const item = e.target.closest('.btnset-menu__item');
+    if (!item) return;
+    if (item.id !== 'btnSetOpenPage') btnSetSubClose();
+    else if (btnSetSub.hidden) btnSetSubOpen();
+  });
+  btnSetMenu.addEventListener('click', (e) => {
+    if (e.target.closest('#btnSetMenuClose')) { btnSetMenuClose(); return; }
+    const item = e.target.closest('[data-page]');
+    if (!item) return;
+    const page = lsPage(Number(item.dataset.page));
+    btnSetDraft.pageId = page.id;
+    btnSetDraft.mode = !page.mode || page.mode === 'page' ? 'page' : 'window';
+    btnSetMenuClose();
+    btnSetRender();
+  });
+  document.addEventListener('mousedown', (e) => { if (!e.target.closest('#btnSetMenu, .btnset__action, .btnset__list')) btnSetMenuClose(); });
+  siteLinkSettings.addEventListener('click', () => { if (btnSet.hidden) btnSetOpen(); else btnSetClose(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (!btnSetMenu.hidden) btnSetMenuClose();
+    else btnSetClose();
   });
 
   // Настройки окна: открываются по левому верхнему углу окна, шестерёнка в это время активна. Правки сразу видны на холсте, галочка сохраняет их в страницу,
@@ -667,26 +914,9 @@
     },
   };
   const wsRoot = $('#ws');
+  peDraggable(wsRoot);
   const wsOpenBtn = $('#wsOpen');
-  // Сетка положения «На экране»: значки из макета, по строкам. edge — столбики прижаты к краю, middle — по центру; у средней ячейки значок свой
-  const WS_POS_ICONS = {
-    edge: '<rect y="5" width="3" height="9" rx="1.5"/><rect x="5" width="3" height="14" rx="1.5"/><rect x="10" y="7" width="3" height="7" rx="1.5"/>',
-    middle: '<rect y="2" width="3" height="10" rx="1.5"/><rect x="5" width="3" height="14" rx="1.5"/><rect x="10" y="2" width="3" height="10" rx="1.5"/>',
-  };
-  const WS_POS = [
-    ['edge', 'scaleY(-1)'], ['edge', 'scaleY(-1)'], ['edge', 'rotate(180deg)'],
-    ['middle', 'scaleY(-1)'], null, ['middle', 'rotate(180deg)'],
-    ['edge', 'scale(1)'], ['edge', 'scale(1)'], ['edge', 'scaleX(-1)'],
-  ];
-  $('.ws-pos__grid', wsRoot).innerHTML = WS_POS.map((pos, i) => {
-    const col = i % 3 - 1;
-    const row = Math.floor(i / 3) - 1;
-    const vars = `--x:${col * 57.5}px;--y:${row * 17.5}px;--dot-x:${col * 57}px;--dot-y:${row * 19.5}px;--t:${pos?.[1] ?? 'scale(1)'}`;
-    const ico = pos
-      ? `<svg class="ws-pos__ico" width="13" height="14" viewBox="0 0 13 14" aria-hidden="true">${WS_POS_ICONS[pos[0]]}</svg>`
-      : '<img class="ws-pos__ico" src="assets/img/pos/22.svg" width="13" height="14" alt="">';
-    return `<div class="ws-pos__cell${pos ? '' : ' is-selected'}" style="${vars}"><img class="ws-pos__dot" src="assets/img/pos/dot.svg" width="3" height="3" alt="">${ico}</div>`;
-  }).join('');
+  posEditorFill(wsRoot);
   const wsTemplate = wsRoot.innerHTML; // PropertyEditor читает значения из разметки при монтировании
   let wsPage = null; // открытая страница, её окно на холсте
   let wsDraft = null; // значения, пока открыты настройки
@@ -739,12 +969,7 @@
   // Значения цветов с прозрачностью он не пишет: дописываем сами, как в макете
   function wsRender() {
     const { pad, pe, posMode } = wsDraft;
-    wsRoot.querySelectorAll('[data-ws-pos-mode]').forEach((seg) => {
-      const on = seg.dataset.wsPosMode === posMode;
-      seg.classList.toggle('is-on', on);
-      seg.setAttribute('aria-checked', on);
-    });
-    wsRoot.querySelectorAll('[data-ws-pos-for]').forEach((row) => { row.hidden = row.dataset.wsPosFor !== posMode; });
+    posEditorRender(wsRoot, posMode);
     wsRoot.querySelectorAll('[data-pe-dim]').forEach((dim) => {
       if (dim.classList.contains('pe__dim--auto')) dim.querySelector('input').placeholder = wsActualSize(dim.dataset.peDim);
     });
@@ -869,9 +1094,9 @@
       bgFromSettings(fillBtn, fillBtn.closest('[data-pe-row]').dataset.peRow);
       return;
     }
-    const posMode = e.target.closest('[data-ws-pos-mode]');
+    const posMode = e.target.closest('[data-pos-mode]');
     if (posMode) {
-      wsDraft.posMode = posMode.dataset.wsPosMode;
+      wsDraft.posMode = posMode.dataset.posMode;
       wsRender();
     } else if (e.target.closest('.pe__reset')) { // свой сброс: PropertyEditor вернул бы значения на момент открытия
       e.stopPropagation();
@@ -897,6 +1122,7 @@
   const SEC_NAME = 'Секция';
   const SEC_WIDTHS = { narrow: { name: 'Узкая', px: 1024 }, wide: { name: 'Широкая', px: 1280 }, full: { name: 'Во всю ширину', px: null } };
   const secRoot = $('#sec');
+  peDraggable(secRoot);
   const secOpenBtn = $('#secOpen');
   const secNameInput = $('#secName');
   const secWidth = $('#secWidth');
@@ -1319,7 +1545,7 @@
   const lsMenu = $('#lsMenu');
   const lsToggle = $('#lsToggle');
   // открыта страница «Меню»
-  const lsInitialPages = () => [{ id: 1, name: 'Главная', off: false }, { id: 2, name: 'Меню', off: false }];
+  const lsInitialPages = () => [{ id: 1, name: 'Главная', off: false, home: true }, { id: 2, name: 'Меню', off: false }];
   let lsPages = lsInitialPages();
   let lsActive = 2;
   let lsNextId = 3;
@@ -1511,6 +1737,7 @@
   // «Сохранить» и Enter в названии добавляют страницу и открывают её, крестик и Esc закрывают без добавления. Клик мимо окно не закрывает.
   // Это же окно — настройки страницы: открывается из меню «⋮» с её значениями, «Сохранить» применяет их к ней.
   const lsNew = $('#lsNew');
+  peDraggable(lsNew);
   const lsNewName = $('#lsNewName');
   const lsNewAddr = $('#lsNewAddr');
   const lsNewSeoTitle = $('#lsNewSeoTitle');
@@ -1720,7 +1947,8 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lsCloseMenu(); });
 
   // Сценарии панели — состояния страницы. «Новая страница»: открытая новая страница (или последняя, или созданная заново) получает режим сценария.
-  // «Создание окна с товаром» возвращает исходные страницы, каталог и подсказку на плюсе.
+  // Остальные возвращают исходные страницы и каталог, подсказка на плюсе — только в «Создании окна с товаром».
+  // «Связь кнопки с окном» — продолжение «Создания окна»: окно с карточкой товара уже есть, открыта секция с кнопкой на «Меню».
   function scenApply(scenario, mode) {
     popupsClose();
     lsNewClose();
@@ -1735,13 +1963,11 @@
       }
       page.mode = mode;
       lsActive = page.id;
-      lsAddPin.remove();
     } else {
       lsPages = lsInitialPages();
       lsActive = 2;
       lsCardPageId = null;
       sitePlaceCatalog();
-      $('#lsAdd').append(lsAddPin);
       if (['no-catalog', 'catalog-add', 'catalog-setup'].includes(scenario)) {
         catalogAdded = scenario === 'catalog-setup';
         if (!catalogAdded) salesSaved = [];
@@ -1752,17 +1978,29 @@
         salesRender();
       }
       salesRender();
+      if (scenario === 'window-link') lsPages.push({ id: lsNextId++, name: 'Товар', off: false, blank: true, mode: 'window', product: true });
     }
+    if (scenario === 'window-create') $('#lsAdd').append(lsAddPin);
+    else lsAddPin.remove();
     lsRender();
     if (scenario === 'catalog-setup') salesOpen();
+    const isLink = scenario === 'window-link';
+    siteLinkSelect(isLink);
+    btnSetReset();
+    if (isLink) {
+      siteLinkScroll();
+      btnSetOpen();
+    } else siteContent.scrollTop = 0;
   }
 
   // Панель показывает состояние открытой страницы, как бы та ни открылась: из списка, после сохранения или удаления.
   function scenSync() {
     const page = lsPage(lsActive);
-    const catalogScenario = ['no-catalog', 'catalog-add', 'catalog-setup'].includes(stage.dataset.scenario);
-    const scenario = page.blank ? 'new' : catalogScenario ? stage.dataset.scenario : 'window-create';
-    const mode = page.blank ? page.mode : null;
+    const keepScenario = ['no-catalog', 'catalog-add', 'catalog-setup', 'window-link'].includes(stage.dataset.scenario);
+    // окно с товаром — часть сценария «Связь кнопки с окном»
+    const isNew = page.blank && !(stage.dataset.scenario === 'window-link' && page.product);
+    const scenario = isNew ? 'new' : keepScenario ? stage.dataset.scenario : 'window-create';
+    const mode = isNew ? page.mode : null;
     if (scenario === frame.value.scenario && mode === frame.value.variant) return;
     scenSyncing = true;
     frame.select(scenario, mode);
@@ -1771,4 +2009,10 @@
 
   lsSetCollapsed(lsReadCollapsed());
   scenApply(stage.dataset.scenario);
+  // каталог выше секции с кнопкой дорисовывается вместе с картинками
+  window.addEventListener('load', () => {
+    if (stage.dataset.scenario !== 'window-link') return;
+    siteLinkScroll();
+    if (!btnSet.hidden) btnSetPlace();
+  });
 })();
