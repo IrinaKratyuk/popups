@@ -766,7 +766,7 @@
   $('.site-blank__back').addEventListener('click', () => siteSelectWindow(true));
 
   stage.addEventListener('mousedown', (e) => {
-    if (e.target.closest('#fbScrim')) return; // пока открыта панель обратной связи, выделение остаётся
+    if (!fbScrim.hidden) return; // пока открыта панель обратной связи, выделение остаётся
     if (btnSet.hidden) siteFloat.classList.toggle('is-active', !!e.target.closest('#siteFloat')); // пока открыты настройки кнопки, выделение остаётся
     if (wsRoot.hidden && secRoot.hidden && !e.target.closest('#bgWin')) { // пока открыты настройки или окно «Фон», выделение остаётся
       const inSection = !!e.target.closest('#siteBlankSection');
@@ -958,9 +958,12 @@
   const btnSetGear = () => $('[data-btn-cmd="settings"]', siteLinkWidget);
   let btnSetSaved = BTN_DEFAULTS();
   let btnSetDraft = BTN_DEFAULTS();
+  let btnSetHost = null; // кто открыл окно поверх себя и хранит его данные: сейчас только панель обратной связи
 
   function btnSetPaintCaption(data) {
-    siteLinkCaption.textContent = data.text.trim() || BTN_DEFAULTS().text;
+    const text = data.text.trim() || BTN_DEFAULTS().text;
+    if (btnSetHost) btnSetHost.paint(text);
+    else siteLinkCaption.textContent = text;
   }
   // Перетащенное окно остаётся на месте, пока его не закроют; выросло — не уходит за край сцены
   let btnSetMoved = false;
@@ -970,7 +973,7 @@
       peMoveTo(btnSet, btnSet.offsetLeft, btnSet.offsetTop);
       return;
     }
-    const r = stageRect(siteLinkWidget);
+    const r = stageRect(btnSetHost?.anchor ?? siteLinkWidget);
     btnSet.style.left = Math.round(r.left - btnSet.offsetWidth - 12) + 'px';
     btnSet.style.top = Math.round(Math.min(r.top, stage.offsetHeight - btnSet.offsetHeight - 8)) + 'px';
   }
@@ -979,6 +982,9 @@
     const page = lsPage(btnSetDraft.pageId);
     btnSetText.value = btnSetDraft.text;
     btnSetPaintCaption(btnSetDraft);
+    const glyph = !!btnSetHost?.hasIcon();
+    $('#btnSetGlyph').hidden = !glyph;
+    $('#btnSetIconPick').hidden = glyph;
     btnSetEmpty.hidden = !!page;
     btnSetPicked.hidden = !page;
     $('#btnSetPage').textContent = page?.name ?? '';
@@ -1028,15 +1034,19 @@
     btnSet.hidden = true;
     btnSetGear().classList.remove('is-selected');
     btnSetGear().setAttribute('aria-pressed', 'false');
-    btnSetPaintCaption(btnSetSaved);
+    if (btnSetHost) btnSetHost.restore();
+    else btnSetPaintCaption(btnSetSaved);
+    btnSetHost = null;
   }
-  function btnSetOpen() {
-    popupsClose();
+  function btnSetOpen(host = null) {
+    if (!host) popupsClose();
+    btnSetHost = host;
     btnSetMoved = false;
-    btnSetDraft = { ...btnSetSaved };
+    btnSetDraft = host ? host.data() : { ...btnSetSaved };
     btnSet.hidden = false;
     btnSetRender();
     btnSetPlace();
+    if (host) return;
     btnSetGear().classList.add('is-selected');
     btnSetGear().setAttribute('aria-pressed', 'true');
   }
@@ -1047,7 +1057,11 @@
   }
 
   PropertyEditor.mount(btnSet, {
-    onDone: () => { btnSetSaved = { ...btnSetDraft, text: btnSetDraft.text.trim() || BTN_DEFAULTS().text }; btnSetClose(); },
+    onDone: () => {
+      if (btnSetHost) btnSetHost.save(btnSetDraft);
+      else btnSetSaved = { ...btnSetDraft, text: btnSetDraft.text.trim() || BTN_DEFAULTS().text };
+      btnSetClose();
+    },
     onClose: btnSetClose,
   });
   btnSetText.addEventListener('input', () => {
@@ -1056,7 +1070,7 @@
   });
   btnSet.addEventListener('click', (e) => {
     if (e.target.closest('.pe__reset')) {
-      btnSetDraft = BTN_DEFAULTS();
+      btnSetDraft = btnSetHost ? btnSetHost.defaults() : BTN_DEFAULTS();
       btnSetMenuClose();
       btnSetRender();
       return;
@@ -1109,15 +1123,17 @@
   });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    if (btnSetHost) e.stopImmediatePropagation(); // Esc закрывает только окно кнопки, панель под ним остаётся
     if (!btnSetMenu.hidden) btnSetMenuClose();
     else if (btnSetOpenMode.isOpen) { btnSetOpenMode.close(); btnSetOpenMode.button.focus(); }
     else btnSetClose();
   });
 
   // Панель настроек обратной связи (Figma 2648:45307): открывается шестерёнкой виджета, где бы он ни стоял. Правки видны только в панели,
-  // галочка применяет их к сайту и ставит виджет на выбранное место, крестик и Esc отменяют. «Основной стиль», «+» у полей, «всегда», сообщение и анимация пока только с ховером.
+  // галочка применяет их к сайту и ставит виджет на выбранное место, крестик и Esc отменяют. «Основной стиль», «+» у полей и «всегда» пока только с ховером.
+  // Клик по кнопке в панели открывает поверх неё общее окно настроек кнопки: его данные живут в черновике панели и сохраняются вместе с ней.
   const FB_DEFAULTS = () => ({
-    title: 'Обратная связь', text: 'Обратная связь', cell: 8, // положение кнопки: ячейка общего редактора, 8 — справа снизу
+    title: 'Обратная связь', text: 'Обратная связь', floatText: '', cell: 8, // положение кнопки: ячейка общего редактора, 8 — справа снизу
     colors: { accent: '#f6733c', bg: '#f3f3f3', head: '#000000', text: '#000000' },
     fields: { name: true, phone: true, email: true, company: true, desc: false },
   });
@@ -1171,6 +1187,7 @@
     fbPanel.querySelectorAll('[data-fb-for]').forEach((node) => { node.hidden = !node.dataset.fbFor.split(' ').includes(fbDraft.show); });
   }
   function fbClose() {
+    if (btnSetHost) btnSetClose();
     fbEditor?.destroy();
     fbEditor = null;
     fbDraft = null;
@@ -1216,6 +1233,27 @@
     else if (cell >= 0) fbDraft.cell = cell;
     else return;
     fbRender();
+  });
+  // Кнопка открывает страницу «Обратная связь». У плавающей кнопки только иконка: её текст свой и по умолчанию пуст, текст статичной кнопки её не касается
+  const fbBtnFloat = () => fbDraft.show === 'float';
+  const fbBtnDefaults = () => ({ ...BTN_DEFAULTS(), pageId: lsFloatPageId, text: fbBtnFloat() ? '' : FB_DEFAULTS().text });
+  const fbBtnHost = {
+    hasIcon: fbBtnFloat,
+    data: () => ({ ...fbBtnDefaults(), ...fbDraft.action, text: fbBtnFloat() ? fbDraft.floatText : fbDraft.text }),
+    defaults: fbBtnDefaults,
+    paint: (text) => { if (!fbBtnFloat()) $('#fbCaption').textContent = text; },
+    save: ({ text, ...action }) => {
+      if (fbBtnFloat()) fbDraft.floatText = text.trim();
+      else fbDraft.text = text.trim() || FB_DEFAULTS().text;
+      fbDraft.action = action;
+    },
+    restore: () => fbRender(),
+  };
+  $('.fbp__button', fbPanel).addEventListener('click', (e) => {
+    const button = e.target.closest('.btn');
+    if (!button) return;
+    if (btnSetHost) btnSetClose();
+    else btnSetOpen({ ...fbBtnHost, anchor: button });
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fbClose(); });
   // Палитра кита открывается от образца и не знает о границах панели: если не умещается, смещается влево

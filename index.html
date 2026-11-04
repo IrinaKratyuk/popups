@@ -385,30 +385,28 @@
                 </div>
               </div>
             </div>
-            <div class="fbp__show">
-              Показывать
-              <div class="tumbler" id="fbShow" role="radiogroup" aria-label="Показывать">
-                <button type="button" class="tumbler__seg" role="radio" data-fb-show="float">Плавающая кнопка</button>
-                <button type="button" class="tumbler__seg" role="radio" data-fb-show="button">Статичная кнопка</button>
-                <button type="button" class="tumbler__seg" role="radio" data-fb-show="section">Секция</button>
+            <div class="fbp__grid">
+              <div class="fbp__show">
+                <span class="pe__label">Показывать</span>
+                <div class="fbp__show-body">
+                  <div class="tumbler" id="fbShow" role="radiogroup" aria-label="Показывать">
+                    <button type="button" class="tumbler__seg" role="radio" data-fb-show="float">Плавающая кнопка</button>
+                    <button type="button" class="tumbler__seg" role="radio" data-fb-show="button">Статичная кнопка</button>
+                    <button type="button" class="tumbler__seg" role="radio" data-fb-show="section">Секция</button>
+                  </div>
+                  <button type="button" class="btn btn--link btn--style-link" data-fb-for="float"><span class="btn__caption">всегда</span></button>
+                </div>
               </div>
-              <button type="button" class="btn btn--link btn--style-link" data-fb-for="float"><span class="btn__caption">всегда</span></button>
-            </div>
-            <div class="fbp__place" data-fb-for="float">
-              <div class="pe__rows fbp__pos"><div data-pos-editor></div></div>
-              <button type="button" class="btn btn--link btn--style-link fbp__message"><span class="btn__icon">&#xE95D;</span><span class="btn__caption">Добавьте привлекающее сообщение</span></button>
-            </div>
-            <label class="fbp__text" data-fb-for="button">
-              Текст кнопки
-              <span class="input input--size-m"><span class="input__body"><span class="input__field"><input class="input__control" id="fbText" aria-label="Текст кнопки"></span></span></span>
-            </label>
-            <div class="fbp__button">
-              <button type="button" class="btn btn--filled btn--style-primary btn--size-5xl btn--icon site-float__button" data-fb-for="float" aria-label="Кнопка обратной связи"><span class="btn__icon">&#xEB45;</span></button>
-              <button type="button" class="btn btn--filled btn--style-primary btn--size-5xl site-link__button" data-fb-for="button"><span class="btn__caption" id="fbCaption"></span></button>
-              <div class="fbp__animation" data-fb-for="float button">
-                <button type="button" class="btn btn--filled btn--style-pale btn--size-m btn--icon" aria-label="Предыдущая анимация"><span class="btn__icon">&#xE9A9;</span></button>
-                <button type="button" class="btn btn--filled btn--style-pale btn--size-m btn--icon" aria-label="Следующая анимация"><span class="btn__icon">&#xE9AB;</span></button>
-                <button type="button" class="btn btn--link btn--style-link"><span class="btn__caption">Анимация</span></button>
+              <div class="fbp__place" data-fb-for="float">
+                <div class="pe__rows fbp__pos"><div data-pos-editor></div></div>
+              </div>
+              <label class="fbp__text" data-fb-for="button">
+                <span class="pe__label">Текст</span>
+                <span class="input input--size-m"><span class="input__body"><span class="input__field"><input class="input__control" id="fbText" aria-label="Текст кнопки"></span></span></span>
+              </label>
+              <div class="fbp__button">
+                <button type="button" class="btn btn--filled btn--style-primary btn--size-5xl btn--icon site-float__button" data-fb-for="float" aria-label="Кнопка обратной связи"><span class="btn__icon">&#xEB45;</span></button>
+                <button type="button" class="btn btn--filled btn--style-primary btn--size-5xl site-link__button" data-fb-for="button"><span class="btn__caption" id="fbCaption"></span></button>
               </div>
             </div>
           </div>
@@ -626,8 +624,8 @@
         </header>
         <div class="pe__body">
           <div class="pe__card btnset__text">
-            <button type="button" class="btnset__icon" aria-label="Выбрать иконку"><img src="assets/img/btn-icon-pick.svg" width="18" height="18" alt=""></button>
-            <label class="input input--size-m"><span class="input__body"><span class="input__field"><input class="input__control" id="btnSetText" aria-label="Текст кнопки"></span></span></label>
+            <button type="button" class="btnset__icon" aria-label="Выбрать иконку"><img id="btnSetIconPick" src="assets/img/btn-icon-pick.svg" width="18" height="18" alt=""><span class="btnset__glyph" id="btnSetGlyph" hidden>&#xEB45;</span></button>
+            <label class="input input--size-m"><span class="input__body"><span class="input__field"><input class="input__control" id="btnSetText" placeholder="Текст на кнопке" aria-label="Текст кнопки"></span></span></label>
           </div>
           <div class="pe__card">
             <div class="pe__rows">
