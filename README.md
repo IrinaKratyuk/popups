@@ -4,8 +4,8 @@
 
 ## Ссылки
 
-- Демо (GitHub Pages): https://mariesmi.github.io/popups/
-- Репозиторий (публичный): https://github.com/MarieSmi/popups
+- Демо (GitHub Pages): https://irinakratyuk.github.io/popups/
+- Репозиторий (публичный): https://github.com/IrinaKratyuk/popups
 - Разработка макета: https://tensor.saby.ru/opendoc.html?guid=01a10b9e-d00c-7be9-9307-91f4f08a3298&client=3
 - Макет: будет добавлен
 - Концептуальное описание: [docs/concept/index.md](docs/concept/index.md)
