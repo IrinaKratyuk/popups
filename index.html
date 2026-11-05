@@ -93,7 +93,7 @@
             <div class="input site-feedback__title"><div class="input__body"><div class="input__field"><input class="input__control" type="text" value="Обратная связь" aria-label="Заголовок"></div></div></div>
             <button type="button" class="btn btn--ghost btn--style-label btn--size-m btn--icon site-feedback__close" aria-label="Закрыть"><span class="btn__icon">&#xE66C;</span></button>
           </div>
-          <div class="input" data-fb-field="name"><div class="input__body"><div class="input__field"><input class="input__control" type="text" placeholder="Имя" aria-label="Имя"></div></div></div>
+          <div class="input" data-fb-field="name"><div class="input__body"><div class="input__field"><input class="input__control" type="text" placeholder="Имя *" aria-label="Имя"></div></div></div>
           <div class="input" data-fb-field="phone"><div class="input__body"><div class="input__field"><input class="input__control" type="tel" placeholder="Телефон *" aria-label="Телефон"></div></div></div>
           <div class="input" data-fb-field="email"><div class="input__body"><div class="input__field"><input class="input__control" type="email" placeholder="E-mail" aria-label="E-mail"></div></div></div>
           <div class="input" data-fb-field="company"><div class="input__body"><div class="input__field"><input class="input__control" type="text" placeholder="Компания" aria-label="Компания"></div></div></div>
@@ -109,7 +109,7 @@
           <button type="button" class="tb__btn" data-sec-cmd="fill" aria-label="Фон"><span class="tb__icon" aria-hidden="true">&#xe664;</span></button>
           <button type="button" class="tb__btn" aria-label="Закрепить"><span class="tb__icon" aria-hidden="true">&#xe97c;</span></button>
           <button type="button" class="tb__btn" data-sec-cmd="settings" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe75d;</span></button>
-          <button type="button" class="tb__btn tb__btn--delete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
+          <button type="button" class="tb__btn tb__btn--delete" data-sec-cmd="delete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button>
           <button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button>
         </template>
         <!-- Заглушка пустой секции — одна на все секции: вставляется в каждый .site-empty -->
@@ -283,10 +283,10 @@
           </div>
           <footer class="wg wg--style-success site-footer" data-site-footer></footer>
         </div>
-        <!-- Плавающая кнопка (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2648:62449): ставится первой плашкой окна внешних виджетов, стоит поверх страницы и не прокручивается с ней -->
-        <div class="wg site-float" id="siteFloat" hidden>
-          <div class="wg__content"><button type="button" class="btn btn--filled btn--style-primary btn--size-5xl btn--icon site-float__button" aria-label="Обратная связь"><span class="btn__icon">&#xEB45;</span></button></div>
-          <div class="wg__toolbar"><div class="tb tb--style-info" role="toolbar" aria-label="Кнопка" data-button-cmds></div></div>
+        <!-- Плавающая кнопка (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2648:62449): ставится первой плашкой окна внешних виджетов, глобальный виджет, как шапка и подвал: стоит поверх всех страниц и не прокручивается с ними -->
+        <div class="wg wg--style-success site-float" id="siteFloat" hidden>
+          <div class="wg__content"><button type="button" class="btn btn--filled btn--style-primary btn--size-5xl btn--icon site-float__button" aria-label="Обратная связь"><span class="btn__icon">&#xEB45;</span></button><div class="site-float__window"><div class="site-float__bar"><span class="site-float__title"></span></div><div class="site-float__form"><div class="site-feedback" data-site-feedback></div></div></div></div>
+          <div class="wg__toolbar"><div class="tb tb--style-success" role="toolbar" aria-label="Кнопка" data-button-cmds></div><div class="tb tb--style-success site-float__tb" role="toolbar" aria-label="Окно"><button type="button" class="tb__btn" id="siteFloatBack" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button><button type="button" class="tb__btn" id="siteFloatFold" aria-expanded="false"><span class="tb__icon" aria-hidden="true"></span><span class="tb__caption"></span></button><button type="button" class="tb__btn" id="siteFloatSettings" aria-label="Настройки"><span class="tb__icon" aria-hidden="true">&#xe61b;</span></button><button type="button" class="tb__btn tb__btn--delete" id="siteFloatDelete" aria-label="Удалить"><span class="tb__icon" aria-hidden="true">&#xeb72;</span></button><button type="button" class="tb__btn" aria-label="Ещё"><span class="tb__icon" aria-hidden="true">&#xeab4;</span></button></div></div>
         </div>
       </main>
 
@@ -385,28 +385,35 @@
                 </div>
               </div>
             </div>
-            <div class="fbp__grid">
+            <div class="fbp__grid" data-fb-for="float">
               <div class="fbp__show">
                 <span class="pe__label">Показывать</span>
-                <div class="fbp__show-body">
-                  <div class="tumbler" id="fbShow" role="radiogroup" aria-label="Показывать">
-                    <button type="button" class="tumbler__seg" role="radio" data-fb-show="float">Плавающая кнопка</button>
-                    <button type="button" class="tumbler__seg" role="radio" data-fb-show="button">Статичная кнопка</button>
-                    <button type="button" class="tumbler__seg" role="radio" data-fb-show="section">Секция</button>
+                <div class="tumbler" id="fbKind" role="radiogroup" aria-label="Показывать">
+                  <button type="button" class="tumbler__seg" role="radio" data-fb-kind="button">Кнопка вызова</button>
+                  <button type="button" class="tumbler__seg" role="radio" data-fb-kind="window">Окно</button>
+                </div>
+                <button type="button" class="btn btn--link btn--style-link btn--size-m"><span class="btn__caption">всегда</span></button>
+              </div>
+              <!-- Положение кнопки: точка в ячейке показывает, в каком углу экрана стоит кнопка. Это редактор кнопки, положение окна задаёт общий редактор на 9 ячеек -->
+              <div class="fbp__place">
+                <span class="pe__label">Расположение</span>
+                <div class="fbp__place-body">
+                  <div class="fbp__corners" role="radiogroup" aria-label="Расположение">
+                    <button type="button" class="fbp__corner" role="radio" data-fb-cell="8" aria-label="Справа снизу"></button>
+                    <button type="button" class="fbp__corner" role="radio" data-fb-cell="6" aria-label="Слева снизу"></button>
+                    <button type="button" class="fbp__corner" role="radio" data-fb-cell="2" aria-label="Справа сверху"></button>
+                    <button type="button" class="fbp__corner" role="radio" data-fb-cell="0" aria-label="Слева сверху"></button>
                   </div>
-                  <button type="button" class="btn btn--link btn--style-link" data-fb-for="float"><span class="btn__caption">всегда</span></button>
+                  <button type="button" class="btn btn--link btn--style-link btn--size-m fbp__message" data-fb-kind-for="button"><span class="btn__caption">+ Добавьте привлекающее сообщение</span></button>
                 </div>
               </div>
-              <div class="fbp__place" data-fb-for="float">
-                <div class="pe__rows fbp__pos"><div data-pos-editor></div></div>
-              </div>
-              <label class="fbp__text" data-fb-for="button">
-                <span class="pe__label">Текст</span>
-                <span class="input input--size-m"><span class="input__body"><span class="input__field"><input class="input__control" id="fbText" aria-label="Текст кнопки"></span></span></span>
-              </label>
-              <div class="fbp__button">
-                <button type="button" class="btn btn--filled btn--style-primary btn--size-5xl btn--icon site-float__button" data-fb-for="float" aria-label="Кнопка обратной связи"><span class="btn__icon">&#xEB45;</span></button>
-                <button type="button" class="btn btn--filled btn--style-primary btn--size-5xl site-link__button" data-fb-for="button"><span class="btn__caption" id="fbCaption"></span></button>
+              <div class="fbp__button-row" data-fb-kind-for="button">
+                <div class="fbp__button">
+                  <button type="button" class="btn btn--filled btn--style-primary btn--size-5xl btn--icon site-float__button" aria-label="Кнопка обратной связи"><span class="btn__icon">&#xEB45;</span></button>
+                </div>
+                <button type="button" class="fbp__arrow fbp__arrow--prev" aria-label="Предыдущая анимация"></button>
+                <button type="button" class="fbp__arrow fbp__arrow--next" aria-label="Следующая анимация"></button>
+                <button type="button" class="btn btn--link btn--style-link btn--size-m"><span class="btn__caption">Анимация</span></button>
               </div>
             </div>
           </div>
@@ -419,14 +426,27 @@
         <div class="sales-picker__rail"><button class="sales-icon" id="salesPickerClose" type="button" aria-label="Отменить выбор"><img src="assets/img/sales-close.svg" width="28" height="28" alt=""></button><span class="sales-icon sales-list-settings" title="Настройки списка"><span class="ico24">&#xEB66;</span></span><span class="sales-spacer"></span><span class="rp-help" aria-label="Помощь"><img src="assets/img/help.svg" width="12" height="16" alt=""></span></div>
       </section>
 
-      <!-- Окно внешних виджетов (Figma 2894:48645): открывается по центру по клику на внешний виджет в магазине -->
-      <section class="ext-picker" id="extPicker" role="dialog" aria-labelledby="extPickerTitle" hidden>
-        <div class="ext-picker__head">
-          <strong class="ext-picker__title" id="extPickerTitle"></strong>
-          <button class="btn btn--same btn--style-unaccented btn--size-m ext-picker__default" type="button">По умолчанию</button>
+      <!-- Окно внешних виджетов (Figma G3QPR5r3X5ox6DmPwj6rJ7 27261:169142): открывается по центру по клику на внешний виджет в магазине, галочки нет: выбор — клик по плашке -->
+      <section class="ext-win ext-win--pick" id="extPicker" role="dialog" aria-labelledby="extPickerTitle" hidden>
+        <div class="ext-win__head">
+          <strong class="ext-win__title" id="extPickerTitle"></strong>
+          <button class="btn btn--same btn--style-unaccented btn--size-m ext-win__default" type="button">По умолчанию</button>
+          <button class="ext-win__close" type="button" id="extPickerClose" aria-label="Закрыть"><img src="assets/img/close-tool.svg" width="28" height="28" alt=""></button>
         </div>
-        <button class="mw-menu__close" type="button" id="extPickerClose" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
-        <div class="ext-picker__list" id="extPickerList"></div>
+        <div class="ext-win__list" id="extPickerList"></div>
+      </section>
+
+      <!-- Настройка вставки (Figma G3QPR5r3X5ox6DmPwj6rJ7 27261:169213): открывается вместо окна выбора, клик по превью возвращает к нему -->
+      <section class="ext-win ext-win--place" id="extPlace" role="dialog" aria-labelledby="extPlaceTitle" hidden>
+        <div class="ext-win__head">
+          <strong class="ext-win__title" id="extPlaceTitle"></strong>
+          <button class="btn btn--filled btn--style-success btn--icon ch-done ext-win__done" type="button" id="extPlaceDone" aria-label="Вставить"><span class="btn__icon">&#xE75E;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
+          <button class="ext-win__close" type="button" id="extPlaceClose" aria-label="Закрыть"><img src="assets/img/close-tool.svg" width="28" height="28" alt=""></button>
+        </div>
+        <div class="ext-win__body">
+          <div class="pe__rows ext-win__rows"><div data-open-mode></div></div>
+          <div class="ext-card" id="extPlaceCard"></div>
+        </div>
       </section>
 
       <!-- Тулбар правого сайдбара -->
