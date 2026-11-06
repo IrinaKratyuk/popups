@@ -575,9 +575,20 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-seo__favicon img { display: block; border: 1px solid #eaeaea; border-radius: 28px; }
 .rs-seo__chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 12px 8px; }
 .rs-seo__chips .chips__caption { padding-bottom: 2px; } /* подъём текста на 1px: Inter в браузере садится ниже, чем в макете (web/chips 20059:4385) */
+/* Чипсы неподключённых компонентов — опциональное свойство ui-kit (.chips--optional, PropertyGrid 37372:32955): белые на фоне окна, иконка 24 px.
+   Иконка — svg компонента в слоте .chips__icon; подъём глифа на 2px картинке не нужен */
+/* группы подключённых компонентов — как блок «Ресторан», только шапка */
+.comp-groups { display: flex; flex-direction: column; gap: 4px; }
+.comp-groups:empty { display: none; }
+.rs-params .comp-group .sales-settings__head { margin-bottom: 0; }
+.rs-comps { padding: 8px 8px 12px; }
+.rs-comps[hidden] { display: none; }
+.rs-comps__chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rs-comps .chips__icon { padding: 0; }
+.rs-comps .chips__icon img { display: block; width: 24px; height: 24px; }
 
 /* Точки продаж — те же кнопки, шрифты и подсказки ui-kit, что в остальных окнах. */
-.rs-params__body { display: flex; flex-direction: column; gap: 12px; }
+.rs-params__body { display: flex; flex-direction: column; gap: 4px; }
 .sales-settings[hidden], .sales-popup[hidden], .sales-picker[hidden], .comp-settings[hidden] { display: none; }
 /* Компоненты: все плашками в две колонки, галка — статус подключения (Figma Ea5CxwsZSyp3zoa5ODoqdm 7350:8132) */
 .comp-settings { display: flex; flex-direction: column; gap: 8px; }
@@ -611,17 +622,32 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-settings__head { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; height: 40px; padding: 0 66px 0 12px; gap: 10px; font-size: 14px; }
 .sales-settings__head > div { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
 .sales-settings__head > span { color: #8991a9; }
+.sales-settings__icon { flex: none; width: 24px; height: 24px; margin-right: -2px; } /* иконка компонента, как у группы в панели страниц */
 .sales-settings .btn--icon, .sales-popup .btn--icon { position: relative; width: 24px; height: 24px; padding: 0; }
 .sales-rows { background: #fff; border-radius: 8px; padding: 8px 0; }
 /* Прежний вид «Параметров сайта»: блок «Сайт» и точки продаж — белые карточки, заголовок точек внутри карточки */
-.rs-site { background: #fff; border-radius: 8px; padding: 8px 0 12px; }
-.rs-site__title { padding: 4px 12px; font-size: 15px; font-weight: 600; letter-spacing: -.2115px; }
-.rs-site__row { display: flex; align-items: center; gap: 8px; padding: 8px 12px 0; font-size: 14px; letter-spacing: -.1974px; }
-.rs-site__label { color: #8991a9; margin-right: 8px; }
+.rs-site { display: flex; flex-direction: column; align-items: flex-start; padding: 8px 12px 12px; background: #fff; border-radius: 8px; } /* Figma 2854:63032 */
+.rs-site__title { display: flex; align-items: center; gap: 8px; height: 24px; font-size: 15px; font-weight: 600; letter-spacing: -.2115px; color: var(--text); }
+.rs-site__row { display: flex; align-items: center; gap: 8px; height: 24px; font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
+.rs-site__label { color: #8991a9; }
+.rs-site__owner { display: flex; align-items: center; gap: 4px; }
 .rs-site__val { color: var(--link); }
-.rs-site__clear { color: #b5b9c7; font-size: 18px; line-height: 1; }
-.rs-params .sales-settings { background: #fff; border-radius: 8px; padding: 4px 0 8px; }
+.rs-site__clear { color: #ccc; }
+/* Точки продаж в «Параметрах сайта»: Figma 2547:71389 — карточка с полями 8 сверху и снизу, шапка 24, строки 32 */
+.rs-params .sales-settings { background: #fff; border-radius: 8px; padding: 8px 0; }
+.rs-params .sales-settings__head { height: 24px; gap: 12px; margin-bottom: 4px; } /* между шапкой и первой строкой — 4px */
 .rs-params .sales-settings .sales-rows { padding: 0; }
+/* Крестик «отключить компонент» (как .swatch-clear в STW): виден всегда. Крестики плашки и строк — в одной вертикали с крестиком панели:
+   кнопка панели 32 в 8 от края окна, тело окна с полями 4 → центр в 20 от края плашки; кнопка 24 → right 8 */
+.rs-params .sales-settings { position: relative; }
+.rs-params .sales-row__actions { padding-right: 8px; }
+.sales-settings__remove { position: absolute; top: 8px; right: 8px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; cursor: pointer; }
+.sales-settings__remove[hidden] { display: none; }
+.sales-settings__remove .ico { color: var(--icon-unaccented_icon-color); }             /* ui-kit: #ccc */
+.sales-settings__remove:hover .ico { color: var(--icon-unaccented_hover_icon-color); } /* ui-kit: #999 */
+.rs-params .sales-row__name .ico { width: 24px; height: 24px; } /* корона в квадрате 24, как «Инфо» в макете */
+.rs-params .sales-price { position: relative; display: flex; justify-self: start; max-width: 100%; overflow: visible; padding: 0; color: var(--text); font: inherit; letter-spacing: inherit; cursor: pointer; }
+.sales-price__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sales-empty { margin: 0; padding: 0 12px; color: #8991a9; font-size: 14px; line-height: 1.4; }
 .sales-empty__link { color: var(--link); } /* кнопка-ссылка в тексте: шрифт и строка — от текста */
 .sales-empty__link:hover { text-decoration: underline; }

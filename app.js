@@ -270,6 +270,33 @@
     const cols = [el('div', 'comp-settings__col'), el('div', 'comp-settings__col')];
     Object.entries(COMP).forEach(([id, c], index) => cols[index % 2].append(compCard(id, c)));
     root.replaceChildren(...cols);
+    compChipsRender();
+  }
+  // Чипсы «Параметров сайта»: неподключённые компоненты, иконка компонента + название. Подключённый уходит из чипсов
+  function compChipsRender() {
+    const chips = Object.entries(COMP).filter(([id]) => !compOn.has(id)).map(([id, c]) => {
+      const chip = el('button', 'chips chips--optional'); // опциональное свойство ui-kit (PropertyGrid 37372:32955)
+      chip.type = 'button';
+      chip.dataset.compAdd = id;
+      chip.title = c.desc;
+      chip.setAttribute('aria-label', 'Подключить компонент: ' + c.name);
+      chip.innerHTML = `<span class="chips__icon"><img src="assets/img/comp/${id}.svg" alt=""></span><span class="chips__caption"></span>`;
+      chip.lastChild.textContent = c.name;
+      return chip;
+    });
+    // Подключённые — группами в порядке подключения, как блок «Ресторан»: настроек у них пока нет, только шапка
+    const groups = [...compOn].filter((id) => id !== 'restaurant').map((id) => {
+      const group = el('section', 'sales-settings comp-group');
+      group.setAttribute('aria-label', COMP[id].name);
+      group.innerHTML = `<div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/${id}.svg" width="24" height="24" alt=""><span></span></div></div>`
+        + `<button class="sales-settings__remove" type="button" data-comp-toggle="${id}"><span class="ico">&#xE66C;</span></button>`;
+      $('.sales-settings__head span', group).textContent = COMP[id].name;
+      group.lastChild.setAttribute('aria-label', `Отключить компонент «${COMP[id].name}»`);
+      return group;
+    });
+    $('#compGroups').replaceChildren(...groups);
+    $('#compChips').replaceChildren(...chips);
+    $('#compChipsBlock').hidden = !chips.length;
   }
   function compCard(id, c) {
     const on = compOn.has(id);
@@ -319,7 +346,8 @@
   const salesCopy = (rows) => rows.map((row) => ({ ...row, prices: row.prices?.slice() }));
   const salesCurrent = () => salesDraft || salesSaved;
 
-  function salesRenderRows(root, rows) {
+  // pricePick — прайс кнопкой, открывает выбор прайсов (прежний вид «Параметров сайта», Figma 2547:71389)
+  function salesRenderRows(root, rows, pricePick = false) {
     root.replaceChildren();
     if (!rows.length) {
       const empty = el('p', 'sales-empty');
@@ -338,8 +366,16 @@
       label.textContent = SALES.find((point) => point.id === row.id).name;
       name.append(label);
       if (!index) name.append(el('span', 'ico', '&#xEABA;'));
-      const price = el('span', 'sales-price');
+      const price = el(pricePick ? 'button' : 'span', 'sales-price');
       price.textContent = row.price;
+      if (pricePick) {
+        // текст — отдельным span с троеточием, чтобы кнопка не обрезала индикатор клика
+        price.replaceChildren(el('span', 'sales-price__text'));
+        price.firstChild.textContent = row.price;
+        price.type = 'button';
+        price.dataset.salesPrice = row.id;
+        price.setAttribute('aria-label', 'Прайс: ' + label.textContent);
+      }
       const actions = el('div', 'sales-row__actions');
       if (index) {
         const primary = el('button', '', '<span class="ico">&#xEABA;</span>');
@@ -361,7 +397,8 @@
     compRender();
     // Прежний вид «Параметров сайта»: точки продаж с прайсами — когда есть каталог или подключён «Ресторан»
     $('#salesSettings').hidden = !catalogAdded && !compOn.has('restaurant');
-    salesRenderRows($('#salesSettingsRows'), salesSaved);
+    $('#salesSettingsRemove').hidden = !compOn.has('restaurant'); // каталог без компонента отключать нечего
+    salesRenderRows($('#salesSettingsRows'), salesSaved, true);
     $('#salesData').hidden = !catalogAdded && !compOn.has('restaurant');
     $('#siteCatalog').classList.toggle('is-demo', catalogHome && !salesSaved.length); // без точек продаж — демоданные
     salesRenderRows($('#salesPopupRows'), salesCurrent());
@@ -651,6 +688,8 @@
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') catSetClose(); });
   stage.addEventListener('click', (e) => {
     if (e.target.closest('[data-sales-add]')) salesPickerOpen();
+    const price = e.target.closest('[data-sales-price]');
+    if (price) salesPickerOpen(price.dataset.salesPrice);
     const remove = e.target.closest('[data-sales-delete]');
     const primary = e.target.closest('[data-sales-primary]');
     if (!remove && !primary) return;
@@ -968,22 +1007,9 @@
     if (!lsPage(lsActive)) lsActive = (lsPages.find((p) => p.home) ?? lsPages[0]).id;
     lsRender();
   }
-  // Снять рыжую галку = отключить компонент. «Зависит от» — эти компоненты приходят с ним и являются его частью, поэтому уходят вместе:
-  // — компоненты, которые от него зависят (без него не работают);
-  // — его зависимости, пришедшие с ним: если их не подключали самостоятельно и они не нужны оставшимся компонентам.
+  // Отключение компонента: уходят только его страницы (и его виджет, его настройки). Другие компоненты — ни зависящие от него, ни его зависимости — остаются
   function compRemoveSet(id) {
-    const ids = new Set([id]);
-    for (let grew = true; grew;) {
-      grew = false;
-      for (const c of compOn) {
-        if (ids.has(c)) continue;
-        const dependent = COMP[c].deps.some((d) => ids.has(d));
-        const orphan = !compRoots.has(c) && [...ids].some((r) => COMP[r].deps.includes(c))
-          && ![...compOn].some((o) => !ids.has(o) && o !== c && COMP[o].deps.includes(c));
-        if (dependent || orphan) { ids.add(c); grew = true; }
-      }
-    }
-    return [...compOn].filter((c) => ids.has(c)); // в порядке подключения
+    return [id];
   }
   // Сначала окно: какие компоненты отключатся вместе с ним и что уйдёт с сайта — страницы и виджет
   function compRemoveAsk(id) {
@@ -1015,9 +1041,9 @@
   // Галка на плашке: рыжая — подключён, снять = отключить (с подтверждением, вместе с зависящими и пришедшими с ним). Серая ставится — компонент подключается:
   // приходят его страницы и зависимости со своими страницами. Клик по остальной плашке «Ресторана» — его окно
   stage.addEventListener('click', (e) => {
-    const toggle = e.target.closest('[data-comp-toggle]');
+    const toggle = e.target.closest('[data-comp-toggle], [data-comp-add]');
     if (toggle) {
-      const id = toggle.dataset.compToggle;
+      const id = toggle.dataset.compToggle || toggle.dataset.compAdd;
       if (compOn.has(id)) { compRemoveAsk(id); return; }
       compConnect(id, true);
       lsRender();
