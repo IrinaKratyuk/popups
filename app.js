@@ -242,7 +242,7 @@
   let salesSelection = new Set();
   let salesPickerMode = null;
   let salesOnlySelected = false;
-  // Компоненты: виджет из магазина подключает свой компонент, а тот — компоненты, от которых зависит. Компонент приносит страницы и настройки
+  // Компоненты: виджет из магазина подключает свой компонент, а с ним приходят компоненты, от которых он зависит (deps) — они его часть. Компонент приносит страницы и настройки
   // (в «Параметры сайта», группа «Компоненты»). Связи — из документа «Компоненты интернет магазина». Настройки пока есть только у «Ресторана» — точки продаж.
   // widget — виджет компонента в магазине, widgetPage — страница, которую виджет открывает, menuPage — страница, на которой стоит меню.
   // Порядок — как в таблице документа; он же порядок плашек в «Параметрах сайта»
@@ -966,21 +966,40 @@
     if (!lsPage(lsActive)) lsActive = (lsPages.find((p) => p.home) ?? lsPages[0]).id;
     lsRender();
   }
-  // Снять рыжую галку = отключить компонент. Сначала окно: что уйдёт с сайта — его страницы и виджет.
-  // Уходят только его страницы, виджет с фрейма и настройки; другие компоненты (зависимости и зависящие) остаются подключёнными
+  // Снять рыжую галку = отключить компонент. «Зависит от» — эти компоненты приходят с ним и являются его частью, поэтому уходят вместе:
+  // — компоненты, которые от него зависят (без него не работают);
+  // — его зависимости, пришедшие с ним: если их не подключали самостоятельно и они не нужны оставшимся компонентам.
+  function compRemoveSet(id) {
+    const ids = new Set([id]);
+    for (let grew = true; grew;) {
+      grew = false;
+      for (const c of compOn) {
+        if (ids.has(c)) continue;
+        const dependent = COMP[c].deps.some((d) => ids.has(d));
+        const orphan = !compRoots.has(c) && [...ids].some((r) => COMP[r].deps.includes(c))
+          && ![...compOn].some((o) => !ids.has(o) && o !== c && COMP[o].deps.includes(c));
+        if (dependent || orphan) { ids.add(c); grew = true; }
+      }
+    }
+    return [...compOn].filter((c) => ids.has(c)); // в порядке подключения
+  }
+  // Сначала окно: какие компоненты отключатся вместе с ним и что уйдёт с сайта — страницы и виджет
   function compRemoveAsk(id) {
-    const ids = [id];
-    const pages = lsPages.filter((p) => p.comp === id);
-    const widget = catalogAdded && id === 'restaurant';
-    // «Вместе с компонентом удалятся страницы «…», «…» и виджет «…»»
+    const ids = compRemoveSet(id);
+    const pages = lsPages.filter((p) => ids.includes(p.comp));
+    const widget = catalogAdded && ids.includes('restaurant');
+    const others = ids.filter((c) => c !== id);
+    // «Вместе с ним отключатся компоненты «…». Удалятся страницы «…» и виджет «…»»
+    const lines = [];
+    if (others.length) lines.push(`Вместе с ним ${others.length > 1 ? 'отключатся компоненты' : 'отключится компонент'} ` + others.map((c) => `«${COMP[c].name}»`).join(', ') + '.');
     const parts = [];
     if (pages.length) parts.push((pages.length > 1 ? 'страницы ' : 'страница ') + pages.map((p) => `«${p.name}»`).join(', '));
     if (widget) parts.push(`виджет «${COMP.restaurant.widget}»`);
-    const many = pages.length > 1 || parts.length > 1;
+    if (parts.length) lines.push(`${pages.length > 1 || parts.length > 1 ? 'Удалятся' : 'Удалится'} ${parts.join(' и ')}.`);
     salesClose();
     confirmAsk({
       message: `Отключить компонент «${COMP[id].name}»?`,
-      details: parts.length ? `Вместе с компонентом ${many ? 'удалятся' : 'удалится'} ${parts.join(' и ')}` : '',
+      details: lines.join(' '),
       answers: [['yes', 'Да', true], ['cancel', 'Отмена']],
     }, (answer) => { if (answer === 'yes') compRemove(ids, widget); });
   }
@@ -991,8 +1010,8 @@
     compDropPages((p) => ids.includes(p.comp));
     salesRender();
   }
-  // Галка на плашке: рыжая — подключён, снять = удалить (с подтверждением). Серая ставится — компонент подключается:
-  // приходят его страницы (и зависимости, если их ещё не было). Клик по остальной плашке «Ресторана» — его окно
+  // Галка на плашке: рыжая — подключён, снять = отключить (с подтверждением, вместе с зависящими и пришедшими с ним). Серая ставится — компонент подключается:
+  // приходят его страницы и зависимости со своими страницами. Клик по остальной плашке «Ресторана» — его окно
   stage.addEventListener('click', (e) => {
     const toggle = e.target.closest('[data-comp-toggle]');
     if (toggle) {
