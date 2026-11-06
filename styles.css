@@ -609,6 +609,15 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-settings__head > span { color: #8991a9; }
 .sales-settings .btn--icon, .sales-popup .btn--icon { position: relative; width: 24px; height: 24px; padding: 0; }
 .sales-rows { background: #fff; border-radius: 8px; padding: 8px 0; }
+/* Прежний вид «Параметров сайта»: блок «Сайт» и точки продаж — белые карточки, заголовок точек внутри карточки */
+.rs-site { background: #fff; border-radius: 8px; padding: 8px 0 12px; }
+.rs-site__title { padding: 4px 12px; font-size: 15px; font-weight: 600; letter-spacing: -.2115px; }
+.rs-site__row { display: flex; align-items: center; gap: 8px; padding: 8px 12px 0; font-size: 14px; letter-spacing: -.1974px; }
+.rs-site__label { color: #8991a9; margin-right: 8px; }
+.rs-site__val { color: var(--link); }
+.rs-site__clear { color: #b5b9c7; font-size: 18px; line-height: 1; }
+.rs-params .sales-settings { background: #fff; border-radius: 8px; padding: 4px 0 8px; }
+.rs-params .sales-settings .sales-rows { padding: 0; }
 .sales-empty { margin: 0; padding: 0 12px; color: #8991a9; font-size: 14px; line-height: 1.4; }
 .sales-empty__link { color: var(--link); } /* кнопка-ссылка в тексте: шрифт и строка — от текста */
 .sales-empty__link:hover { text-decoration: underline; }

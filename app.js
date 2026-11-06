@@ -247,7 +247,7 @@
   // widget — виджет компонента в магазине, widgetPage — страница, которую виджет открывает. Отдельной страницы «Меню» у «Ресторана» нет: каталог стоит на главной.
   // Порядок — как в таблице документа; он же порядок плашек в «Параметрах сайта»
   const COMP = {
-    company: { name: 'Компания и точки продаж', desc: 'Адреса, контакты и часы работы филиалов на карте', deps: [], pages: ['Филиалы'] },
+    company: { name: 'Компания и точки продаж', desc: 'Адреса, контакты и часы работы филиалов на карте', deps: [], pages: [] },
     account: { name: 'Личный кабинет', desc: 'Вход и регистрация покупателя, профиль, бонусы и сохранённые адреса', deps: [], pages: ['Вход и регистрация', 'Профиль'] },
     orders: { name: 'Заказы и оплата', desc: 'Корзина, оформление и оплата заказа онлайн, история заказов покупателя', deps: ['company', 'account'], pages: ['Заказы', 'Карточка заказа'] },
     delivery: { name: 'Доставка и самовывоз', desc: 'Зоны и стоимость доставки, самовывоз из ближайшей точки', deps: [], pages: [] },
@@ -359,6 +359,9 @@
   }
   function salesRender() {
     compRender();
+    // Прежний вид «Параметров сайта»: точки продаж с прайсами — когда есть каталог или подключён «Ресторан»
+    $('#salesSettings').hidden = !catalogAdded && !compOn.has('restaurant');
+    salesRenderRows($('#salesSettingsRows'), salesSaved);
     $('#salesData').hidden = !catalogAdded && !compOn.has('restaurant');
     $('#siteCatalog').classList.toggle('is-demo', catalogHome && !salesSaved.length); // без точек продаж — демоданные
     salesRenderRows($('#salesPopupRows'), salesCurrent());

@@ -332,6 +332,7 @@
         </div>
         <div class="rs-params__body">
           <div class="rs-seo">
+            <div class="rs-seo__domain"><span class="rs-seo__url">s-billing.saby.ws</span><button class="btn btn--link btn--style-unaccented" type="button">Сменить</button></div>
             <div class="rs-seo__favicon">Иконка сайта (favicon)<img src="assets/img/favicon.png" width="28" height="28" alt=""></div>
             <div class="rs-seo__chips">
             <button class="chips chips--size-m" type="button"><span class="chips__caption">HTML - код</span></button>
@@ -342,8 +343,18 @@
             <button class="chips chips--size-m" type="button"><span class="chips__caption">Google Tag Manager</span></button>
             </div>
           </div>
+          <!-- Прежний вид: блок «Сайт» и точки продаж с прайсами. Показывается, пока скрыты плашки «Компоненты» -->
+          <section class="rs-site" aria-label="Сайт">
+            <div class="rs-site__title">Сайт</div>
+            <div class="rs-site__row"><span class="rs-site__label">Владелец</span><span class="rs-site__val">Тензор, ООО</span><span class="rs-site__clear" aria-hidden="true">×</span></div>
+          </section>
+          <section class="sales-settings" id="salesSettings" aria-label="Точки продаж сайта" hidden>
+            <div class="sales-settings__head"><div>Точки продаж <button class="btn btn--filled btn--style-pale btn--size-m btn--icon" type="button" data-sales-add aria-label="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span></button></div><span>Прайс</span></div>
+            <div class="sales-rows" id="salesSettingsRows"></div>
+          </section>
+          <!-- Компоненты пока скрыты (hidden), код не удалён. Вернуть — снять hidden и спрятать .rs-site и #salesSettings -->
           <!-- Компоненты: все плашками в две колонки, галка — статус. Плашки строит compRender, точки продаж — на плашке «Ресторан» -->
-          <section class="comp-settings" id="compSettings" aria-label="Компоненты сайта">
+          <section class="comp-settings" id="compSettings" aria-label="Компоненты сайта" hidden>
             <div class="comp-settings__title">Компоненты</div>
             <div class="comp-settings__list" id="compList"></div>
           </section>
