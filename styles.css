@@ -446,6 +446,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* активная иконка: фон navigation_active, маркер справа */
 .rp-btn.is-active, .rp-btn.is-active:hover { background: #f2f2f2; }
 .rp-btn.is-active::after { content: ""; position: absolute; left: 44px; top: 8px; width: 4px; height: 32px; border-radius: 3px; background: #cc3d00; }
+/* окно выбора закрывает тулбар до края сцены, но при масштабе его край сглаживается и полоска у края просвечивает — пока окно открыто, её нет */
+.stage:has(.sales-picker:not([hidden])) .rp-btn.is-active::after { display: none; }
 .rp-help { width: 32px; height: 32px; border-radius: 16px; background: #eeebff; border: 1px solid #d4ccff; display: flex; align-items: center; justify-content: center; transition: background-color .12s; }
 .rp-help:hover { background: #e1dbff; }
 
