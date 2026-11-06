@@ -2423,7 +2423,7 @@
     const head = el('div', 'ls-group');
     const icon = el('img', 'ls-group__icon');
     icon.src = `assets/img/comp/${id}.svg`;
-    icon.width = icon.height = 16;
+    icon.width = icon.height = 24;
     icon.alt = '';
     const name = el('span', 'ls-group__name');
     name.textContent = COMP[id].name;
