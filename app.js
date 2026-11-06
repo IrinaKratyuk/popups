@@ -1160,6 +1160,10 @@
     shopProductPin.hidden = on || siteBlank.hidden;
     siteBlankCell.hidden = on;
     siteBlankSection.classList.toggle('has-widget', on);
+    // Страница пришла с компонентом — её основной виджет (карточка товара/блюда) удалить нельзя: нет «Удалить» ни у виджета, ни у его секции
+    const locked = on && !!wsPage.comp;
+    $('#siteProductDelete').hidden = locked;
+    $('[data-sec-cmd="delete"]', siteBlankSection).hidden = locked;
     siteProduct.classList.remove('is-active');
     siteBlankSection.classList.remove('is-active');
   }
@@ -1174,6 +1178,7 @@
     if (wsRoot.hidden) siteSelectWindow(false);
   }
   function siteRemoveProduct() {
+    if (wsPage.comp) return; // основной виджет страницы компонента не удаляется
     wsPage.product = false;
     siteProductSyncShop();
     siteProductRender(false);
