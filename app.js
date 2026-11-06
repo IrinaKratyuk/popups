@@ -244,7 +244,7 @@
   let salesOnlySelected = false;
   // Компоненты: виджет из магазина подключает свой компонент, а с ним приходят компоненты, от которых он зависит (deps) — они его часть. Компонент приносит страницы и настройки
   // (в «Параметры сайта», группа «Компоненты»). Связи — из документа «Компоненты интернет магазина». Настройки пока есть только у «Ресторана» — точки продаж.
-  // widget — виджет компонента в магазине, widgetPage — страница, которую виджет открывает, menuPage — страница, на которой стоит меню.
+  // widget — виджет компонента в магазине, widgetPage — страница, которую виджет открывает. Отдельной страницы «Меню» у «Ресторана» нет: каталог стоит на главной.
   // Порядок — как в таблице документа; он же порядок плашек в «Параметрах сайта»
   const COMP = {
     company: { name: 'Компания и точки продаж', desc: 'Адреса, контакты и часы работы филиалов на карте', deps: [], pages: ['Филиалы'] },
@@ -252,7 +252,7 @@
     orders: { name: 'Заказы и оплата', desc: 'Корзина, оформление и оплата заказа онлайн, история заказов покупателя', deps: ['company', 'account'], pages: ['Заказы', 'Карточка заказа'] },
     delivery: { name: 'Доставка и самовывоз', desc: 'Зоны и стоимость доставки, самовывоз из ближайшей точки', deps: [], pages: [] },
     shop: { name: 'Магазин', desc: 'Каталог товаров с ценами и остатками, корзина и заказ с доставкой', deps: ['orders', 'delivery'], pages: [] },
-    restaurant: { name: 'Ресторан', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', deps: ['orders', 'delivery'], pages: ['Меню', 'Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда', menuPage: 'Меню' },
+    restaurant: { name: 'Ресторан', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', deps: ['orders', 'delivery'], pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда' },
     services: { name: 'Сфера услуг', desc: 'Каталог услуг и онлайн-запись к специалисту на свободное время', deps: ['orders'], pages: [] },
     hotel: { name: 'Отель', desc: 'Номера и цены, бронирование на даты с оплатой онлайн', deps: ['orders'], pages: [] },
     loyalty: { name: 'Лояльность', desc: 'Бонусы, скидки и акции для покупателей, баланс в личном кабинете', deps: ['company', 'account'], pages: [] },
@@ -260,7 +260,7 @@
   };
   const compOn = new Set();    // подключавшиеся, в порядке подключения: их страницы и настройки на сайте
   const compRoots = new Set(); // подключённые виджетом, а не как зависимость
-  let catalogHome = false;     // каталог стоит на главной (сценарии компонентов), а не на «Меню»
+  let catalogHome = false;     // каталог стоит на главной (сценарии компонентов), а не на странице «Меню» прочих сценариев
   const compConfigured = () => salesSaved.length > 0;
   function compRender() {
     const root = $('#compList');
@@ -951,8 +951,7 @@
     COMP[id].pages.forEach((name, i) => {
       if (lsPages.some((p) => p.comp === id && p.name === name)) return;
       const widgetPage = name === COMP[id].widgetPage;
-      const menu = name === COMP[id].menuPage; // страница с меню — страница сайта, остальные пока пустые
-      const page = { id: lsNextId++, name, off: false, blank: !menu, mode: 'page', fixed: true, comp: id, widgetPage, menu, product: widgetPage };
+      const page = { id: lsNextId++, name, off: false, blank: true, mode: 'page', fixed: true, comp: id, widgetPage, product: widgetPage };
       // вернувшаяся страница встаёт на своё место среди страниц компонента
       const order = (p) => p.comp === id ? COMP[id].pages.indexOf(p.name) : -1;
       const after = lsPages.findLastIndex((p) => p.comp === id && order(p) < i);
@@ -1089,11 +1088,8 @@
     siteMain.hidden = isBlank;
     // Главная — баннер и «О нас», на «Меню» — только секция с каталогом. В сценариях компонентов каталог стоит на главной между ними
     siteMain.classList.toggle('is-home', !!page.home);
-    // На странице «Меню» компонента — меню: тот же каталог, но это содержимое страницы, а не виджет с главной — удалить его отсюда нельзя
-    siteMain.classList.toggle('is-menu', !!page.menu);
-    if (catalogHome) siteCatalogShow(!!page.menu || catalogAdded);
-    $('#siteCatalogDelete').hidden = !!page.menu;
-    const hasCatalog = !isBlank && (catalogHome ? page.home || page.menu : !page.home);
+    if (catalogHome) siteCatalogShow(catalogAdded);
+    const hasCatalog = !isBlank && (catalogHome ? page.home : !page.home);
     if (!hasCatalog) salesClose(); // каталога на открытой странице нет
     siteBlank.hidden = !isBlank;
     siteTumbler.classList.toggle('is-off', isWindow);
@@ -1262,7 +1258,7 @@
   }
   $('#siteExtDelete').addEventListener('click', siteRemoveExt);
   // «Удалить» в тулбаре секции удаляет и виджет внутри неё; секция с формой существует только вместе с формой
-  $('[data-sec-cmd="delete"]', siteSection).addEventListener('click', () => { if (!siteCatalog.hidden && !lsPage(lsActive).menu) siteDeleteCatalogAsk(); });
+  $('[data-sec-cmd="delete"]', siteSection).addEventListener('click', () => { if (!siteCatalog.hidden) siteDeleteCatalogAsk(); });
   $('[data-sec-cmd="delete"]', siteBlankSection).addEventListener('click', () => { if (wsPage.product) siteRemoveProduct(); });
   $('[data-sec-cmd="delete"]', siteExt).addEventListener('click', siteRemoveExt);
   // «Назад» поднимает на уровень секции

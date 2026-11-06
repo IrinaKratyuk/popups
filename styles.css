@@ -113,7 +113,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-footer__terms { height: 64px; margin-top: 40px; display: flex; align-items: center; }
 .site-blank.is-window > .site-footer { display: none; }
 .site:not(.is-home) .site-banner, .site:not(.is-home) .site-about, .site.is-home:not(.is-catalog-home) .site-section { display: none; }
-.site.is-catalog-home:not(.is-home, .is-menu) .site-section { display: none; } /* сценарии компонентов: каталог стоит на главной и на странице «Меню» */
+.site.is-catalog-home:not(.is-home) .site-section { display: none; } /* сценарии компонентов: каталог стоит только на главной */
 .tb__btn[hidden] { display: none; }
 .site-banner { height: 166px; background: #f5f4f5; }
 .site-banner .wg__content { position: relative; height: 100%; }
