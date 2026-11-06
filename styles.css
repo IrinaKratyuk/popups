@@ -413,7 +413,9 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ls-mode__head, .ls-menu__head { height: 28px; display: flex; align-items: center; padding-left: 12px; font-size: 14px; letter-spacing: 1.25px; text-transform: uppercase; color: var(--text-label_text-color); }
 .ls-mode__head { padding-left: 22px; } /* 8 px отступ пункта + 14 px место радиомаркера: заголовок выровнен по тексту */
 .mw-menu.ls-access { width: 280px; }
-.mw-menu.open-mode__menu { width: 220px; }
+/* «Способ отображения»: ширина по самому длинному пункту с отступами пункта (8 + маркер 14 + текст + 16) и списка (8 + 8) */
+.mw-menu.open-mode__menu { width: max-content; }
+.open-mode__menu .mw-menu__text { flex: none; }
 .ls-mode__toggle { flex: none; width: 14px; height: 32px; display: flex; align-items: center; justify-content: center; padding-right: 2px; }
 .ls-mode__toggle::before { content: ""; width: 7px; height: 7px; border-radius: 50%; visibility: hidden; }
 .ls-mode__item:hover .ls-mode__toggle::before { visibility: visible; border: 1px solid var(--border-border-color); background: var(--background-background-color); }
@@ -474,20 +476,24 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-ext__title { padding: 8px 0; font-size: 16px; font-weight: 600; letter-spacing: -.2256px; }
 .rs-widgets { display: flex; flex-direction: column; gap: 16px; }
 .rs-w[hidden] { display: none; }
-.rs-w { display: flex; flex-direction: column; gap: 8px; min-width: 120px; }
+/* виджет магазина — заголовок, описание и превью вместе: ховер и клик на всём виджете */
+.rs-w { display: flex; flex-direction: column; gap: 8px; min-width: 120px; cursor: pointer; }
 .rs-w__name { font-size: 14px; letter-spacing: -.1974px; }
+/* пин подсказки у заголовка: сразу после текста, по центру строки */
+.rs-w__name--pin { position: relative; width: fit-content; }
+.rs-w__name--pin > .pin { top: calc(50% - 12px); }
 .rs-w__desc { margin-top: 4px; font-size: 12px; letter-spacing: -.1692px; color: #999; }
-.rs-w__pv { flex: 1 0 0; min-height: 0; position: relative; overflow: hidden; border-radius: 8px; cursor: pointer; }
+.rs-w__pv { flex: 1 0 0; min-height: 0; position: relative; overflow: hidden; border-radius: 8px; }
 .rs-w__pv--white { padding: 0 12px; background: #fff; }
 .rs-w__pv::after { content: ""; position: absolute; inset: 0; border: 1px solid transparent; border-radius: 8px; transition: border-color .12s; }
-.rs-w__pv:hover::after { border-color: rgba(123, 98, 248, .4); }
+.rs-w:hover .rs-w__pv::after { border-color: rgba(123, 98, 248, .4); }
 .rs-w__img { position: relative; height: 100%; overflow: hidden; }
 .rs-w__img img { position: absolute; max-width: none; }
 .rs-w__plus { position: absolute; z-index: 1; left: 50%; top: calc(50% + .5px); width: 36px; height: 36px; padding-bottom: 1px; transform: translate(-50%, -50%); border-radius: 18px; background: #eeebff; color: #5a49ab; opacity: 0; transition: opacity .12s; }
-.rs-w__pv:hover .rs-w__plus { opacity: 1; }
+.rs-w:hover .rs-w__plus { opacity: 1; }
 .rs-w__pv > .pin { z-index: 2; left: calc(50% - 12px); top: calc(50% - 12px); }
 /* «Онлайн-запись» и каталоги, кроме «Меню ресторана», только показаны в магазине: ховер есть, клика нет */
-.rs-w__pv:is([data-widget="booking"], [data-widget^="catalog-"]) { cursor: default; }
+.rs-w:is([data-widget="booking"], [data-widget^="catalog-"]) { cursor: default; }
 
 /* окно внешних виджетов (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2894:48645) */
 /* окна внешних виджетов (Figma G3QPR5r3X5ox6DmPwj6rJ7 27261:169142 и 27261:169213): общие шапка и плашка, плашка выбора и вставки — одна */
@@ -507,7 +513,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ext-win__list { display: flex; gap: 12px; padding: 0 12px 12px; }
 .ext-win__body { display: flex; flex-direction: column; gap: 12px; padding: 8px 12px 12px; background: #fff; border-radius: 0 0 12px 12px; }
 .ext-win__rows { flex: none; font-size: var(--font-font-size-font-size_m); }
-.ext-win .mw-menu.open-mode__menu { width: max-content; }
 .ext-card { position: relative; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; padding: 12px; background: #fff; border-radius: 12px; cursor: pointer; }
 .ext-card::after { content: ""; position: absolute; inset: 0; border: 2px solid transparent; border-radius: 12px; pointer-events: none; transition: border-color .12s; }
 .ext-card:hover::after { border-color: #7b62f8; }
@@ -583,6 +588,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .comp-card__rows { margin-left: 32px; } /* под названием: 24px иконки + 8px */
 .comp-card__title { display: block; flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 15px; font-weight: 600; line-height: normal; letter-spacing: -.2115px; color: var(--text); }
 .comp-card__desc { margin: 0 0 0 32px; font-size: 12px; line-height: normal; letter-spacing: -.1692px; color: #999; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+/* страницы компонента — отдельной строкой под описанием, тем же цветом */
+.comp-card__pages { margin: 4px 0 0 32px; font-size: 12px; line-height: normal; letter-spacing: -.1692px; color: #999; }
 /* галка (Figma 7327:11922): язычок 26×24 вплотную к правой грани плашки, на линии заголовка; серая — не подключён, рыжая — подключён */
 .comp-card__check { flex: none; margin-left: auto; width: 26px; height: 24px; padding: 0; border: 0; background: url('assets/img/comp/check-off.svg') no-repeat; cursor: pointer; }
 .comp-card__check:hover { background-image: url('assets/img/comp/check-off-hover.svg'); }
@@ -626,7 +633,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* Окно — .pe из ui-kit (фон, тень, шапка, кнопки); здесь только место на сцене, ширина под две колонки и облачко без своих отступов — строки со своими */
 .sales-popup { position: absolute; z-index: 25; left: 585px; top: 398px; width: 430px; }
 .sales-popup--over-params { left: 50%; top: 50%; transform: translate(-50%, -50%); } /* из «Параметров сайта»: по центру страницы, как окно подтверждения */
-.sales-popup .sales-popup__add { margin-left: 8px; }
+.sales-popup .sales-popup__add { position: relative; margin-left: 8px; } /* опора для тултипа .has-tip */
 .sales-popup__card { padding: 0; }
 .sales-popup .sales-rows { background: none; }
 .sales-spacer { flex: 1; }
@@ -951,3 +958,30 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* наведение — только рамка темнее (Figma 17890:1124, 17890:184) */
 .confirm__btn:hover { border-color: #0065b8; }                 /* border/secondary_hover_border-color */
 .confirm__btn--primary:hover { border-color: #f55714; }        /* border/primary_hover_border-color */
+
+/* настройки каталога: .pe из ui-kit, свойства — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:84587. Пока только ховер */
+.catset { position: absolute; z-index: 20; width: 430px; }
+.catset__main { gap: 8px; }
+.catset__lookup { display: flex; align-items: center; gap: 4px; height: 28px; border-bottom: 1px solid var(--border-unaccented_border-color); }
+.catset__value { min-width: 0; margin: 0; padding: 0; border: 0; background: none; color: var(--text-text-color); font: inherit; font-size: 16px; letter-spacing: -.2256px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.catset__value:hover { color: var(--text-hover_text-color); }
+/* подсветка значения (Figma 2547:84597): фиолетовая подложка под текстом, высота 21 */
+.catset__value { line-height: 21px; background: var(--background-same-info_same_background-color); }
+.catset__clear { flex: none; width: 16px; height: 16px; margin: 0; padding: 0; border: 0; background: none; color: #ccc; font-family: "cbuc-icons"; font-size: 16px; line-height: 1; cursor: pointer; }
+.catset__clear:hover { color: var(--icon-label_icon-color); }
+/* плитки вариантов: в ряд поровну, у «Карусели разделов» — по подписи */
+.catset__tiles { display: flex; flex-direction: column; gap: 6px; }
+.catset__tiles:not(:has(.catset__row)), .catset__row { flex-direction: row; display: flex; gap: 6px; }
+.catset__tile { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 0; padding: 6px; border: 1px solid rgba(0, 0, 0, .1); border-radius: 8px; background: var(--background-background-color); color: var(--text-text-color); font: inherit; overflow: hidden; cursor: pointer; }
+.catset__tile--fit { flex: none; }
+/* ховер (Figma ADbWjlSHvq18Dv2WmFeWVW 6771:154046): рамка и схема темнеют до .3, у выбранной плитки ховер не меняет вид */
+.catset__tile:hover { border-color: rgba(0, 0, 0, .3); }
+.catset__tile:hover .catset__rect { --c: rgba(0, 0, 0, .3); }
+.catset__tile.is-selected { border-color: var(--border-unaccented_hover_border-color); background: var(--background-contrast_background-color); }
+.catset__tile-name { white-space: nowrap; }
+.catset__pic { position: relative; flex: none; display: block; overflow: hidden; }
+.catset__rect { position: absolute; display: block; box-sizing: border-box; --c: rgba(0, 0, 0, .1); }
+.catset__tile.is-selected .catset__rect { --c: var(--icon-secondary_icon-color); }
+.catset__rect--f { background: var(--c); }
+.catset__rect--b { border: 1px solid var(--c); }
+.catset__rect--d { border: 1px dashed var(--c); }

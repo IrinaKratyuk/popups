@@ -74,15 +74,17 @@
     },
   });
 
-  // Панель сценариев: demo-frame даёт один уровень групп, раздел «Внешние виджеты» со сворачиванием,
+  // Панель сценариев: demo-frame даёт один уровень групп, разделы «Работа с окнами» и «Внешние виджеты» со сворачиванием,
   // и статус показа добавляем поверх его разметки.
   const scenCard = $('.df-card--scen', frame.panel);
   const scenGroups = [...scenCard.querySelectorAll('.df-group')];
 
+  // Раздел по умолчанию свёрнут
   function scenSection(title, nodes) {
-    const head = el('button', 'pop-sec__head', `<span>${title}</span><span class="ico pop-sec__arrow">&#xE9AA;</span>`);
+    const head = el('button', 'pop-sec__head', `<span>${title}</span><span class="ico pop-sec__arrow">&#xE9C2;</span>`);
     head.type = 'button';
     const body = el('div', 'pop-sec__body');
+    body.hidden = true;
     body.append(...nodes);
     head.addEventListener('click', () => {
       body.hidden = !body.hidden;
@@ -93,12 +95,13 @@
     return section;
   }
 
-  const groupNodes = (g) => [g, g.nextElementSibling];
   for (const g of scenGroups) g.classList.add('pop-sub');
-  const scenLast = scenGroups.at(-1);
-  const scenLastOptions = scenLast.nextElementSibling;
-  scenLast.remove(); // заголовок группы становится заголовком раздела
-  scenCard.append(scenSection('Внешние виджеты', [scenLastOptions]));
+  // «Работа с окнами» и «Внешние виджеты» — сворачиваемые разделы на своих местах; заголовок группы становится заголовком раздела
+  for (const g of scenGroups.slice(1)) {
+    const options = g.nextElementSibling;
+    const section = scenSection(g.textContent.trim(), [options]);
+    g.replaceWith(section);
+  }
 
   $('.df-team', frame.panel).before(el('div', 'pop-status', '<span class="ico24">&#xE651;</span>Не показывали'));
   $('.df-team__name', frame.panel).after(el('span', 'df-team__name', 'Смирнова Мария')); // второй дизайнер в той же плашке: team в demo-frame знает одно имя на строку
@@ -143,6 +146,7 @@
   // Без родителя не работают и остаются с ним только меню режима открытия, меню и палитры PropertyEditor.
   function popupsClose() {
     salesClose();
+    catSetClose();
     rsCloseParams();
     lsCloseMenu();
     lsNewClose();
@@ -290,6 +294,12 @@
     const desc = el('p', 'comp-card__desc');
     desc.textContent = c.desc;
     body.append(head, desc);
+    // под описанием — страницы, которые компонент добавляет на сайт: видно, какая страница с каким компонентом пришла
+    if (c.pages.length) {
+      const pages = el('p', 'comp-card__pages');
+      pages.textContent = 'Страницы: ' + c.pages.join(', ');
+      body.append(pages);
+    }
     if (id === 'restaurant') body.append(compSalesRows());
     item.append(body);
     // индикатор клика: плашка «Ресторана» открывает его окно
@@ -546,7 +556,96 @@
   }
   $('#salesDone').addEventListener('click', () => { salesSave(salesDraft); salesClose(); salesRender(); });
   $('#salesReset').addEventListener('click', () => { salesDraft = []; salesRender(); });
-  $('#siteCatalogSettings').addEventListener('click', salesOpen);
+  // ---------- Настройки каталога (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:84587) ----------
+  // Шестерёнка тулбара каталога открывает окно по левому верхнему углу виджета, повторный клик закрывает. Внутри пока только ховер.
+  // Плитки — схемы из макета: [x, y, w, h, вид], вид f — заливка, b — рамка, d — пунктир; выбранная плитка — из макета.
+  const CAT_TILES = {
+    size: { w: 86, h: 86, items: [
+      { name: 'Большой', rects: [[6, 6, 35, 35, 'f'], [45, 6, 35, 35, 'f'], [6, 45, 35, 35, 'b'], [45, 45, 35, 35, 'b']] },
+      { name: 'Средний', on: true, rects: [0, 26, 52].flatMap((x) => [[x + 6, 6, 22, 22, 'f'], [x + 6, 32, 22, 22, 'f'], [x + 6, 58, 22, 22, 'b']]) },
+      { name: 'Маленький', rects: [5, 25, 45, 65].flatMap((x) => [[x, 5, 16, 16, 'f'], [x, 25, 16, 16, 'f'], [x, 45, 16, 16, 'b'], [x, 65, 16, 16, 'b']]) },
+    ] },
+    toc: { w: 110, h: 92, items: [
+      { name: 'Слева', rects: [...catTocLines(4), ...catTocGrid(56)] },
+      { name: 'Справа', rects: [...catTocLines(60), ...catTocGrid(6)] },
+      { name: 'Скрыто', on: true, w: 64, rects: catTocGrid(8) },
+    ] },
+    nav: { w: 74, h: 92, rows: [3, 2], items: [
+      { name: 'Только разделы', rects: [0, 26, 52].flatMap((x) => [[x, 6, 22, 22, 'f'], [x, 32, 22, 22, 'f'], [x, 58, 22, 28, 'd']]) },
+      { name: 'Карусель разделов', on: true, fit: true, rects: [0, 26, 52].flatMap((x) => [[x, 6, 22, 22, 'f'], [x, 32, 22, 25, 'b'], [x, 61, 22, 25, 'b']]) },
+      { name: 'Только товары', rects: [0, 26, 52].flatMap((x) => [[x, 6, 22, 28, 'b'], [x, 38, 22, 28, 'b']]) },
+      { name: 'Разделы в виде меню', rects: [[0, 18, 22, 3, 'f'], ...[0, 26, 52].flatMap((x) => [[x, 6, 22, 8, 'f'], [x, 26, 22, 28, 'b'], [x, 58, 22, 28, 'b']])] },
+      { name: 'Динамическая плитка', rects: [[0, 6, 22, 22, 'f'], [0, 32, 22, 22, 'f'], [26, 6, 22, 48, 'f'], [52, 6, 22, 36, 'f'], [0, 58, 22, 28, 'b'], [26, 58, 22, 28, 'b'], [52, 58, 22, 28, 'b']] },
+    ] },
+  };
+  // Оглавление: строки текста слева от сетки товаров (x — левый край строк) и сетка 2×3
+  function catTocLines(x) {
+    return [[0, 0, 40, 8], [6, 11, 40, 4], [6, 18, 40, 4], [6, 25, 34, 4], [0, 34, 40, 8], [6, 45, 40, 4], [6, 52, 40, 4], [6, 59, 34, 4]]
+      .map(([dx, dy, w, h]) => [x + dx, 10 + dy, w, h, 'f', 2]);
+  }
+  function catTocGrid(x) {
+    return [0, 26].flatMap((dx) => [[x + dx, 6, 22, 22, 'f'], [x + dx, 32, 22, 22, 'f'], [x + dx, 58, 22, 28, 'b']]);
+  }
+  for (const box of document.querySelectorAll('[data-cat-tiles]')) {
+    const set = CAT_TILES[box.dataset.catTiles];
+    const tiles = set.items.map((item) => {
+      const tile = el('button', 'catset__tile' + (item.on ? ' is-selected' : '') + (item.fit ? ' catset__tile--fit' : ''), `<span class="catset__tile-name">${item.name}</span>`);
+      tile.type = 'button';
+      tile.setAttribute('aria-pressed', !!item.on);
+      const pic = el('span', 'catset__pic');
+      pic.style.width = (item.w ?? set.w) + 'px';
+      pic.style.height = set.h + 'px';
+      for (const [x, y, w, h, kind, r = 4] of item.rects) {
+        const rect = el('i', 'catset__rect catset__rect--' + kind);
+        Object.assign(rect.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', borderRadius: r + 'px' });
+        pic.append(rect);
+      }
+      tile.append(pic);
+      return tile;
+    });
+    if (!set.rows) { box.append(...tiles); continue; }
+    let at = 0;
+    for (const n of set.rows) {
+      const row = el('div', 'catset__row');
+      row.append(...tiles.slice(at, at += n));
+      box.append(row);
+    }
+  }
+  peDraggable($('#catSet'));
+  // «Открывать товар» — тот же компонент, что «Способ отображения» в настройках страницы: своя подпись и два варианта
+  const catSetOpenMode = openModeFill($('#catSet'), [], { title: 'Открывать товар', options: [['page', 'На странице'], ['window', 'В новом окне']] });
+  catSetOpenMode.set('window');
+  const catSetGear = $('#siteCatalogSettings');
+  function catSetClose() {
+    const root = $('#catSet');
+    if (root.hidden) return;
+    catSetOpenMode.close();
+    root.hidden = true;
+    catSetGear.classList.remove('is-selected');
+    catSetGear.setAttribute('aria-pressed', 'false');
+  }
+  PropertyEditor.mount($('#catSet'), { onDone: catSetClose, onClose: catSetClose });
+  // Окно настроек каталога открывается по шестерёнке в тулбаре (она же закрывает) и по клику на уже выделенный виджет:
+  // первый клик выделяет, второй открывает — так же срабатывает и двойной клик.
+  // Слушатель на самом виджете срабатывает раньше общего на siteView, который ставит is-active, — видно выделение до этого клика
+  catSetGear.addEventListener('click', () => {
+    if (!$('#catSet').hidden) { catSetClose(); return; }
+    catSetOpen();
+  });
+  $('#siteCatalog').addEventListener('click', (e) => {
+    if (e.target.closest('.tb')) return; // клики по кнопкам тулбара — их собственные
+    if ($('#siteCatalog').classList.contains('is-active') && $('#catSet').hidden) catSetOpen();
+  });
+  function catSetOpen() {
+    const root = $('#catSet');
+    popupsClose();
+    const r = stageRect($('#siteCatalog'));
+    root.hidden = false;
+    peMoveTo(root, r.left, r.top);
+    catSetGear.classList.add('is-selected');
+    catSetGear.setAttribute('aria-pressed', 'true');
+  }
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') catSetClose(); });
   stage.addEventListener('click', (e) => {
     if (e.target.closest('[data-sales-add]')) salesPickerOpen();
     const remove = e.target.closest('[data-sales-delete]');
@@ -625,8 +724,8 @@
     ['Уведомления', 'Виджет для отображения уведомлений по категориям', 267, 'notifications', false, 'left:-2.12%;top:-3.35%;width:105.66%;height:107.43%'],
   ];
   const shopWidgetsHtml = (list) => list.map(([name, desc, h, img, white, pos, file = img + '.png']) =>
-    `<div class="rs-w${img.startsWith('catalog') ? ' rs-w--catalog' : ''}" style="height:${h}px"><div><div class="rs-w__name">${name}</div><div class="rs-w__desc">${desc}</div></div>` +
-    `<div class="rs-w__pv${white ? ' rs-w__pv--white' : ''}" data-widget="${img}"><div class="rs-w__img"><img src="assets/img/shop/${file}" alt="" style="${pos}"></div><span class="ico24 rs-w__plus">&#xEAE9;</span></div></div>`).join('');
+    `<div class="rs-w${img.startsWith('catalog') ? ' rs-w--catalog' : ''}" data-widget="${img}" style="height:${h}px"><div><div class="rs-w__name">${name}</div><div class="rs-w__desc">${desc}</div></div>` +
+    `<div class="rs-w__pv${white ? ' rs-w__pv--white' : ''}"><div class="rs-w__img"><img src="assets/img/shop/${file}" alt="" style="${pos}"></div><span class="ico24 rs-w__plus">&#xEAE9;</span></div></div>`).join('');
   $('#rsWidgets').innerHTML = shopWidgetsHtml(SHOP_WIDGETS);
   // Внешние виджеты — вместо расширенных в сценарии «С плавающей кнопкой»
   $('#rsOuter').innerHTML = shopWidgetsHtml([
@@ -636,7 +735,7 @@
   const shopFeedback = $('#rsOuter [data-widget="feedback"]').closest('.rs-w');
   const shopFeedbackPin = el('span', 'pin', '<img src="assets/img/pin-cursor.svg" width="15" height="15" alt="">');
   shopFeedbackPin.setAttribute('aria-hidden', 'true');
-  $('#rsOuter [data-widget="feedback"]').append(shopFeedbackPin);
+  $('.rs-w__pv', shopFeedback).append(shopFeedbackPin);
 
   // Окно внешних виджетов: клик по «Обратной связи» открывает её варианты по центру. Добавить можно только её: у «Онлайн-записи» нет ни клика, ни ховера.
   // Закрывается крестиком, Esc и кликом мимо. Пин виджета виден, только пока окно закрыто и кнопка ещё не поставлена.
@@ -784,10 +883,11 @@
   const shopProductPin = el('span', 'pin', '<img src="assets/img/pin-cursor.svg" width="15" height="15" alt="">');
   shopProductPin.setAttribute('aria-hidden', 'true');
   $('.rs-w__pv', shopProduct).append(shopProductPin);
-  // Подсказка клика на «Меню ресторана»: видна, пока виджет в магазине
+  // Подсказка клика на «Меню ресторана»: видна, пока виджет в магазине. Стоит у заголовка, а не на превью
   const shopCatalogPin = el('span', 'pin', '<img src="assets/img/pin-cursor.svg" width="15" height="15" alt="">');
   shopCatalogPin.setAttribute('aria-hidden', 'true');
-  $('.rs-w__pv', shopCatalog).append(shopCatalogPin);
+  $('.rs-w__name', shopCatalog).classList.add('rs-w__name--pin');
+  $('.rs-w__name', shopCatalog).append(shopCatalogPin);
 
   function siteCatalogShow(on) {
     siteCatalog.hidden = !on;
@@ -818,6 +918,7 @@
   // dropPage — удалить и страницу, которую открывает виджет. Компонент остаётся.
   function siteRemoveCatalog(dropPage) {
     salesClose();
+    catSetClose();
     catalogAdded = false;
     if (!compOn.size) { // каталог других сценариев: без компонента, точки и «Карточка товара» уходят вместе с ним
       salesSaved = [];
@@ -1077,7 +1178,7 @@
       if (!(bgKey === 'section' ? sectionHit : windowHit)) bgClose(); // тулбар с командой скрылся
     }
     if (siteCatalog.hidden || ['window-link', 'ext-added', 'ext-link'].includes(stage.dataset.scenario)) return; // в этих сценариях выделена кнопка, клик мимо выделение не снимает
-    if (!e.target.closest('#salesPopup, #salesPicker, #rsParams, .rp-btn')) siteCatalog.classList.toggle('is-active', !!e.target.closest('#siteCatalog'));
+    if (!e.target.closest('#salesPopup, #salesPicker, #catSet, #rsParams, .rp-btn')) siteCatalog.classList.toggle('is-active', !!e.target.closest('#siteCatalog'));
   });
 
   // Секция с кнопкой: пока кнопка выделена, у секции пунктирная рамка родителя
@@ -1204,7 +1305,7 @@
   }
 
   // Свойство «Способ отображения» — одно на все окна: настройки страницы и настройки кнопки. Разметка в <template id="openMode">, поведение здесь. Окно задаёт только список вариантов, отдельных копий заводить нельзя.
-  // Меню: заголовок на уровне строки, текст пунктов — под значением. Клик мимо и Esc закрывают только меню.
+  // Меню без заголовка: первый пункт на уровне строки, текст пунктов — под значением. Клик мимо и Esc закрывают только меню.
   function openModeFill(root, modes, { onOpen, onChange, title, options } = {}) {
     const parts = $('#openMode').content.cloneNode(true);
     const row = $('.open-mode', parts);
@@ -1213,7 +1314,6 @@
     // Подпись и список можно задать свои: вид и поведение остаются общими
     if (title) {
       $('.pe__label', row).textContent = title;
-      $('.ls-mode__head', menu).remove(); // своя подпись уже есть в строке, заголовок меню её не повторяет
       menu.setAttribute('aria-label', title);
     }
     const sample = $('[data-mode]', menu);

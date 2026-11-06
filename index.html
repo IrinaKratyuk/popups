@@ -356,7 +356,7 @@
       <section class="pe sales-popup" id="salesPopup" role="dialog" aria-label="Ресторан" hidden>
         <header class="pe__head">
           <span class="pe__name pe__name--static">Ресторан</span>
-          <button class="btn btn--filled btn--style-pale btn--size-m btn--icon sales-popup__add" type="button" data-sales-add aria-label="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
+          <button class="btn btn--filled btn--style-pale btn--size-m btn--icon sales-popup__add has-tip" type="button" data-sales-add aria-label="Добавить точки продаж" data-tip="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
           <div class="pe__cmds">
             <button type="button" class="pe__reset" id="salesReset" aria-label="Сбросить точки продаж" disabled>&#xe629;</button>
             <button type="button" class="pe__done" id="salesDone" aria-label="Сохранить точки продаж">&#xe75e;</button>
@@ -364,6 +364,34 @@
           </div>
         </header>
         <div class="pe__body"><div class="pe__card sales-popup__card"><div class="sales-rows" id="salesPopupRows"></div></div></div>
+      </section>
+      <!-- Настройки каталога (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:84587): .pe из ui-kit, открывается шестерёнкой тулбара каталога по левому верхнему углу виджета.
+           Внутри пока только ховер: выбор не меняется. Плитки вариантов рисует app.js (catSetTiles) -->
+      <section class="pe catset" id="catSet" aria-label="Настройки каталога" hidden>
+        <header class="pe__head">
+          <span class="pe__name pe__name--static">Каталог</span>
+          <div class="pe__cmds">
+            <button type="button" class="pe__reset" aria-label="Сбросить настройки">&#xe629;</button>
+            <button type="button" class="pe__done" aria-label="Сохранить">&#xe75e;</button>
+            <button type="button" class="pe__close" aria-label="Закрыть">&#xe66c;</button>
+          </div>
+        </header>
+        <div class="pe__body">
+          <div class="pe__card catset__main">
+            <div class="catset__lookup">
+              <button type="button" class="catset__value">[Из текущей точки продаж]</button>
+              <button type="button" class="catset__clear" aria-label="Очистить">&#xe66c;</button>
+              <span class="pe__spacer"></span>
+              <button type="button" class="btnset__list" aria-label="Выбрать из списка"><img src="assets/img/lookup-list.svg" width="12" height="9" alt=""></button>
+            </div>
+            <div class="pe__rows">
+              <div data-open-mode></div>
+            </div>
+          </div>
+          <div class="pe__card"><div class="pe__title">Размер</div><div class="catset__tiles" data-cat-tiles="size"></div></div>
+          <div class="pe__card"><div class="pe__title">Оглавление</div><div class="catset__tiles" data-cat-tiles="toc"></div></div>
+          <div class="pe__card"><div class="pe__title">Схема навигации</div><div class="catset__tiles" data-cat-tiles="nav"></div></div>
+        </div>
       </section>
       <!-- Подтверждение (Figma nuC4KFMiS36uDWDUp9wKGl 4064:21938, из interface-prototype): текст и кнопки ставит confirmAsk -->
       <div class="confirm-layer" id="confirm" hidden>
@@ -622,7 +650,6 @@
               </div>
         <div class="mw-menu ls-mode open-mode__menu" role="menu" aria-label="Способ отображения" hidden>
           <div class="mw-menu__list">
-            <div class="ls-mode__head">Способ отображения</div>
             <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="window"><span class="ls-mode__toggle"></span><span class="mw-menu__text">В новом окне</span></button>
             <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="page"><span class="ls-mode__toggle"></span><span class="mw-menu__text">На странице</span></button>
             <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="both"><span class="ls-mode__toggle"></span><span class="mw-menu__text">В окне и на странице</span></button>
