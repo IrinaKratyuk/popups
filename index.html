@@ -21,7 +21,7 @@
 </head>
 <body>
   <div class="viewport">
-    <div class="stage" id="stage" data-scenario="ext-add">
+    <div class="stage" id="stage" data-scenario="catalog-add">
 
       <!-- Шапка конструктора (Figma rHabzni5OI5D4fxBLQdj2m 5:28058): только ховер, без действий по клику -->
       <header class="ch">
@@ -42,7 +42,7 @@
           <div class="ch-cmds">
             <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Отменить"><span class="btn__icon">&#xE6CF;</span></button>
             <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Повторить"><span class="btn__icon">&#xE6CA;</span></button>
-            <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Сбросить" disabled><span class="btn__icon">&#xE629;</span></button>
+            <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Сбросить"><span class="btn__icon">&#xE629;</span></button>
             <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Предпросмотр"><span class="btn__icon">&#xEAB9;</span></button>
             <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Компоновка"><span class="btn__icon">&#xEBBA;</span></button>
             <div class="ch-zoom">
@@ -319,7 +319,6 @@
           <div class="rs-field"><span class="ico rs-field__arrow">&#xEB89;</span><span class="rs-field__name">Владелец</span><span class="rs-field__val rs-field__val--link">Арсенал, ООО</span></div>
           <div class="rs-field"><span class="ico rs-field__arrow">&#xEB89;</span><span class="rs-field__name">Пользователь</span><span class="rs-field__val">Пользователь</span></div>
           <div id="salesData" hidden>
-            <details class="rs-variable"><summary class="rs-field"><span class="ico rs-field__arrow">&#xEB89;</span><span class="rs-field__name">Точки продаж</span><button class="rs-field__val rs-field__val--link rs-variable__value" id="salesDataValue" type="button" aria-label="Выбрать точки продаж">Не выбраны</button></summary><div class="rs-variable__children" id="salesDataList"></div></details>
             <details class="rs-variable"><summary class="rs-field"><span class="ico rs-field__arrow">&#xEB89;</span><span class="rs-field__name">Текущая точка</span><span class="rs-field__val">Точка продаж</span></summary><div class="rs-variable__children" id="salesDataCurrent"></div></details>
           </div>
         </div>
@@ -333,29 +332,50 @@
         </div>
         <div class="rs-params__body">
           <div class="rs-seo">
-            <div class="rs-seo__domain"><span class="rs-seo__url">s-billing.saby.ws</span><button class="btn btn--link btn--style-unaccented" type="button">Сменить</button></div>
             <div class="rs-seo__favicon">Иконка сайта (favicon)<img src="assets/img/favicon.png" width="28" height="28" alt=""></div>
             <div class="rs-seo__chips">
-            <button class="btn btn--filled btn--style-pale btn--size-m" type="button">HTML - код</button>
-            <button class="btn btn--filled btn--style-pale btn--size-m" type="button">Яндекс.Вебмастер</button>
-            <button class="btn btn--filled btn--style-pale btn--size-m" type="button">Яндекс.Метрика</button>
-            <button class="btn btn--filled btn--style-pale btn--size-m" type="button">VK Пиксель</button>
-            <button class="btn btn--filled btn--style-pale btn--size-m" type="button">Google Search Console</button>
-            <button class="btn btn--filled btn--style-pale btn--size-m" type="button">Google Tag Manager</button>
+            <button class="chips chips--size-m" type="button"><span class="chips__caption">HTML - код</span></button>
+            <button class="chips chips--size-m" type="button"><span class="chips__caption">Яндекс.Вебмастер</span></button>
+            <button class="chips chips--size-m" type="button"><span class="chips__caption">Яндекс.Метрика</span></button>
+            <button class="chips chips--size-m" type="button"><span class="chips__caption">VK Пиксель</span></button>
+            <button class="chips chips--size-m" type="button"><span class="chips__caption">Google Search Console</span></button>
+            <button class="chips chips--size-m" type="button"><span class="chips__caption">Google Tag Manager</span></button>
             </div>
           </div>
-          <section class="sales-settings" id="salesSettings" aria-label="Точки продаж сайта" hidden>
-            <div class="sales-settings__head"><div>Точки продаж <button class="btn btn--filled btn--style-pale btn--size-m btn--icon" type="button" data-sales-add aria-label="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span></button></div><span>Прайс</span></div>
-            <div class="sales-rows" id="salesSettingsRows"></div>
+          <!-- Компоненты: все плашками в две колонки, галка — статус. Плашки строит compRender, точки продаж — на плашке «Ресторан» -->
+          <section class="comp-settings" id="compSettings" aria-label="Компоненты сайта">
+            <div class="comp-settings__title">Компоненты</div>
+            <div class="comp-settings__list" id="compList"></div>
           </section>
         </div>
       </section>
 
       <!-- Точки продаж: Figma 2560:97159, 2596:110271. Выбор — отдельная стек-панель 2596:108382. -->
-      <section class="sales-popup" id="salesPopup" role="dialog" aria-label="Настройка точек продаж" hidden>
-        <div class="sales-popup__head"><strong>Точки продаж</strong><button class="btn btn--filled btn--style-pale btn--size-m btn--icon" type="button" data-sales-add aria-label="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button><span class="sales-spacer"></span><button class="sales-icon" id="salesReset" type="button" aria-label="Сбросить точки продаж"><span class="ico24">&#xE629;</span></button><button class="sales-done" id="salesDone" type="button" aria-label="Сохранить точки продаж"><span class="ico">&#xE75E;</span></button><button class="sales-icon" id="salesClose" type="button" aria-label="Отменить настройку точек продаж"><img src="assets/img/close-link.svg" width="24" height="24" alt=""></button></div>
-        <div class="sales-popup__body"><div class="sales-rows" id="salesPopupRows"></div></div>
+      <!-- Окно настроек компонента: то же, что его блок в «Параметрах сайта», заголовок — название компонента -->
+      <!-- Шапка и облачко — .pe из ui-kit, как у окна новой страницы (#lsNew); название не меняется — .pe__name--static. PropertyEditor не монтируем: кнопки шапки ведёт app.js -->
+      <section class="pe sales-popup" id="salesPopup" role="dialog" aria-label="Ресторан" hidden>
+        <header class="pe__head">
+          <span class="pe__name pe__name--static">Ресторан</span>
+          <button class="btn btn--filled btn--style-pale btn--size-m btn--icon sales-popup__add" type="button" data-sales-add aria-label="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
+          <div class="pe__cmds">
+            <button type="button" class="pe__reset" id="salesReset" aria-label="Сбросить точки продаж" disabled>&#xe629;</button>
+            <button type="button" class="pe__done" id="salesDone" aria-label="Сохранить точки продаж">&#xe75e;</button>
+            <button type="button" class="pe__close" id="salesClose" aria-label="Отменить настройку точек продаж">&#xe66c;</button>
+          </div>
+        </header>
+        <div class="pe__body"><div class="pe__card sales-popup__card"><div class="sales-rows" id="salesPopupRows"></div></div></div>
       </section>
+      <!-- Подтверждение (Figma nuC4KFMiS36uDWDUp9wKGl 4064:21938, из interface-prototype): текст и кнопки ставит confirmAsk -->
+      <div class="confirm-layer" id="confirm" hidden>
+        <div class="confirm" role="dialog" aria-modal="true" aria-labelledby="confirmMsg" aria-describedby="confirmDetails">
+          <div class="confirm__head"><span class="confirm__marker"></span></div>
+          <div class="confirm__content">
+            <p class="confirm__message" id="confirmMsg"></p>
+            <p class="confirm__details" id="confirmDetails"></p>
+          </div>
+          <div class="confirm__footer" id="confirmFooter"></div>
+        </div>
+      </div>
       <!-- Панель настроек обратной связи (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2648:45307): выезжает справа поверх сцены, форма — общий шаблон, палитры — PropertyEditor. Правый столбец — картинка из макета -->
       <div class="fbp-scrim" id="fbScrim" hidden>
         <section class="fbp" id="fbPanel" aria-label="Настройки обратной связи">
@@ -422,7 +442,7 @@
       </div>
 
       <section class="sales-picker" id="salesPicker" role="dialog" aria-modal="true" aria-labelledby="salesPickerTitle" hidden>
-        <div class="sales-picker__main"><div class="sales-picker__head"><strong id="salesPickerTitle">Точки продаж</strong><span class="sales-spacer"></span><button class="sales-icon sales-filter" id="salesFilter" type="button" aria-label="Показать только отмеченные" aria-pressed="false"><span class="ico24">&#xE94C;</span></button><button class="sales-done" id="salesPickerDone" type="button" aria-label="Подтвердить выбор"><span class="ico">&#xE75E;</span></button></div><div class="sales-picker__search"><input class="sales-checkbox" id="salesSelectAll" type="checkbox" aria-label="Выбрать все точки продаж"><input id="salesSearch" type="search" placeholder="Найти" aria-label="Поиск точек продаж"><button id="salesCount" type="button" aria-label="Показать только отмеченные точки" aria-pressed="false"></button></div><div class="sales-picker__list" id="salesPickerList"></div></div>
+        <div class="sales-picker__main"><div class="sales-picker__head"><strong id="salesPickerTitle">Точки продаж</strong><span class="sales-spacer"></span><!-- Фильтр слева от галочки, через 12px (Figma 2596:108391) --><button class="sales-icon sales-filter" id="salesFilter" type="button" aria-label="Показать только отмеченные" aria-pressed="false"><span class="ico24">&#xE94C;</span></button><button class="sales-done" id="salesPickerDone" type="button" aria-label="Подтвердить выбор"><span class="ico">&#xE75E;</span></button></div><div class="sales-picker__search"><input class="sales-checkbox" id="salesSelectAll" type="checkbox" aria-label="Выбрать все точки продаж"><!-- Обычный поиск: поле 300 без плашки и фильтра --><div class="sales-search"><input id="salesSearch" type="search" placeholder="Найти" aria-label="Поиск точек продаж"></div><button id="salesCount" type="button" aria-label="Показать только отмеченные точки" aria-pressed="false"></button></div><div class="sales-picker__list" id="salesPickerList"></div></div>
         <div class="sales-picker__rail"><button class="sales-icon" id="salesPickerClose" type="button" aria-label="Отменить выбор"><img src="assets/img/sales-close.svg" width="28" height="28" alt=""></button><span class="sales-icon sales-list-settings" title="Настройки списка"><span class="ico24">&#xEB66;</span></span><span class="sales-spacer"></span><span class="rp-help" aria-label="Помощь"><img src="assets/img/help.svg" width="12" height="16" alt=""></span></div>
       </section>
 
@@ -594,15 +614,15 @@
         </div>
       </section>
 
-      <!-- Свойство «Открывать» — одно на все окна: настройки страницы и настройки кнопки. Правится только здесь, в openModeFill и стилях .open-mode*. Окно задаёт только список вариантов. Меню — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:20980 -->
+      <!-- Свойство «Способ отображения» — одно на все окна: настройки страницы и настройки кнопки. Правится только здесь, в openModeFill и стилях .open-mode*. Окно задаёт только список вариантов. Меню — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:20980 -->
       <template id="openMode">
               <div class="pe__row open-mode">
-                <span class="pe__label">Открывать</span>
+                <span class="pe__label">Способ отображения</span>
                 <button class="btn btn--link btn--style-link btn--size-m open-mode__value" type="button" aria-haspopup="menu" aria-expanded="false"></button>
               </div>
-        <div class="mw-menu ls-mode open-mode__menu" role="menu" aria-label="Открывать" hidden>
+        <div class="mw-menu ls-mode open-mode__menu" role="menu" aria-label="Способ отображения" hidden>
           <div class="mw-menu__list">
-            <div class="ls-mode__head">Открывать</div>
+            <div class="ls-mode__head">Способ отображения</div>
             <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="window"><span class="ls-mode__toggle"></span><span class="mw-menu__text">В новом окне</span></button>
             <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="page"><span class="ls-mode__toggle"></span><span class="mw-menu__text">На странице</span></button>
             <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="both"><span class="ls-mode__toggle"></span><span class="mw-menu__text">В окне и на странице</span></button>

@@ -17,6 +17,7 @@
 
   /* окна и меню */
   --win-shadow: 0 0 46px rgba(0, 0, 0, .12), 0 0 15px rgba(0, 0, 0, .12); /* shadow_a */
+  --shadow-c: 0 0 8px rgba(0, 0, 0, .06); /* shadow_c: color/shadow-color_c, blur/shadow-blur_c 8 */
   --label: #656c87;            /* icon/secondary_icon-color */
   --link: #2562aa;             /* text/link_text-color */
   --readonly: #ccc;            /* text/readonly_text-color */
@@ -111,7 +112,9 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-footer__ico { flex: none; width: 24px; height: 24px; padding-bottom: 1px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: "cbuc-icons"; font-size: 20px; line-height: 1; letter-spacing: 0; }
 .site-footer__terms { height: 64px; margin-top: 40px; display: flex; align-items: center; }
 .site-blank.is-window > .site-footer { display: none; }
-.site:not(.is-home) .site-banner, .site:not(.is-home) .site-about, .site.is-home .site-section { display: none; }
+.site:not(.is-home) .site-banner, .site:not(.is-home) .site-about, .site.is-home:not(.is-catalog-home) .site-section { display: none; }
+.site.is-catalog-home:not(.is-home, .is-menu) .site-section { display: none; } /* сценарии компонентов: каталог стоит на главной и на странице «Меню» */
+.tb__btn[hidden] { display: none; }
 .site-banner { height: 166px; background: #f5f4f5; }
 .site-banner .wg__content { position: relative; height: 100%; }
 .site-banner img { position: absolute; max-width: none; }
@@ -267,7 +270,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-h2 { padding-bottom: 8px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; color: #8991a9; }
 .site-h2--next { padding-top: 12px; }
 .site-cards { width: 100%; display: flex; gap: 12px; }
-.site-card { flex: 1 0 0; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: #fff; border-radius: 8px; box-shadow: 0 0 8px rgba(0, 0, 0, .06); }
+.site-card { flex: 1 0 0; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: #fff; border-radius: 8px; box-shadow: var(--shadow-c); }
 .site-card__img { position: relative; aspect-ratio: 1; overflow: hidden; }
 .site-card__img img { position: absolute; left: 0; top: 0; width: 100%; max-width: none; }
 .site-card__cover { height: 100%; object-fit: cover; }
@@ -278,6 +281,11 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-card__foot { min-height: 54px; margin-top: auto; display: flex; align-items: flex-end; justify-content: flex-end; padding: 6px 12px 12px; }
 .site-card__buy { display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 12px; background: rgba(51, 51, 51, .05); border-radius: 39px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; color: #cc3d00; }
 .site-card__buy .ico24 { padding-bottom: 4px; color: #f47843; }
+/* демоданные: пока у компонента нет точек продаж, вместо фото — заглушки */
+.site-demo { display: none; }
+.site-catalog.is-demo .site-demo { display: block; z-index: 0; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; }
+.site-catalog.is-demo :is(.site-card__img, .site-cat) img:not(.site-demo) { visibility: hidden; }
+.site-catalog.is-demo .site-cat::after { background: rgba(71, 56, 47, .35); }
 
 /* Секция после каталога — Figma 2824:74343. */
 .site-about { flex: none; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 80px; min-height: 450px; padding: 0 var(--site-gutter); background: #f9f4ef; border-radius: 2px; font-family: 'Montserrat', sans-serif; color: #47382f; }
@@ -419,6 +427,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ls-menu__close { flex: none; width: 24px; height: 24px; margin: 2px 4px 0 0; display: flex; align-items: center; justify-content: center; }
 .ls-menu__close img { flex: none; display: block; }
 .mw-menu__item.ls-menu__item { padding: 0 16px 0 12px; }
+.mw-menu__item.ls-menu__item[hidden] { display: none; }
 .ls-menu__item .ico24 { flex: none; height: 32px; margin-right: 4px; color: #656c87; } /* icon/secondary_icon-color */
 .ls-menu__item .ico24.ls-menu__danger { color: #c2140a; } /* icon/danger_icon-color */
 
@@ -460,6 +469,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-cell:hover, .rs-item:hover { box-shadow: inset 0 0 0 1px rgba(123, 98, 248, .4); }
 .rs-ext { padding-top: 8px; }
 .stage[data-scenario^="ext-"] .rs-ext:not(.rs-ext--outer), .stage:not([data-scenario^="ext-"]) .rs-ext--outer { display: none; }
+/* Каталоги — только в сценариях компонентов: в остальных их в магазине нет */
+.stage:not([data-scenario^="catalog-"]) .rs-w--catalog { display: none; }
 .rs-ext__title { padding: 8px 0; font-size: 16px; font-weight: 600; letter-spacing: -.2256px; }
 .rs-widgets { display: flex; flex-direction: column; gap: 16px; }
 .rs-w[hidden] { display: none; }
@@ -475,10 +486,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-w__plus { position: absolute; z-index: 1; left: 50%; top: calc(50% + .5px); width: 36px; height: 36px; padding-bottom: 1px; transform: translate(-50%, -50%); border-radius: 18px; background: #eeebff; color: #5a49ab; opacity: 0; transition: opacity .12s; }
 .rs-w__pv:hover .rs-w__plus { opacity: 1; }
 .rs-w__pv > .pin { z-index: 2; left: calc(50% - 12px); top: calc(50% - 12px); }
-/* «Онлайн-запись» только показана в магазине: добавить её нельзя */
-.rs-w__pv[data-widget="booking"] { cursor: default; }
-.rs-w__pv[data-widget="booking"]:hover::after { border-color: transparent; }
-.rs-w__pv[data-widget="booking"] .rs-w__plus { display: none; }
+/* «Онлайн-запись» и каталоги, кроме «Меню ресторана», только показаны в магазине: ховер есть, клика нет */
+.rs-w__pv:is([data-widget="booking"], [data-widget^="catalog-"]) { cursor: default; }
 
 /* окно внешних виджетов (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2894:48645) */
 /* окна внешних виджетов (Figma G3QPR5r3X5ox6DmPwj6rJ7 27261:169142 и 27261:169213): общие шапка и плашка, плашка выбора и вставки — одна */
@@ -529,12 +538,18 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-field__val { flex: none; padding-left: 12px; font-size: 14px; letter-spacing: -.1974px; color: #8991a9; }
 .rs-field__val--link { color: #2562aa; }
 #salesData[hidden] { display: none; }
-.rs-variable > summary { list-style: none; }
+.rs-variable > summary { list-style: none; cursor: pointer; } /* раскрывается по клику */
 .rs-variable > summary::-webkit-details-marker { display: none; }
 .rs-variable[open] > summary .rs-field__arrow { transform: rotate(90deg); }
-.rs-variable__value { max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }
-.rs-variable__value:hover { text-decoration: underline; }
-.rs-variable__children { padding: 4px 12px 8px 28px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #8991a9; }
+.rs-variable__children { display: flex; flex-direction: column; gap: 2px; }
+/* Вложенные поля переменной: отступ 40, имя 15px, тип справа, значение ниже. Figma 3042:49624, ховер 3738:319254 */
+.rs-sub { min-height: 31px; padding: 3px 8px 3px 48px; border-radius: 6px; display: flex; flex-direction: column; justify-content: center; gap: 4px; cursor: default; transition: background-color .12s; }
+.rs-sub:hover { background: #eff0f4; } /* background/unaccented_hover_background-color */
+.rs-sub__head { display: flex; align-items: flex-end; padding-top: 3px; }
+.rs-sub:not(:has(.rs-sub__value)) .rs-sub__head { padding-bottom: 4px; }
+.rs-sub__name { flex: 1; min-width: 0; font-size: 15px; letter-spacing: -.2115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rs-sub__type { flex: none; padding-left: 12px; font-size: 14px; letter-spacing: -.1974px; color: #8991a9; } /* text/label_text-color */
+.rs-sub__value { padding-bottom: 4px; font-size: 14px; letter-spacing: -.1974px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* text/unaccented_text-color */
 
 /* окно «Параметры сайта» */
 .rs-params { position: absolute; z-index: 15; left: 946px; top: 44px; bottom: 8px; width: 600px; display: flex; flex-direction: column; background: #f8f8f8; border-radius: 8px; box-shadow: var(--win-shadow); }
@@ -545,19 +560,49 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-seo { background: #fff; border-radius: 8px; }
 .rs-seo__domain { display: flex; align-items: center; gap: 12px; padding: 12px; height: 56px; }
 .rs-seo__url { padding-bottom: 5px; font-size: 24px; font-weight: 600; letter-spacing: -.3384px; color: #298e3c; }
-.rs-seo__favicon { height: 32px; display: flex; align-items: center; gap: 8px; padding: 0 12px 8px; font-size: 14px; letter-spacing: -.1974px; color: #8991a9; }
+.rs-seo__favicon { height: 44px; display: flex; align-items: center; gap: 8px; padding: 12px 12px 8px; font-size: 14px; letter-spacing: -.1974px; color: #8991a9; }
 .rs-seo__favicon img { display: block; border: 1px solid #eaeaea; border-radius: 28px; }
 .rs-seo__chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 12px 8px; }
+.rs-seo__chips .chips__caption { padding-bottom: 2px; } /* подъём текста на 1px: Inter в браузере садится ниже, чем в макете (web/chips 20059:4385) */
 
 /* Точки продаж — те же кнопки, шрифты и подсказки ui-kit, что в остальных окнах. */
 .rs-params__body { display: flex; flex-direction: column; gap: 12px; }
-.sales-settings[hidden], .sales-popup[hidden], .sales-picker[hidden] { display: none; }
+.sales-settings[hidden], .sales-popup[hidden], .sales-picker[hidden], .comp-settings[hidden] { display: none; }
+/* Компоненты: все плашками в две колонки, галка — статус подключения (Figma Ea5CxwsZSyp3zoa5ODoqdm 7350:8132) */
+.comp-settings { display: flex; flex-direction: column; gap: 8px; }
+.comp-settings__title { padding: 4px 12px 0; font-size: 16px; font-weight: 600; letter-spacing: -.2256px; }
+.comp-settings__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: start; }
+.comp-settings__col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.comp-card { position: relative; display: flex; padding: 8px; background: #fff; border-radius: 8px; transition: box-shadow .12s; }
+.comp-card:hover { box-shadow: var(--shadow-c); } /* Figma WHZ4ZSm4wRMrxQPWqEk5Wk 3046:50358 */
+.comp-card--open { cursor: pointer; }
+.comp-card > .pin { z-index: 2; left: calc(50% - 12px); top: calc(50% - 12px); } /* как на карточках магазина */
+.comp-card__icon { display: block; flex: none; }
+.comp-card__body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.comp-card__head { display: flex; align-items: center; gap: 8px; height: 24px; margin-right: -8px; } /* иконка, название и галка — на одной линии; галка-язычок выходит из отступа 8px и прижата к правой грани плашки */
+.comp-card__rows { margin-left: 32px; } /* под названием: 24px иконки + 8px */
+.comp-card__title { display: block; flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 15px; font-weight: 600; line-height: normal; letter-spacing: -.2115px; color: var(--text); }
+.comp-card__desc { margin: 0 0 0 32px; font-size: 12px; line-height: normal; letter-spacing: -.1692px; color: #999; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+/* галка (Figma 7327:11922): язычок 26×24 вплотную к правой грани плашки, на линии заголовка; серая — не подключён, рыжая — подключён */
+.comp-card__check { flex: none; margin-left: auto; width: 26px; height: 24px; padding: 0; border: 0; background: url('assets/img/comp/check-off.svg') no-repeat; cursor: pointer; }
+.comp-card__check:hover { background-image: url('assets/img/comp/check-off-hover.svg'); }
+.comp-card__check.is-on { background-image: url('assets/img/comp/check-on.svg'); }
+.comp-card__check.is-on:hover { background-image: url('assets/img/comp/check-on-hover.svg'); }
+/* точки продаж — серые подпункты: название слева, меню справа */
+.comp-card__rows { display: flex; flex-direction: column; margin-top: 6px; font-size: 12px; line-height: 16px; letter-spacing: -.1692px; color: #999; }
+.comp-card__rows:empty { display: none; }
+.comp-card__row-name { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* Тултип по ховеру: тёмная плашка над кнопкой */
+.has-tip[data-tip]::after { content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); padding: 4px 8px; border-radius: 4px; background: #333; color: #fff; font-family: inherit; font-size: 12px; font-weight: 400; line-height: 16px;letter-spacing: -.1692px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .12s; z-index: 10; }
+.has-tip[data-tip]:hover::after { opacity: 1; }
 .sales-settings__head { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; height: 40px; padding: 0 66px 0 12px; gap: 10px; font-size: 14px; }
 .sales-settings__head > div { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
 .sales-settings__head > span { color: #8991a9; }
 .sales-settings .btn--icon, .sales-popup .btn--icon { position: relative; width: 24px; height: 24px; padding: 0; }
 .sales-rows { background: #fff; border-radius: 8px; padding: 8px 0; }
 .sales-empty { margin: 0; padding: 0 12px; color: #8991a9; font-size: 14px; line-height: 1.4; }
+.sales-empty__link { color: var(--link); } /* кнопка-ссылка в тексте: шрифт и строка — от текста */
+.sales-empty__link:hover { text-decoration: underline; }
 .sales-row { position: relative; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 10px; min-height: 32px; padding: 0 12px; font-size: 14px; letter-spacing: -.1974px; }
 .sales-settings .sales-row { padding-right: 66px; }
 .sales-row:hover, .sales-row:focus-within { background: var(--menu-item-hover); }
@@ -565,15 +610,25 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-row__name > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sales-row__name .ico { color: #8991a9; flex: none; }
 .sales-price { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sales-price:hover { text-decoration: underline; }
-.sales-row__actions { position: absolute; right: 4px; display: none; background: var(--menu-item-hover); }
+/* Текст без своего ховера и клика: подсвечивается только строка, строку можно перетащить */
+.sales-row { cursor: grab; }
+.sales-row.is-drag { opacity: .5; }
+/* Команды строки (Figma 2560:101239): кнопки 24, иконки 16, между кнопками 6, поля 4/6/3, фон — ховер строки */
+.sales-row__actions { position: absolute; top: 0; right: 0; bottom: 0; display: none; align-items: center; gap: 6px; padding: 4px 6px 3px; background: var(--menu-item-hover); }
 .sales-row:hover .sales-row__actions, .sales-row:focus-within .sales-row__actions { display: flex; }
-.sales-row__actions button { width: 24px; height: 24px; }
+.sales-row__actions button { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 100px; }
+.sales-row__actions button { cursor: pointer; }
+.sales-row__actions .ico { color: #656c87; } /* icon/secondary_icon-color */
+/* Иконки-ссылки: при наведении темнеют */
+.sales-row__actions button:hover .ico { color: #313e78; }
+.sales-row__actions [data-sales-delete]:hover .ico { color: #8f0e07; }
 .sales-row__actions [data-sales-delete] .ico { color: #c2140a; }
-.sales-popup { position: absolute; z-index: 25; left: 585px; top: 398px; width: 430px; border-radius: 12px; background: #f3f5f7; box-shadow: 0 0 18px #0000001f; }
-.sales-popup__head { display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 8px 0 16px; }
-.sales-popup__head strong { font-size: 16px; font-weight: 600; margin-right: -6px; }
-.sales-popup__body { padding: 0 4px 4px; }
+/* Окно — .pe из ui-kit (фон, тень, шапка, кнопки); здесь только место на сцене, ширина под две колонки и облачко без своих отступов — строки со своими */
+.sales-popup { position: absolute; z-index: 25; left: 585px; top: 398px; width: 430px; }
+.sales-popup--over-params { left: 50%; top: 50%; transform: translate(-50%, -50%); } /* из «Параметров сайта»: по центру страницы, как окно подтверждения */
+.sales-popup .sales-popup__add { margin-left: 8px; }
+.sales-popup__card { padding: 0; }
+.sales-popup .sales-rows { background: none; }
 .sales-spacer { flex: 1; }
 .sales-icon { display: flex; align-items: center; justify-content: center; flex: none; width: 24px; height: 24px; border-radius: 50%; }
 .sales-icon:hover { background: #3333330d; }
@@ -585,13 +640,21 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-picker__main { width: 550px; min-width: 0; display: flex; flex-direction: column; }
 .sales-picker__head { height: 46px; padding: 0 12px 0 16px; display: flex; align-items: center; gap: 12px; }
 .sales-picker__head strong { font-size: 20px; font-weight: 600; letter-spacing: -.282px; }
-.sales-picker__head .sales-filter { width: 32px; height: 32px; }
 .sales-filter .ico24, .sales-list-settings .ico24 { color: #656c87; }
+.sales-picker__head .sales-filter { width: 32px; height: 32px; }
 .sales-filter[aria-pressed="true"] { background: #eeebff; }
+.sales-picker--prices .sales-filter { margin-right: 12px; } /* у прайсов gap в шапке 0 */
 .sales-picker__head .sales-done { width: 26px; height: 26px; }
 .sales-picker__search { display: flex; gap: 0; align-items: center; padding: 0 12px 0 4px; height: 32px; font-size: 14px; letter-spacing: -.1974px; color: #313e78; }
-.sales-picker__search input[type="search"] { font: inherit; width: 300px; flex: none; height: 28px; padding: 0 12px; margin-left: 3px; margin-right: 8px; background: #fff; border: 1px solid #eaeaea; border-radius: 16px; outline-color: #8991a9; }
-.sales-picker__search input::placeholder { color: #8991a999; }
+/* Обычный поиск. От низа поля до белого списка — 10px (поле 28 в строке 32: 2px снизу + 8px отступ) */
+.sales-picker__main > .sales-picker__search { margin-bottom: 8px; }
+.sales-search { flex: none; width: 300px; height: 28px; display: flex; align-items: center; margin: 0 4px 0 3px; padding: 0 12px; overflow: hidden; background: #fff; border: 1px solid #eaeaea; border-radius: 16px; }
+.sales-search input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: none; background: none; font: inherit; color: #000; }
+.sales-search input::placeholder { color: #8991a999; }
+/* Пока ничего не отмечено, нет ни «Отмечено», ни чекбокса «Выбрать все»: место чекбокса остаётся, поле не сдвигается */
+.sales-checkbox.is-empty { visibility: hidden; }
+#salesCount { margin-left: 8px; }
+#salesCount[hidden] { display: none; }
 .sales-picker__list { flex: 1; min-height: 0; background: #fff; overflow: auto; padding: 5px 0 0; }
 .sales-picker__group { width: 100%; display: flex; align-items: center; min-height: 31px; padding: 0 16px 0 20px; gap: 4px; font-size: 16px; text-align: left; }
 .sales-picker__group .ico { color: #313e78; }
@@ -620,7 +683,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-picker--prices .sales-picker__head > strong,
 .sales-picker--prices .sales-picker__head > .sales-spacer { display: none; }
 .sales-picker--prices .sales-picker__search { flex: 1; padding-right: 0; }
-.sales-picker--prices .sales-filter { margin-left: 12px; margin-right: 12px; }
 .sales-picker--prices .sales-option { gap: 3px; min-height: 32px; padding: 4px 12px 4px 4px; font-size: 15px; letter-spacing: -.2115px; }
 .sales-picker--prices .sales-option input:checked { opacity: 1; }
 .price-picker__divider { margin: 12px 20px; height: 1px; background: #eaeaea; }
@@ -668,7 +730,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* неактивный сценарий: в ките disabled только снимает ховер, цвета — readonly-токены */
 .df-radio:disabled .df-radio__text { color: var(--text-readonly_text-color); }
 .df-radio:disabled .df-radio__box::before { border-color: var(--border-readonly_border-color); }
-.pop-hints { display: flex; align-items: center; gap: 6px; }
 .pop-status { display: flex; align-items: center; gap: 6px; padding: 4px 6px 8px; font-size: 14px; letter-spacing: -.1974px; color: #8991a9; }
 .pop-status .ico24 { width: 20px; height: 20px; font-size: 20px; color: #8991a9; }
 
@@ -866,3 +927,27 @@ ul { list-style: none; margin: 0; padding: 0; }
 .stage .wg.site-float[data-col="1"] { left: calc((1600px + var(--float-left) - var(--float-right)) / 2 - 24px); right: auto; }
 .stage .wg.site-float[data-row="0"] { top: 82px; bottom: auto; }
 .stage .wg.site-float[data-row="1"] { top: 448px; bottom: auto; }
+
+/* ---------- Подтверждение (Figma nuC4KFMiS36uDWDUp9wKGl 4064:21938, из interface-prototype) ---------- */
+.confirm-layer { position: absolute; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; }
+.confirm-layer[hidden] { display: none; }
+.confirm {
+  width: 350px; display: flex; flex-direction: column; align-items: center; overflow: hidden; border-radius: 8px; box-shadow: var(--win-shadow);
+  background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 350 164' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%25' width='100%25' fill='url(%23grad)' opacity='0.08'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(30.15 40.234 44.907 -27.324 87.5 -24.78)'><stop stop-color='rgba(12,148,255,0)' offset='0'/><stop stop-color='rgba(12,148,255,1)' offset='1'/></radialGradient></defs></svg>") 0 0 / 100% 100%, #fff;
+}
+.confirm__head { width: 100%; display: flex; justify-content: center; padding: 20px 0; }
+.confirm__marker { width: 40px; height: 3px; border-radius: 100px; background: #0c94ff; } /* components/popuptemplate/secondary_marker_color */
+.confirm__content { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 24px 24px; text-align: center; }
+.confirm__message { margin: 0; padding-top: 1px; font-size: 18px; letter-spacing: -.2538px; color: var(--text); }
+.confirm__details { margin: 0; white-space: pre-line; font-size: 15px; letter-spacing: -.2115px; color: var(--label); } /* text/label_contrast_text-color */
+.confirm__details[hidden] { display: none; }
+.confirm__footer { display: flex; justify-content: center; gap: 12px; padding-bottom: 24px; }
+.confirm__btn {
+  width: 80px; height: 24px; display: flex; align-items: center; justify-content: center; padding: 0 12px 1px;
+  background: #fff; border: 1px solid #529edc; border-radius: 100px; /* border/secondary_border-color */
+  font-size: 14px; letter-spacing: -.1974px; color: var(--text); transition: border-color .12s;
+}
+.confirm__btn--primary { border-color: #f88f62; } /* border/primary_border-color */
+/* наведение — только рамка темнее (Figma 17890:1124, 17890:184) */
+.confirm__btn:hover { border-color: #0065b8; }                 /* border/secondary_hover_border-color */
+.confirm__btn--primary:hover { border-color: #f55714; }        /* border/primary_hover_border-color */
