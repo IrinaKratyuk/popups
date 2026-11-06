@@ -327,6 +327,10 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ls-item__name { flex: 1; min-width: 0; font-size: 15px; letter-spacing: -.2115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
 .ls-item.is-active .ls-item__name { font-weight: 600; }
 .ls-item.is-off .ls-item__name { color: #999; } /* text/unaccented_text-color */
+/* группа страниц компонента: маленькая иконка и название, без ховера и клика; отступ слева — как у названий страниц */
+.ls-group { flex: none; display: flex; align-items: center; gap: 6px; height: 31px; margin-top: 6px; padding: 0 8px; cursor: default; }
+.ls-group__icon { flex: none; width: 16px; height: 16px; }
+.ls-group__name { min-width: 0; font-size: 15px; font-weight: 600; letter-spacing: -.2115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
 .ls-item__cmds { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: none; gap: 6px; padding-left: 4px; background: #ebf4ff; }
 .ls-item:hover .ls-item__cmds, .ls-item.is-menu .ls-item__cmds { display: flex; }
 /* команды — .btn размера m из ui-kit: глиф 16 из cbuc-icons, у глазика и ✕ в макете 24 из cbuc-icons24 */

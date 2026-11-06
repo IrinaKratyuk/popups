@@ -2399,21 +2399,40 @@
     try { localStorage.setItem(LS_KEY, collapsed ? 'collapsed' : 'pinned'); } catch {}
   }
 
+  // Порядок показа: сначала страницы сайта, потом страницы компонентов группами — в порядке компонентов, как в «Параметрах сайта»
+  function lsOrdered() {
+    const own = lsPages.filter((p) => !p.comp);
+    return [own, ...Object.keys(COMP).map((id) => lsPages.filter((p) => p.comp === id))];
+  }
   function lsRenderLines() {
-    lsLines.replaceChildren(...lsPages.map((p) => el('span', 'ls-line' + (p.id === lsActive ? ' is-active' : ''))));
+    lsLines.replaceChildren(...lsOrdered().flat().map((p) => el('span', 'ls-line' + (p.id === lsActive ? ' is-active' : ''))));
   }
 
+  function lsRow(p) {
+    const row = el('div', 'ls-item' + (p.id === lsActive ? ' is-active' : '') + (p.off ? ' is-off' : ''),
+      '<span class="ls-item__marker"></span><span class="ls-item__name"></span>' +
+      '<span class="ls-item__cmds">' +
+      '<button class="btn btn--link btn--style-label btn--size-m btn--icon ls-cmd" type="button" data-cmd="more" aria-label="Ещё"><span class="btn__icon">&#xE9D9;</span></button>' +
+      '</span>');
+    row.dataset.id = p.id;
+    row.querySelector('.ls-item__name').textContent = p.name;
+    return row;
+  }
+  // Группа компонента: заголовок — маленькая иконка компонента и его название, под ним — страницы, которые он принёс
+  function lsGroupHead(id) {
+    const head = el('div', 'ls-group');
+    const icon = el('img', 'ls-group__icon');
+    icon.src = `assets/img/comp/${id}.svg`;
+    icon.width = icon.height = 16;
+    icon.alt = '';
+    const name = el('span', 'ls-group__name');
+    name.textContent = COMP[id].name;
+    head.append(icon, name);
+    return head;
+  }
   function lsRender() {
-    lsList.replaceChildren(...lsPages.map((p) => {
-      const row = el('div', 'ls-item' + (p.id === lsActive ? ' is-active' : '') + (p.off ? ' is-off' : ''),
-        '<span class="ls-item__marker"></span><span class="ls-item__name"></span>' +
-        '<span class="ls-item__cmds">' +
-        '<button class="btn btn--link btn--style-label btn--size-m btn--icon ls-cmd" type="button" data-cmd="more" aria-label="Ещё"><span class="btn__icon">&#xE9D9;</span></button>' +
-        '</span>');
-      row.dataset.id = p.id;
-      row.querySelector('.ls-item__name').textContent = p.name;
-      return row;
-    }));
+    const [own, ...groups] = lsOrdered();
+    lsList.replaceChildren(...own.map(lsRow), ...groups.filter((g) => g.length).flatMap((g) => [lsGroupHead(g[0].comp), ...g.map(lsRow)]));
     lsRenderLines();
     siteShowPage(lsPage(lsActive));
     siteProductSyncShop();
