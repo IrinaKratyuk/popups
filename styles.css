@@ -147,6 +147,58 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-product__img { display: block; margin: 0 auto; max-width: 100%; height: auto; }
 /* форма обратной связи (Figma 2654:44316): поля и чекбоксы из кита, ширина — по зоне контента. Своего фона нет: он у окна или секции */
 .site-product--feedback .site-product__img, .site-product:not(.site-product--feedback) .site-feedback { display: none; }
+/* виджет страницы компонента: название и демоданные (COMP_DEMO в app.js) вместо карточки товара. Вид — как у сайта «Мили»: Montserrat, коричневый текст, рыжие цены, золотые кнопки */
+.site-product--comp .site-product__img, .site-product:not(.site-product--comp) .site-compw { display: none; }
+.site-compw { display: flex; flex-direction: column; gap: 20px; padding: 8px 0 24px; font-family: "Montserrat", sans-serif; font-size: 15px; color: #47382f; }
+.site-compw__name { font-size: 28px; font-weight: 600; letter-spacing: -.3948px; color: #000; }
+.pgw-muted { font-size: 13px; color: #8c7d74; }
+.pgw-price { font-size: 18px; font-weight: 600; color: #cc3d00; white-space: nowrap; }
+.pgw-btn { align-self: flex-start; min-height: 48px; padding: 0 28px; display: inline-flex; align-items: center; border-radius: 100px; font-size: 14px; font-weight: 500; letter-spacing: .56px; text-transform: uppercase; background: linear-gradient(#ffffff33, #ffffff33), linear-gradient(#47382f1a, #47382f1a), #e8c37d; }
+.pgw-h { margin-top: 4px; font-size: 18px; font-weight: 600; }
+.pgw-row { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-top: 1px solid #efe9e5; }
+.pgw-row b { flex: none; width: 110px; font-weight: 600; }
+.pgw-tag { margin-left: auto; padding: 2px 10px; border-radius: 20px; font-size: 12px; background: #f6eedf; color: #9a6b12; }
+/* вход и регистрация */
+.pgw-auth { max-width: 420px; display: flex; flex-direction: column; gap: 16px; }
+.pgw-tabs { display: flex; gap: 24px; font-size: 18px; font-weight: 600; color: #b3a69e; }
+.pgw-tabs .is-on { color: #47382f; box-shadow: inset 0 -2px #e8c37d; padding-bottom: 6px; }
+.pgw-field { display: flex; flex-direction: column; gap: 6px; padding: 10px 16px; border: 1px solid #e3dad4; border-radius: 12px; }
+.pgw-field span { font-size: 12px; color: #8c7d74; }
+.pgw-field b { font-weight: 500; font-size: 16px; }
+.pgw-field__empty { color: #c9bdb5; letter-spacing: 4px; }
+.pgw-note { font-size: 12px; color: #8c7d74; }
+/* профиль */
+.pgw-profile, .pgw-card { display: flex; flex-direction: column; gap: 16px; }
+.pgw-person { display: flex; align-items: center; gap: 16px; }
+.pgw-avatar { flex: none; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 600; background: #e8c37d; }
+.pgw-person__name { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.pgw-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.pgw-stat { display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: 12px; background: rgba(51, 51, 51, .05); }
+.pgw-stat b { font-size: 22px; font-weight: 600; color: #cc3d00; }
+.pgw-stat span { font-size: 13px; color: #8c7d74; }
+/* история заказов */
+.pgw-orders { display: flex; flex-direction: column; }
+.pgw-order { display: grid; grid-template-columns: 1fr auto 110px 100px; align-items: center; gap: 16px; padding: 14px 0; border-top: 1px solid #efe9e5; }
+.pgw-order > div:first-child { display: flex; flex-direction: column; gap: 4px; }
+.pgw-order .pgw-price { text-align: right; }
+.pgw-thumbs { display: flex; }
+.pgw-thumbs img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; margin-left: -10px; background: #f3f3f3; }
+.pgw-thumbs img:first-child { margin-left: 0; }
+.pgw-status { justify-self: start; padding: 4px 12px; border-radius: 20px; font-size: 13px; }
+.pgw-status--ok { background: #e6f2e4; color: #3c7a33; }
+.pgw-status--off { background: #f3eeeb; color: #8c7d74; }
+/* карточка заказа */
+.pgw-steps { display: flex; gap: 6px; }
+.pgw-steps span { flex: 1; padding-top: 10px; font-size: 13px; color: #b3a69e; box-shadow: inset 0 3px #efe9e5; }
+.pgw-steps .is-done { color: #47382f; box-shadow: inset 0 3px #e8c37d; }
+.pgw-steps .is-on { color: #3c7a33; font-weight: 600; box-shadow: inset 0 3px #6aa75f; }
+.pgw-item { display: flex; align-items: center; gap: 16px; }
+.pgw-item img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: #f3f3f3; }
+.pgw-item__name { flex: 1; display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
+.pgw-item__name span { font-weight: 400; font-size: 13px; color: #8c7d74; }
+.pgw-sum { display: flex; justify-content: space-between; }
+.pgw-sum--total { padding-top: 12px; border-top: 1px solid #efe9e5; font-size: 18px; font-weight: 600; }
+.pgw-sum--total span:last-child { color: #cc3d00; }
 .site-feedback { display: flex; flex-direction: column; }
 .site-feedback .input { --in-h: 40px; font-size: 16px; }
 .site-feedback__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
@@ -568,20 +620,16 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-params__head { flex: none; height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 16px; }
 .rs-params__title { font-size: 18px; font-weight: 600; letter-spacing: -.2538px; }
 .rs-params__body { flex: 1; min-height: 0; padding: 0 4px; overflow: hidden auto; }
-.rs-seo { background: #fff; border-radius: 8px; }
-.rs-seo__domain { display: flex; align-items: center; gap: 12px; padding: 12px; height: 56px; }
-.rs-seo__url { padding-bottom: 5px; font-size: 24px; font-weight: 600; letter-spacing: -.3384px; color: #298e3c; }
-.rs-seo__favicon { height: 44px; display: flex; align-items: center; gap: 8px; padding: 12px 12px 8px; font-size: 14px; letter-spacing: -.1974px; color: #8991a9; }
-.rs-seo__favicon img { display: block; border: 1px solid #eaeaea; border-radius: 28px; }
-.rs-seo__chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 12px 8px; }
-.rs-seo__chips .chips__caption { padding-bottom: 2px; } /* подъём текста на 1px: Inter в браузере садится ниже, чем в макете (web/chips 20059:4385) */
+.rs-site__chips .chips__caption { padding-bottom: 2px; } /* подъём текста на 1px: Inter в браузере садится ниже, чем в макете (web/chips 20059:4385) */
 /* Чипсы неподключённых компонентов — опциональное свойство ui-kit (.chips--optional, PropertyGrid 37372:32955): белые на фоне окна, иконка 24 px.
    Иконка — svg компонента в слоте .chips__icon; подъём глифа на 2px картинке не нужен */
 /* группы подключённых компонентов — как блок «Ресторан», только шапка */
 .comp-groups { display: flex; flex-direction: column; gap: 4px; }
 .comp-groups:empty { display: none; }
 .rs-params .comp-group .sales-settings__head { margin-bottom: 0; }
-.rs-comps { padding: 8px 8px 12px; }
+.rs-comps { padding: 12px 8px 12px; } /* сверху 12 + 4 (gap тела) = 16 от плашки выше, как в Figma qRTnmlLncsGaoD9FD0u3Nh 17264:108765 */
+/* заголовок группы чипсов — «МОЖНО ДОБАВИТЬ» из Figma 21912:180563: 12px капсом, 12 от края чипсов, 8 до чипсов */
+.rs-comps__title { padding: 0 0 8px 12px; font-size: 12px; line-height: normal; letter-spacing: .24px; text-transform: uppercase; color: var(--text-label_contrast_text-color); }
 .rs-comps[hidden] { display: none; }
 .rs-comps__chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .rs-comps .chips__icon { padding: 0; }
@@ -626,9 +674,13 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-settings .btn--icon, .sales-popup .btn--icon { position: relative; width: 24px; height: 24px; padding: 0; }
 .sales-rows { background: #fff; border-radius: 8px; padding: 8px 0; }
 /* Прежний вид «Параметров сайта»: блок «Сайт» и точки продаж — белые карточки, заголовок точек внутри карточки */
-.rs-site { display: flex; flex-direction: column; align-items: flex-start; padding: 8px 12px 12px; background: #fff; border-radius: 8px; } /* Figma 2854:63032 */
+.rs-site { display: flex; flex-direction: column; align-items: flex-start; padding: 8px 12px; background: #fff; border-radius: 8px; } /* Figma 2854:63032 */
 .rs-site__title { display: flex; align-items: center; gap: 8px; height: 24px; font-size: 15px; font-weight: 600; letter-spacing: -.2115px; color: var(--text); }
-.rs-site__row { display: flex; align-items: center; gap: 8px; height: 24px; font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
+/* свойства: метки в первой колонке, редакторы — в 8px от самой длинной метки */
+.rs-site__props { display: grid; grid-template-columns: max-content minmax(0, 1fr); column-gap: 8px; align-items: center; justify-items: start; grid-auto-rows: minmax(24px, auto); font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
+.rs-site__favicon { display: block; margin: 2px 0; border: 1px solid #eaeaea; border-radius: 28px; }
+.rs-site__props, .rs-site__chips { align-self: stretch; }
+.rs-site__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .rs-site__label { color: #8991a9; }
 .rs-site__owner { display: flex; align-items: center; gap: 4px; }
 .rs-site__val { color: var(--link); }
@@ -637,6 +689,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-params .sales-settings { background: #fff; border-radius: 8px; padding: 8px 0; }
 .rs-params .sales-settings__head { height: 24px; gap: 12px; margin-bottom: 4px; } /* между шапкой и первой строкой — 4px */
 .rs-params .sales-settings .sales-rows { padding: 0; }
+/* поле внутри белых плашек «Параметров сайта» — 8px сверху и снизу, 12px по бокам (у шапки и строк — их собственные 12px) */
 /* Крестик «отключить компонент» (как .swatch-clear в STW): виден всегда. Крестики плашки и строк — в одной вертикали с крестиком панели:
    кнопка панели 32 в 8 от края окна, тело окна с полями 4 → центр в 20 от края плашки; кнопка 24 → right 8 */
 .rs-params .sales-settings { position: relative; }

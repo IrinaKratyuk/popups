@@ -192,7 +192,7 @@
               <div class="wg__toolbar">
                 <div class="tb tb--style-info" role="toolbar" aria-label="Виджет">
                   <!-- набор команд — из макета (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2547:84576), кнопки — .tb__btn из ui-kit -->
-                  <button type="button" class="tb__btn" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
+                  <button type="button" class="tb__btn" id="siteCatalogBack" aria-label="Назад"><span class="tb__icon" aria-hidden="true">&#xe9a9;</span></button>
                   <button type="button" class="tb__btn"><span class="tb__caption">Стиль</span><span class="tb__arrow" aria-hidden="true"></span></button>
                   <button type="button" class="tb__btn" aria-label="Расположение"><span class="tb__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="5" height="1" rx=".5"/><rect x="2" y="8" width="8" height="1" rx=".5"/><rect x="2" y="11" width="6" height="1" rx=".5"/><rect x="2" y="14" width="7" height="1" rx=".5"/><rect x="12.5" y="4.5" width="9" height="15" rx="1.5" fill="none" stroke="currentColor"/></svg></span></button>
                   <button type="button" class="tb__btn"><span class="tb__caption">Раздел</span></button>
@@ -215,6 +215,7 @@
             </div>
             <button type="button" class="site-plus site-plus--up"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
             <button type="button" class="site-plus site-plus--down"><span class="site-plus__ico" aria-hidden="true">&#xe95d;</span>секция</button>
+            <div class="wg__toolbar"><div class="tb tb--style-info" role="toolbar" aria-label="Секция" data-section-cmds></div></div>
           </section>
           <!-- Секция с формой обратной связи: сценарий «Виджет добавлен → В секции». Секция собрана из общих шаблонов, форма — та же, что в окне -->
           <section class="wg site-ext" id="siteExt" aria-label="Секция с формой">
@@ -255,6 +256,8 @@
                 <div class="wg__content">
                   <img class="site-product__img" src="assets/img/site/product-card.png?v=2" width="756" height="768" alt="Карточка товара" draggable="false">
                   <div class="site-feedback" data-site-feedback></div>
+                  <!-- Виджет страницы компонента (вход, профиль, заказы): страница приходит со своим виджетом. Макета пока нет — название и демоданные (COMP_DEMO в app.js) -->
+                  <div class="site-compw" inert><div class="site-compw__name"></div><div class="site-compw__body"></div></div>
                 </div>
                 <div class="wg__toolbar">
                   <div class="tb tb--style-info" role="toolbar" aria-label="Карточка товара">
@@ -331,9 +334,15 @@
           <button class="btn btn--ghost btn--style-label btn--icon" type="button" id="rsParamsClose" aria-label="Закрыть"><img src="assets/img/close-tool.svg" width="28" height="28" alt=""></button>
         </div>
         <div class="rs-params__body">
-          <div class="rs-seo">
-            <div class="rs-seo__favicon">Иконка сайта (favicon)<img src="assets/img/favicon.png" width="28" height="28" alt=""></div>
-            <div class="rs-seo__chips">
+          <!-- Прежний вид: блок «Сайт» и точки продаж с прайсами. Показывается, пока скрыты плашки «Компоненты» -->
+          <!-- Блок «Сайт»: Figma 2854:63032. Сначала свойства, за ними SEO-чипсы. Редакторы — в одной колонке, в 8px от самой длинной метки -->
+          <section class="rs-site" aria-label="Сайт">
+            <div class="rs-site__title"><img class="sales-settings__icon" src="assets/img/comp/site.svg" width="24" height="24" alt="">Сайт</div>
+            <div class="rs-site__props">
+              <span class="rs-site__label">Владелец</span><span class="rs-site__owner"><span class="rs-site__val">Тензор, ООО</span><span class="ico rs-site__clear" aria-hidden="true">&#xE66C;</span></span>
+              <span class="rs-site__label">Иконка сайта (favicon)</span><img class="rs-site__favicon" src="assets/img/favicon.png" width="28" height="28" alt="">
+            </div>
+            <div class="rs-site__chips">
             <button class="chips chips--size-m" type="button"><span class="chips__caption">HTML - код</span></button>
             <button class="chips chips--size-m" type="button"><span class="chips__caption">Яндекс.Вебмастер</span></button>
             <button class="chips chips--size-m" type="button"><span class="chips__caption">Яндекс.Метрика</span></button>
@@ -341,12 +350,6 @@
             <button class="chips chips--size-m" type="button"><span class="chips__caption">Google Search Console</span></button>
             <button class="chips chips--size-m" type="button"><span class="chips__caption">Google Tag Manager</span></button>
             </div>
-          </div>
-          <!-- Прежний вид: блок «Сайт» и точки продаж с прайсами. Показывается, пока скрыты плашки «Компоненты» -->
-          <!-- Блок «Сайт»: Figma 2854:63032 -->
-          <section class="rs-site" aria-label="Сайт">
-            <div class="rs-site__title"><img class="sales-settings__icon" src="assets/img/comp/site.svg" width="24" height="24" alt="">Сайт</div>
-            <div class="rs-site__row"><span class="rs-site__label">Владелец</span><span class="rs-site__owner"><span class="rs-site__val">Тензор, ООО</span><span class="ico rs-site__clear" aria-hidden="true">&#xE66C;</span></span></div>
           </section>
           <section class="sales-settings" id="salesSettings" aria-label="Точки продаж сайта" hidden>
             <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt="">Ресторан <button class="btn btn--filled btn--style-pale btn--size-m btn--icon has-tip" type="button" data-sales-add aria-label="Добавить точки продаж" data-tip="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span></button></div><span></span><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div>
@@ -356,6 +359,7 @@
           <div class="comp-groups" id="compGroups"></div>
           <!-- Неподключённые компоненты чипсами ui-kit с иконкой: клик подключает компонент (с зависимостями). Чипсы строит compChipsRender -->
           <section class="rs-comps" id="compChipsBlock" aria-label="Подключить компонент">
+            <div class="rs-comps__title">Добавить компонент</div>
             <div class="rs-comps__chips" id="compChips"></div>
           </section>
           <!-- Компоненты пока скрыты (hidden), код не удалён. Вернуть — снять hidden и спрятать .rs-site и #salesSettings -->

@@ -244,15 +244,17 @@
   let salesOnlySelected = false;
   // Компоненты: виджет из магазина подключает свой компонент, а с ним приходят компоненты, от которых он зависит (deps) — они его часть. Компонент приносит страницы и настройки
   // (в «Параметры сайта», группа «Компоненты»). Связи — из документа «Компоненты интернет магазина». Настройки пока есть только у «Ресторана» — точки продаж.
-  // widget — виджет компонента в магазине, widgetPage — страница, которую виджет открывает. Отдельной страницы «Меню» у «Ресторана» нет: каталог стоит на главной.
+  // widget — виджет компонента в магазине, widgetPage — страница, которую виджет открывает. Страницы создаются под виджет: у каждой страницы компонента свой виджет
+  // (widgetPage — карточка блюда, остальные — по widgets). widgetHome — страница для самого виджета: приходит, только если компонент подключили галкой, а его виджета на сайте нет.
+  // Виджет, поставленный из магазина, стоит там, куда его поставили (в сценариях компонентов — на главной), страницы для него не создаётся.
   // Порядок — как в таблице документа; он же порядок плашек в «Параметрах сайта»
   const COMP = {
     company: { name: 'Компания и точки продаж', desc: 'Адреса, контакты и часы работы филиалов на карте', deps: [], pages: [] },
-    account: { name: 'Личный кабинет', desc: 'Вход и регистрация покупателя, профиль, бонусы и сохранённые адреса', deps: [], pages: ['Вход и регистрация', 'Профиль'] },
-    orders: { name: 'Заказы и оплата', desc: 'Корзина, оформление и оплата заказа онлайн, история заказов покупателя', deps: ['company', 'account'], pages: ['Заказы', 'Карточка заказа'] },
+    account: { name: 'Личный кабинет', desc: 'Вход и регистрация покупателя, профиль, бонусы и сохранённые адреса', deps: [], pages: ['Вход и регистрация', 'Профиль'], widgets: { 'Вход и регистрация': 'Вход и регистрация', 'Профиль': 'Профиль покупателя' } },
+    orders: { name: 'Заказы и оплата', desc: 'Корзина, оформление и оплата заказа онлайн, история заказов покупателя', deps: ['company', 'account'], pages: ['Заказы', 'Карточка заказа'], widgets: { 'Заказы': 'История заказов', 'Карточка заказа': 'Карточка заказа' } },
     delivery: { name: 'Доставка и самовывоз', desc: 'Зоны и стоимость доставки, самовывоз из ближайшей точки', deps: [], pages: [] },
     shop: { name: 'Магазин', desc: 'Каталог товаров с ценами и остатками, корзина и заказ с доставкой', deps: ['orders', 'delivery'], pages: [] },
-    restaurant: { name: 'Ресторан', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', deps: ['orders', 'delivery'], pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда' },
+    restaurant: { name: 'Ресторан', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', deps: ['orders', 'delivery'], pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда', widgetHome: 'Меню' },
     services: { name: 'Сфера услуг', desc: 'Каталог услуг и онлайн-запись к специалисту на свободное время', deps: ['orders'], pages: [] },
     hotel: { name: 'Отель', desc: 'Номера и цены, бронирование на даты с оплатой онлайн', deps: ['orders'], pages: [] },
     loyalty: { name: 'Лояльность', desc: 'Бонусы, скидки и акции для покупателей, баланс в личном кабинете', deps: ['company', 'account'], pages: [] },
@@ -261,6 +263,7 @@
   const compOn = new Set();    // подключавшиеся, в порядке подключения: их страницы и настройки на сайте
   const compRoots = new Set(); // подключённые виджетом, а не как зависимость
   let catalogHome = false;     // каталог стоит на главной (сценарии компонентов), а не на странице «Меню» прочих сценариев
+  let catalogMenu = false;     // каталог стоит на странице «Меню», которую принёс «Ресторан» (подключён галкой без виджета)
   const compConfigured = () => salesSaved.length > 0;
   function compRender() {
     const root = $('#compList');
@@ -400,7 +403,7 @@
     $('#salesSettingsRemove').hidden = !compOn.has('restaurant'); // каталог без компонента отключать нечего
     salesRenderRows($('#salesSettingsRows'), salesSaved, true);
     $('#salesData').hidden = !catalogAdded && !compOn.has('restaurant');
-    $('#siteCatalog').classList.toggle('is-demo', catalogHome && !salesSaved.length); // без точек продаж — демоданные
+    $('#siteCatalog').classList.toggle('is-demo', (catalogHome || catalogMenu) && !salesSaved.length); // без точек продаж — демоданные
     salesRenderRows($('#salesPopupRows'), salesCurrent());
     $('#salesReset').disabled = !salesDraft?.length; // сброс убирает точки: без них сбрасывать нечего
     salesDataCurrentRender();
@@ -667,14 +670,16 @@
   PropertyEditor.mount($('#catSet'), { onDone: catSetClose, onClose: catSetClose });
   // Окно настроек каталога открывается по шестерёнке в тулбаре (она же закрывает) и по клику на уже выделенный виджет:
   // первый клик выделяет, второй открывает — так же срабатывает и двойной клик.
-  // Слушатель на самом виджете срабатывает раньше общего на siteView, который ставит is-active, — видно выделение до этого клика
   catSetGear.addEventListener('click', () => {
     if (!$('#catSet').hidden) { catSetClose(); return; }
     catSetOpen();
   });
+  // Выделение ставит общий mousedown на сцене — раньше click. Поэтому «уже выделен» запоминается на mousedown самого виджета: он срабатывает до общего
+  let catWasActive = false;
+  $('#siteCatalog').addEventListener('mousedown', () => { catWasActive = $('#siteCatalog').classList.contains('is-active'); });
   $('#siteCatalog').addEventListener('click', (e) => {
     if (e.target.closest('.tb')) return; // клики по кнопкам тулбара — их собственные
-    if ($('#siteCatalog').classList.contains('is-active') && $('#catSet').hidden) catSetOpen();
+    if (catWasActive && $('#catSet').hidden) catSetOpen();
   });
   function catSetOpen() {
     const root = $('#catSet');
@@ -875,6 +880,8 @@
   for (const footer of document.querySelectorAll('[data-site-footer]')) footer.append($('#siteFooter').content.cloneNode(true));
   const siteSection = $('#siteSection');
   const siteCatalog = $('#siteCatalog');
+  const siteLink = $('#siteLink');
+  const siteLinkWidget = $('#siteLinkWidget');
   // Демоданные: пока у компонента нет точек продаж, вместо фото блюд — демо-фото, те же, что в превью «Меню ресторана» (.is-demo ставит salesRender)
   siteCatalog.querySelectorAll('.site-card__img, .site-cat').forEach((box, i) => {
     const demo = el('img', 'site-demo');
@@ -932,6 +939,11 @@
   $('.rs-w__name', shopCatalog).append(shopCatalogPin);
 
   function siteCatalogShow(on) {
+    if (!on && siteCatalog.parentElement === siteBlankSection) { // каталог убрали из окна — в окне снова пустая ячейка
+      siteSection.append(siteCatalog);
+      siteBlankCell.hidden = false;
+      siteBlankSection.classList.remove('has-widget');
+    }
     siteCatalog.hidden = !on;
     $('.site-empty', siteSection).hidden = on;
     siteSection.classList.toggle('has-widget', on);
@@ -957,15 +969,19 @@
     salesRender();
     if (!compConfigured()) salesOpen();
   }
-  // dropPage — удалить и страницу, которую открывает виджет. Компонент остаётся.
-  function siteRemoveCatalog(dropPage) {
+  // Удаление виджета не трогает компонент и его страницы: они уходят только вместе с компонентом
+  function siteRemoveCatalog() {
     salesClose();
     catSetClose();
     catalogAdded = false;
     if (!compOn.size) { // каталог других сценариев: без компонента, точки и «Карточка товара» уходят вместе с ним
       salesSaved = [];
       lsRemoveCardPage();
-    } else if (dropPage) compDropPages((p) => p.widgetPage);
+    }
+    if (catalogMenu) { // каталог «Меню» уходит только с компонентом, а с ним и страница: дальше каталог снова ставится на главную
+      catalogMenu = false;
+      catalogHomeSet(true);
+    }
     salesRender();
     scenSyncing = true;
     frame.select('catalog-add');
@@ -974,18 +990,6 @@
     siteCatalogShow(false);
     siteCatalog.classList.remove('is-active');
   }
-  // Удаление виджета спрашивает, удалить ли и его страницу; «Нет» удаляет только виджет
-  function siteDeleteCatalogAsk() {
-    const page = compOn.has('restaurant') && lsPages.find((p) => p.widgetPage);
-    if (!page) { siteRemoveCatalog(false); return; }
-    salesClose();
-    confirmAsk({
-      message: `Удалить страницу «${page.name}»?`,
-      details: `Компонент «${COMP.restaurant.name}» и его настройки сохранятся`,
-      answers: [['yes', 'Да', true], ['no', 'Нет'], ['cancel', 'Отмена']],
-    }, (answer) => { if (answer !== 'cancel') siteRemoveCatalog(answer === 'yes'); });
-  }
-
   // Подключение: сначала сам компонент, потом его зависимости. Уже подключённый компонент возвращает свои страницы, если их удалили вместе с виджетом
   function compConnect(id, root = false) {
     if (root) compRoots.add(id);
@@ -993,7 +997,7 @@
     COMP[id].pages.forEach((name, i) => {
       if (lsPages.some((p) => p.comp === id && p.name === name)) return;
       const widgetPage = name === COMP[id].widgetPage;
-      const page = { id: lsNextId++, name, off: false, blank: true, mode: 'page', fixed: true, comp: id, widgetPage, product: widgetPage };
+      const page = { id: lsNextId++, name, off: false, blank: true, mode: 'page', fixed: true, comp: id, widgetPage, product: widgetPage, compWidget: COMP[id].widgets?.[name] };
       // вернувшаяся страница встаёт на своё место среди страниц компонента
       const order = (p) => p.comp === id ? COMP[id].pages.indexOf(p.name) : -1;
       const after = lsPages.findLastIndex((p) => p.comp === id && order(p) < i);
@@ -1001,6 +1005,20 @@
       lsPages.splice(after >= 0 ? after + 1 : before >= 0 ? before : lsPages.length, 0, page);
     });
     for (const dep of COMP[id].deps) compConnect(dep);
+  }
+  // Компонент подключён, а его виджета на сайте нет: приходит страница для виджета («Меню») — первой в группе компонента, с виджетом на ней
+  function compAddWidgetHome(id) {
+    const c = COMP[id];
+    if (!c.widgetHome || catalogAdded) return;
+    const page = { id: lsNextId++, name: c.widgetHome, off: false, mode: 'page', fixed: true, comp: id, menu: true };
+    const at = lsPages.findIndex((p) => p.comp === id);
+    lsPages.splice(at >= 0 ? at : lsPages.length, 0, page);
+    catalogHomeSet(false);
+    catalogMenu = true;
+    catalogAdded = true;
+    shopCatalog.hidden = true;
+    siteCatalogShow(true);
+    siteCatalog.classList.remove('is-active');
   }
   function compDropPages(match) {
     lsPages = lsPages.filter((p) => !match(p));
@@ -1033,7 +1051,7 @@
   }
   function compRemove(ids, widget) {
     for (const c of ids) { compOn.delete(c); compRoots.delete(c); }
-    if (widget) siteRemoveCatalog(false);
+    if (widget) siteRemoveCatalog();
     if (ids.includes('restaurant')) salesSaved = []; // настройки компонента — точки продаж — уходят с ним
     compDropPages((p) => ids.includes(p.comp));
     salesRender();
@@ -1046,6 +1064,7 @@
       const id = toggle.dataset.compToggle || toggle.dataset.compAdd;
       if (compOn.has(id)) { compRemoveAsk(id); return; }
       compConnect(id, true);
+      compAddWidgetHome(id);
       lsRender();
       salesRender();
       return;
@@ -1093,7 +1112,9 @@
     if (e.target.closest('[data-widget="catalog"]')) siteAddCatalog();
     if (e.target.closest('[data-widget="product"]')) siteAddProduct();
   });
-  $('#siteCatalogDelete').addEventListener('click', siteDeleteCatalogAsk);
+  // каталог на «Меню» компонента — основной виджет страницы и не удаляется
+  const siteDeleteCatalog = () => { if (!catalogMenu) siteRemoveCatalog(); };
+  $('#siteCatalogDelete').addEventListener('click', siteDeleteCatalog);
 
   // Новая страница (blank) — вместо сайта пустая секция, на ней ничего не выделено. «В окне» — внутри окна и с неактивным адаптивом, иначе — под шапкой сайта.
   // «Страница и окно» — переключатель в шапке показывает страницу (по умолчанию) или окно, выбор запоминается в странице.
@@ -1102,7 +1123,7 @@
   let siteShown = null;
   // На открытой странице ничего не выделено: выделение появляется только кликом
   function siteClearSelection() {
-    for (const widget of [siteCatalog, siteFloat, siteLinkWidget, siteProduct, siteBlankSection, siteExt, siteExtWidget]) widget.classList.remove('is-active');
+    for (const widget of [siteCatalog, siteFloat, siteLinkWidget, siteProduct, siteSection, siteLink, siteBlankSection, siteExt, siteExtWidget]) widget.classList.remove('is-active');
   }
   function siteShowPage(page) {
     const isBoth = page.mode === 'both';
@@ -1118,8 +1139,12 @@
     // Главная — баннер и «О нас», на «Меню» — только секция с каталогом. В сценариях компонентов каталог стоит на главной между ними
     siteMain.classList.toggle('is-home', !!page.home);
     if (catalogHome) siteCatalogShow(catalogAdded);
-    const hasCatalog = !isBlank && (catalogHome ? page.home : !page.home);
+    const hasCatalog = !page.blank && !siteCatalog.hidden && (catalogHome ? !!page.home : !page.home);
     if (!hasCatalog) salesClose(); // каталога на открытой странице нет
+    // Страница с каталогом «В окне» — каталог переезжает в секцию окна вместо пустой ячейки, на странице — обратно в свою секцию
+    const catalogInWindow = isWindow && hasCatalog;
+    if (catalogInWindow) siteBlankSection.insertBefore(siteCatalog, siteBlankCell);
+    else if (siteCatalog.parentElement !== siteSection) siteSection.append(siteCatalog);
     siteBlank.hidden = !isBlank;
     siteTumbler.classList.toggle('is-off', isWindow);
     siteTumbler.querySelectorAll('.ch-seg').forEach((seg) => { seg.disabled = isWindow; });
@@ -1139,7 +1164,16 @@
       siteBlankBody.removeAttribute('style');
       wsPaintFill(siteBlankBody, null);
     }
-    siteProductRender(!!(page.product || page.feedback));
+    // каталог на «Меню» компонента — основной виджет страницы: нет «Удалить» ни у виджета, ни у секции
+    $('#siteCatalogDelete').hidden = !!page.menu;
+    $('[data-sec-cmd="delete"]', siteSection).hidden = !!page.menu;
+    siteProductRender(!!(page.product || page.feedback || page.compWidget));
+    if (catalogInWindow) {
+      siteBlankCell.hidden = true;
+      shopProductPin.hidden = true;
+      siteBlankSection.classList.add('has-widget');
+      $('[data-sec-cmd="delete"]', siteBlankSection).hidden = !!page.menu;
+    }
     siteSelectWindow(false);
     extPinSync();
   }
@@ -1153,9 +1187,62 @@
   function shopFeedbackSync() {
     shopFeedback.hidden = stage.dataset.scenario !== 'ext-add';
   }
+  // Демоданные виджетов страниц компонентов: макетов пока нет, вид — в стиле сайта «Мили». Покупатель, адреса и заказы вымышленные
+  const CW_IMG = 'assets/img/site/catalog/';
+  const cwThumbs = (...imgs) => `<span class="pgw-thumbs">${imgs.map((img) => `<img src="${CW_IMG}${img}.png" alt="">`).join('')}</span>`;
+  const cwItem = (img, name, qty, price) =>
+    `<div class="pgw-item"><img src="${CW_IMG}${img}.png" alt=""><div class="pgw-item__name">${name}<span>${qty} шт.</span></div><div class="pgw-price">${price} ₽</div></div>`;
+  const COMP_DEMO = {
+    'Вход и регистрация':
+      '<div class="pgw-auth">' +
+        '<div class="pgw-tabs"><span class="is-on">Вход</span><span>Регистрация</span></div>' +
+        '<label class="pgw-field"><span>Телефон</span><b>+7 (910) 555-12-34</b></label>' +
+        '<label class="pgw-field"><span>Код из СМС</span><b class="pgw-field__empty">— — — —</b></label>' +
+        '<span class="pgw-btn">Получить код</span>' +
+        '<div class="pgw-note">Повторно отправить код можно через 0:59</div>' +
+        '<div class="pgw-note">Нажимая кнопку, вы соглашаетесь с условиями обработки персональных данных</div>' +
+      '</div>',
+    'Профиль покупателя':
+      '<div class="pgw-profile">' +
+        '<div class="pgw-person"><span class="pgw-avatar">АС</span><div><div class="pgw-person__name">Анна Смирнова</div><div class="pgw-muted">+7 (910) 555-12-34 · anna.smirnova@example.ru</div></div></div>' +
+        '<div class="pgw-stats">' +
+          '<div class="pgw-stat"><b>1 240</b><span>бонусных баллов</span></div>' +
+          '<div class="pgw-stat"><b>14</b><span>заказов</span></div>' +
+          '<div class="pgw-stat"><b>Мили</b><span>на Московском — любимый ресторан</span></div>' +
+        '</div>' +
+        '<div class="pgw-h">Адреса доставки</div>' +
+        '<div class="pgw-row"><b>Дом</b><span>Ярославль, ул. Свободы, 12, кв. 45</span><span class="pgw-tag">основной</span></div>' +
+        '<div class="pgw-row"><b>Работа</b><span>Ярославль, пр-т Октября, 56, офис 310</span></div>' +
+      '</div>',
+    'История заказов':
+      '<div class="pgw-orders">' +
+        `<div class="pgw-order"><div><b>№ 10482</b><span class="pgw-muted">6 ноября, 19:40 · Доставка</span></div>${cwThumbs('pepperoni', 'tuna')}<span class="pgw-status pgw-status--ok">Доставлен</span><div class="pgw-price">2 000 ₽</div></div>` +
+        `<div class="pgw-order"><div><b>№ 10431</b><span class="pgw-muted">31 октября, 13:15 · Самовывоз</span></div>${cwThumbs('langoustine', 'tuna', 'pepperoni')}<span class="pgw-status pgw-status--ok">Выдан</span><div class="pgw-price">2 540 ₽</div></div>` +
+        `<div class="pgw-order"><div><b>№ 10397</b><span class="pgw-muted">24 октября, 20:05 · Доставка</span></div>${cwThumbs('pepperoni')}<span class="pgw-status pgw-status--off">Отменён</span><div class="pgw-price">650 ₽</div></div>` +
+      '</div>',
+    'Карточка заказа':
+      '<div class="pgw-card">' +
+        '<div class="pgw-muted">Заказ № 10482 от 6 ноября 2026, 19:40</div>' +
+        '<div class="pgw-steps"><span class="is-done">Принят</span><span class="is-done">Готовится</span><span class="is-done">В пути</span><span class="is-on">Доставлен</span></div>' +
+        cwItem('pepperoni', 'Пепперони', 1, '650') +
+        cwItem('tuna', 'Севиче из тунца', 1, '1 350') +
+        '<div class="pgw-sum"><span>Доставка</span><span>0 ₽</span></div>' +
+        '<div class="pgw-sum"><span>Начислено баллов</span><span>+100</span></div>' +
+        '<div class="pgw-sum pgw-sum--total"><span>Итого</span><span>2 000 ₽</span></div>' +
+        '<div class="pgw-row"><b>Адрес</b><span>Ярославль, ул. Свободы, 12, кв. 45</span></div>' +
+        '<div class="pgw-row"><b>Оплата</b><span>Картой онлайн · оплачен</span></div>' +
+        '<span class="pgw-btn">Повторить заказ</span>' +
+      '</div>',
+  };
   function siteProductRender(on) {
     siteProduct.hidden = !on;
     siteProduct.classList.toggle('site-product--feedback', !!wsPage.feedback);
+    siteProduct.classList.toggle('site-product--comp', !!wsPage.compWidget); // виджет страницы компонента (вход, профиль, заказы)
+    if (wsPage.compWidget) {
+      $('.site-compw__name', siteProduct).textContent = wsPage.compWidget;
+      $('.site-compw__body', siteProduct).innerHTML = COMP_DEMO[wsPage.compWidget] ?? '';
+    }
+    $('.tb', siteProduct).setAttribute('aria-label', wsPage.compWidget || (wsPage.feedback ? 'Обратная связь' : 'Карточка товара'));
     siteBlankBody.classList.toggle('has-feedback', !!wsPage.feedback); // у формы свой крестик, крестик окна не нужен
     shopProductPin.hidden = on || siteBlank.hidden;
     siteBlankCell.hidden = on;
@@ -1168,7 +1255,7 @@
     siteBlankSection.classList.remove('is-active');
   }
   function siteAddProduct() {
-    if (siteBlank.hidden || wsPage.product || wsPage.feedback) return;
+    if (siteBlank.hidden || wsPage.product || wsPage.feedback || wsPage.compWidget || siteCatalog.parentElement === siteBlankSection) return;
     wsPage.product = true;
     siteProductSyncShop();
     siteProductRender(true);
@@ -1215,15 +1302,21 @@
     if (wsRoot.hidden && secRoot.hidden && !e.target.closest('#bgWin')) { // пока открыты настройки или окно «Фон», выделение остаётся
       const inSection = !!e.target.closest('#siteBlankSection');
       const inProduct = !!e.target.closest('#siteProduct');
-      siteBlankSection.classList.toggle('is-active', inSection && !inProduct);
+      siteBlankSection.classList.toggle('is-active', inSection && !inProduct && !e.target.closest('#siteCatalog')); // каталог в окне выделяется сам
       siteProduct.classList.toggle('is-active', inProduct);
       const inExt = !!e.target.closest('#siteExt');
       const inExtWidget = !!e.target.closest('#siteExtWidget');
       siteExt.classList.toggle('is-active', inExt && !inExtWidget);
       siteExtWidget.classList.toggle('is-active', inExtWidget);
+      // Секция каталога и секция с кнопкой выделяются кликом мимо своего виджета, как остальные секции
+      siteSection.classList.toggle('is-active', !!e.target.closest('#siteSection') && !e.target.closest('#siteCatalog'));
+      const inLink = !!e.target.closest('#siteLink');
+      const inLinkWidget = !!e.target.closest('#siteLinkWidget');
+      siteLink.classList.toggle('is-active', inLink && !inLinkWidget);
+      if (btnSet.hidden && inLink) siteLinkSelect(inLinkWidget); // пока открыты настройки кнопки, выделение остаётся
       const windowHit = !inSection && siteBlank.classList.contains('is-window') && !!e.target.closest('#siteBlankBody');
       siteSelectWindow(windowHit);
-      const sectionHit = secNode === siteExt ? inExt && !inExtWidget : inSection && !inProduct;
+      const sectionHit = secNode.classList.contains('is-active');
       if (!(bgKey === 'section' ? sectionHit : windowHit)) bgClose(); // тулбар с командой скрылся
     }
     if (siteCatalog.hidden || ['window-link', 'ext-added', 'ext-link'].includes(stage.dataset.scenario)) return; // в этих сценариях выделена кнопка, клик мимо выделение не снимает
@@ -1231,11 +1324,19 @@
   });
 
   // Секция с кнопкой: пока кнопка выделена, у секции пунктирная рамка родителя
-  const siteLink = $('#siteLink');
-  const siteLinkWidget = $('#siteLinkWidget');
   function siteLinkSelect(on) {
     siteLinkWidget.classList.toggle('is-active', on);
   }
+  // «Назад» поднимает на уровень секции — у каталога и у кнопки, как у карточки товара и формы
+  $('#siteCatalogBack').addEventListener('click', () => {
+    siteCatalog.classList.remove('is-active');
+    siteCatalog.parentElement.classList.add('is-active'); // своя секция или секция окна
+  });
+  $('[data-btn-cmd="back"]', siteLinkWidget).addEventListener('click', () => {
+    btnSetClose();
+    siteLinkSelect(false);
+    siteLink.classList.add('is-active');
+  });
   // Родитель выделенного виджета — .wg--level-2 из кита: только пунктир, кнопки «+ секция» есть лишь у активной секции. Общее правило для всех секций, как бы ни поставилось выделение
   const SITE_PARENTS = [siteSection, siteLink, siteBlankSection, siteExt];
   function siteParentsSync() {
@@ -1292,7 +1393,7 @@
   }
   $('#siteExtDelete').addEventListener('click', siteRemoveExt);
   // «Удалить» в тулбаре секции удаляет и виджет внутри неё; секция с формой существует только вместе с формой
-  $('[data-sec-cmd="delete"]', siteSection).addEventListener('click', () => { if (!siteCatalog.hidden) siteDeleteCatalogAsk(); });
+  $('[data-sec-cmd="delete"]', siteSection).addEventListener('click', () => { if (!siteCatalog.hidden) siteDeleteCatalog(); });
   $('[data-sec-cmd="delete"]', siteBlankSection).addEventListener('click', () => { if (wsPage.product) siteRemoveProduct(); });
   $('[data-sec-cmd="delete"]', siteExt).addEventListener('click', siteRemoveExt);
   // «Назад» поднимает на уровень секции
@@ -1977,11 +2078,11 @@
   const secRoot = $('#sec');
   peDraggable(secRoot);
   // Команды тулбара секции работают одинаково у всех секций: «Настройки» открывает это окно, «Фон» — окно «Фон».
-  // Данные секции новой страницы лежат в странице, секции с формой — в своём объекте.
-  const SEC_NODES = [siteBlankSection, siteExt];
+  // Данные секции новой страницы лежат в странице, у остальных секций (каталог, кнопка, форма) — в своих объектах.
+  const SEC_NODES = [siteBlankSection, siteExt, siteSection, siteLink];
   let secNode = siteBlankSection;
-  const siteExtData = {};
-  const secData = () => (secNode === siteExt ? siteExtData : wsPage);
+  const secStore = new Map([[siteExt, {}], [siteSection, {}], [siteLink, {}]]);
+  const secData = () => secStore.get(secNode) ?? wsPage;
   const secNameInput = $('#secName');
   const secWidth = $('#secWidth');
   const secWidthMenu = $('#secWidthMenu');
@@ -2390,6 +2491,7 @@
   // Сценарий «Создание окна с товаром»: каталог уже на странице и не выделен, страницы «Карточка товара» нет.
   function sitePlaceCatalog() {
     catalogHomeSet(false);
+    catalogMenu = false;
     catalogAdded = true;
     shopCatalog.hidden = true;
     siteCatalogShow(true);
@@ -2867,6 +2969,7 @@
     const isLink = scenario === 'window-link' || scenario === 'ext-link';
     const extAt = scenario === 'ext-added' ? mode ?? 'float' : null; // где стоит добавленный внешний виджет
     siteLinkSelect(isLink);
+    for (const section of [siteSection, siteLink]) section.classList.remove('is-active'); // выделение секции из прошлого сценария не переносится
     siteExtWidget.classList.toggle('is-active', extAt === 'section');
     const extPageMode = scenario === 'ext-page' ? mode ?? 'page' : null;
     siteFloatRemove();
