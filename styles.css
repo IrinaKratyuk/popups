@@ -724,6 +724,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-row__actions button:hover .ico { color: #313e78; }
 .sales-row__actions [data-sales-delete]:hover .ico { color: #8f0e07; }
 .sales-row__actions [data-sales-delete] .ico { color: #c2140a; }
+.sales-row__actions .has-tip { position: relative; }
+.sales-row__actions .has-tip[data-tip]::after { left: auto; right: 0; transform: none; } /* корона у края панели: по центру тултип обрезался бы */
 /* Окно — .pe из ui-kit (фон, тень, шапка, кнопки); здесь только место на сцене, ширина под две колонки и облачко без своих отступов — строки со своими */
 .sales-popup { position: absolute; z-index: 25; left: 585px; top: 398px; width: 430px; }
 .sales-popup--over-params { left: 50%; top: 50%; transform: translate(-50%, -50%); } /* из «Параметров сайта»: по центру страницы, как окно подтверждения */

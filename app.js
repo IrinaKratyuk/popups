@@ -381,10 +381,11 @@
       }
       const actions = el('div', 'sales-row__actions');
       if (index) {
-        const primary = el('button', '', '<span class="ico">&#xEABA;</span>');
+        const primary = el('button', 'has-tip', '<span class="ico">&#xEABA;</span>');
         primary.type = 'button';
         primary.dataset.salesPrimary = row.id;
-        primary.setAttribute('aria-label', 'Основная точка: ' + label.textContent);
+        primary.dataset.tip = 'Сделать текущей точкой';
+        primary.setAttribute('aria-label', 'Сделать текущей точкой: ' + label.textContent);
         actions.append(primary);
       }
       const remove = el('button', '', '<span class="ico">&#xE65C;</span>');
