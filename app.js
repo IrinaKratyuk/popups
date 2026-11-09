@@ -2533,7 +2533,9 @@
   }
   function lsRender() {
     const [own, ...groups] = lsOrdered();
-    lsList.replaceChildren(...own.map(lsRow), ...groups.filter((g) => g.length).flatMap((g) => [lsGroupHead(g[0].comp), ...g.map(lsRow)]));
+    const shown = groups.filter((g) => g.length);
+    lsList.classList.toggle('has-groups', shown.length > 0);
+    lsList.replaceChildren(...own.map(lsRow), ...shown.flatMap((g) => [lsGroupHead(g[0].comp), ...g.map(lsRow)]));
     lsRenderLines();
     siteShowPage(lsPage(lsActive));
     siteProductSyncShop();

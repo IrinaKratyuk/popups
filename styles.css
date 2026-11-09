@@ -375,6 +375,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ls-item { flex: none; position: relative; height: 31px; display: flex; align-items: center; gap: 5px; padding-right: 8px; border-radius: 4px; cursor: pointer; }
 .ls-item.is-active, .ls-item:hover, .ls-item.is-menu { background: #ebf4ff; }
 .ls-item__marker { flex: none; width: 3px; height: 16px; border-radius: 4px; }
+.ls-list.has-groups .ls-item__marker { margin-right: 30px; } /* 3 + 30 + зазор 5 = 38 px: при группах название страницы выровнено по тексту их заголовков (8 + иконка 24 + 6) */
 .ls-item.is-active .ls-item__marker { background: #cc3d00; }
 .ls-item__name { flex: 1; min-width: 0; font-size: 15px; letter-spacing: -.2115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
 .ls-item.is-active .ls-item__name { font-weight: 600; }
