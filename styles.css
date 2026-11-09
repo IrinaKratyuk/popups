@@ -382,6 +382,10 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ls-item.is-off .ls-item__name { color: #999; } /* text/unaccented_text-color */
 /* группа страниц компонента: маленькая иконка и название, без ховера и клика; отступ слева — как у названий страниц */
 .ls-group { flex: none; display: flex; align-items: center; gap: 6px; height: 31px; margin-top: 6px; padding: 0 8px; cursor: default; }
+.ls-group.has-expander { cursor: pointer; }
+.ls-group .rs-field__arrow { flex: none; transform: rotate(90deg); }
+.ls-group.is-collapsed .rs-field__arrow { transform: none; }
+.ls-item[hidden] { display: none; }
 .ls-group__icon { flex: none; width: 24px; height: 24px; }
 .ls-group__name { min-width: 0; font-size: 15px; font-weight: 600; letter-spacing: -.2115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
 .ls-item__cmds { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: none; gap: 6px; padding-left: 4px; background: #ebf4ff; }
@@ -649,6 +653,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-settings__head > span { color: #8991a9; }
 .sales-settings__icon { flex: none; width: 24px; height: 24px; margin-right: -2px; } /* иконка компонента, как у группы в панели страниц */
 .sales-settings .btn--icon, .sales-popup .btn--icon { position: relative; width: 24px; height: 24px; padding: 0; }
+.sales-settings .rs-plus, .sales-popup .rs-plus { position: relative; } /* опора для тултипа и метки */
 .sales-rows { background: #fff; border-radius: 8px; padding: 8px 0; }
 /* Прежний вид «Параметров сайта»: блок «Сайт» и точки продаж — белые карточки, заголовок точек внутри карточки */
 .rs-site { display: flex; flex-direction: column; align-items: flex-start; padding: 8px 12px; background: #fff; border-radius: 8px; } /* Figma 2854:63032 */
@@ -798,7 +803,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* ---------- Панель сценариев: разделы поверх demo-frame ---------- */
 /* в макете панели (Figma xMQ3ZEN4AUINgwjVoxR8hS 18715:93398) своего фона нет — карточки стоят на фоне страницы, в ките панель белая */
 .df-panel { background: transparent; overflow: hidden; } /* всё умещается в 900 по высоте, скролла нет */
-.df-team__label { width: auto; } /* в ките 54px: отступ до имён — только gap 8 из .df-team */
+.df-team__label { display: grid; width: auto; } /* в ките 54px: отступ до имён — только gap 8 из .df-team */
+.df-team__label::after { content: "Develop"; height: 0; overflow: hidden; visibility: hidden; } /* колонка подписей по самой широкой: имена дизайнеров и разработчика на одной линии */
 /* .df-panel — чтобы перекрыть сброс кнопок в demo-frame (.df-panel button) */
 .df-panel .pop-sec__head { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 12px 6px 6px; font-size: 14px; letter-spacing: -.1974px; text-transform: uppercase; color: var(--text-text-color); }
 .df-panel .pop-sec:first-child .pop-sec__head { padding-top: 6px; }

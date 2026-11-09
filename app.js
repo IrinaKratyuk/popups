@@ -59,7 +59,6 @@
     ],
     team: [
       { label: 'Design', name: 'Пахтусова Ирина', links: [
-        { title: 'Компоненты интернет магазина', href: 'https://online.sbis.ru/shared/disk/3d890419-0681-49c4-a247-1dd6f27cc2e2' },
         { title: 'Описание', href: 'https://online.sbis.ru/shared/disk/8a1d0f8c-06f5-47f1-924b-23c7f2efd143' },
       ] },
       { label: 'Develop', name: 'Сухоручкин Андрей', links: [
@@ -2519,23 +2518,38 @@
     row.querySelector('.ls-item__name').textContent = p.name;
     return row;
   }
+  const LS_GROUP_EXPANDER = false; // экспандер групп пока скрыт: true вернёт стрелку и сворачивание
+  const lsCollapsed = new Set(); // id компонентов со свёрнутой группой
   // Группа компонента: заголовок — маленькая иконка компонента и его название, под ним — страницы, которые он принёс
   function lsGroupHead(id) {
-    const head = el('div', 'ls-group');
+    const head = el('div', 'ls-group' + (lsCollapsed.has(id) ? ' is-collapsed' : ''));
     const icon = el('img', 'ls-group__icon');
     icon.src = `assets/img/comp/${id}.svg`;
     icon.width = icon.height = 24;
     icon.alt = '';
     const name = el('span', 'ls-group__name');
     name.textContent = COMP[id].name;
+    // Экспандер — та же стрелка, что у полей в «Данных». Только прячет строки: страница и список не перерисовываются
     head.append(icon, name);
+    if (!LS_GROUP_EXPANDER) return head;
+    head.classList.add('has-expander');
+    head.append(el('span', 'ico rs-field__arrow', '&#xEB89;'));
+    head.addEventListener('click', () => {
+      const collapsed = head.classList.toggle('is-collapsed');
+      if (collapsed) lsCollapsed.add(id); else lsCollapsed.delete(id);
+      for (let row = head.nextElementSibling; row && row.classList.contains('ls-item'); row = row.nextElementSibling) row.hidden = collapsed;
+    });
     return head;
   }
   function lsRender() {
     const [own, ...groups] = lsOrdered();
     const shown = groups.filter((g) => g.length);
     lsList.classList.toggle('has-groups', shown.length > 0);
-    lsList.replaceChildren(...own.map(lsRow), ...shown.flatMap((g) => [lsGroupHead(g[0].comp), ...g.map(lsRow)]));
+    lsList.replaceChildren(...own.map(lsRow), ...shown.flatMap((g) => [lsGroupHead(g[0].comp), ...g.map((p) => {
+      const row = lsRow(p);
+      row.hidden = lsCollapsed.has(p.comp);
+      return row;
+    })]));
     lsRenderLines();
     siteShowPage(lsPage(lsActive));
     siteProductSyncShop();
