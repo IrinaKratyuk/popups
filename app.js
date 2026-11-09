@@ -59,9 +59,12 @@
     ],
     team: [
       { label: 'Design', name: 'Пахтусова Ирина', links: [
+        { title: 'Компоненты интернет магазина', href: 'https://online.sbis.ru/shared/disk/3d890419-0681-49c4-a247-1dd6f27cc2e2' },
+        { title: 'Описание', href: 'https://online.sbis.ru/shared/disk/8a1d0f8c-06f5-47f1-924b-23c7f2efd143' },
+      ] },
+      { label: 'Develop', name: 'Сухоручкин Андрей', links: [
         { title: 'Разработка макета', href: 'https://tensor.saby.ru/opendoc.html?guid=01a10b9e-d00c-7be9-9307-91f4f08a3298&client=3' },
       ] },
-      { label: 'Develop' },
     ],
     value: { scenario: stage.dataset.scenario },
     onScale: (s) => { scale = s; },
@@ -245,35 +248,32 @@
   // Компоненты: виджет из магазина подключает свой компонент, а с ним приходят компоненты, от которых он зависит (deps) — они его часть. Компонент приносит страницы и настройки
   // (в «Параметры сайта», группа «Компоненты»). Связи — из документа «Компоненты интернет магазина». Настройки пока есть только у «Ресторана» — точки продаж.
   // widget — виджет компонента в магазине, widgetPage — страница, которую виджет открывает. Страницы создаются под виджет: у каждой страницы компонента свой виджет
-  // (widgetPage — карточка блюда, остальные — по widgets). widgetHome — страница для самого виджета: приходит, только если компонент подключили галкой, а его виджета на сайте нет.
+  // (widgetPage — карточка блюда, остальные — по widgets). widgetHome — страница для самого виджета: приходит, только если компонент подключили в «Параметрах сайта», а его виджета на сайте нет.
   // Виджет, поставленный из магазина, стоит там, куда его поставили (в сценариях компонентов — на главной), страницы для него не создаётся.
-  // Порядок — как в таблице документа; он же порядок плашек в «Параметрах сайта»
+  // Порядок — как в таблице документа; он же порядок чипсов в «Параметрах сайта»
   const COMP = {
-    company: { name: 'Компания и точки продаж', desc: 'Адреса, контакты и часы работы филиалов на карте', deps: [], pages: [] },
     account: { name: 'Личный кабинет', desc: 'Вход и регистрация покупателя, профиль, бонусы и сохранённые адреса', deps: [], pages: ['Вход и регистрация', 'Профиль'], widgets: { 'Вход и регистрация': 'Вход и регистрация', 'Профиль': 'Профиль покупателя' } },
-    orders: { name: 'Заказы и оплата', desc: 'Корзина, оформление и оплата заказа онлайн, история заказов покупателя', deps: ['company', 'account'], pages: ['Заказы', 'Карточка заказа'], widgets: { 'Заказы': 'История заказов', 'Карточка заказа': 'Карточка заказа' } },
-    delivery: { name: 'Доставка и самовывоз', desc: 'Зоны и стоимость доставки, самовывоз из ближайшей точки', deps: [], pages: [] },
-    shop: { name: 'Магазин', desc: 'Каталог товаров с ценами и остатками, корзина и заказ с доставкой', deps: ['orders', 'delivery'], pages: [] },
-    restaurant: { name: 'Ресторан', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', deps: ['orders', 'delivery'], pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда', widgetHome: 'Меню' },
+    orders: { name: 'Заказы и оплата', desc: 'Корзина, оформление и оплата заказа онлайн, история заказов покупателя', deps: ['account'], pages: ['Корзина', 'Заказы', 'Карточка заказа'], widgets: { 'Корзина': 'Корзина', 'Заказы': 'История заказов', 'Карточка заказа': 'Карточка заказа' } },
+    shop: { name: 'Магазин', desc: 'Каталог товаров с ценами и остатками, корзина и заказ с доставкой', deps: ['orders'], options: ['Доставка', 'Самовывоз'], pages: [] },
+    restaurant: { name: 'Ресторан', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', deps: ['orders'], options: ['Доставка', 'Самовывоз'], pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда', widgetHome: 'Меню' },
     services: { name: 'Сфера услуг', desc: 'Каталог услуг и онлайн-запись к специалисту на свободное время', deps: ['orders'], pages: [] },
     hotel: { name: 'Отель', desc: 'Номера и цены, бронирование на даты с оплатой онлайн', deps: ['orders'], pages: [] },
-    loyalty: { name: 'Лояльность', desc: 'Бонусы, скидки и акции для покупателей, баланс в личном кабинете', deps: ['company', 'account'], pages: [] },
+    loyalty: { name: 'Лояльность', desc: 'Бонусы, скидки и акции для покупателей, баланс в личном кабинете', deps: ['account'], pages: [] },
     certificates: { name: 'Сертификаты и абонементы', desc: 'Продажа подарочных сертификатов и абонементов на сайте', deps: ['orders'], pages: [] },
   };
   const compOn = new Set();    // подключавшиеся, в порядке подключения: их страницы и настройки на сайте
   const compRoots = new Set(); // подключённые виджетом, а не как зависимость
   let catalogHome = false;     // каталог стоит на главной (сценарии компонентов), а не на странице «Меню» прочих сценариев
-  let catalogMenu = false;     // каталог стоит на странице «Меню», которую принёс «Ресторан» (подключён галкой без виджета)
+  let catalogMenu = false;     // каталог стоит на странице «Меню», которую принёс «Ресторан» (подключён в «Параметрах сайта» без виджета)
   const compConfigured = () => salesSaved.length > 0;
-  function compRender() {
-    const root = $('#compList');
-    // Все компоненты плашками в две колонки (Figma Ea5CxwsZSyp3zoa5ODoqdm 7350:8132): иконка, название, галка, описание.
-    // Рыжая галка — подключён, серая — нет. У «Ресторана» под описанием — точки продаж, клик по плашке открывает его окно
-    // Две независимые колонки: плашки идут друг за другом без пропусков под короткими, порядок чтения — слева направо, как в таблице
-    const cols = [el('div', 'comp-settings__col'), el('div', 'comp-settings__col')];
-    Object.entries(COMP).forEach(([id, c], index) => cols[index % 2].append(compCard(id, c)));
-    root.replaceChildren(...cols);
-    compChipsRender();
+  // Дополнительные настройки подключённого компонента (options) — серые чипсы, как в блоке «Сайт». Пока без действия
+  function compOptionsFill(root, id) {
+    root.replaceChildren(...(compOn.has(id) ? COMP[id].options ?? [] : []).map((name) => {
+      const chip = el('button', 'chips chips--size-m', '<span class="chips__caption"></span>');
+      chip.type = 'button';
+      chip.firstChild.textContent = name;
+      return chip;
+    }));
   }
   // Чипсы «Параметров сайта»: неподключённые компоненты, иконка компонента + название. Подключённый уходит из чипсов
   function compChipsRender() {
@@ -287,64 +287,24 @@
       chip.lastChild.textContent = c.name;
       return chip;
     });
-    // Подключённые — группами в порядке подключения, как блок «Ресторан»: настроек у них пока нет, только шапка
-    const groups = [...compOn].filter((id) => id !== 'restaurant').map((id) => {
+    // Подключённые — группами в порядке чипсов (порядок COMP). У «Ресторана» своя разметка: блок #salesSettings встаёт на своё место, скрывает его salesRender
+    const groups = Object.keys(COMP).filter((id) => id === 'restaurant' || compOn.has(id)).map((id) => {
+      if (id === 'restaurant') return $('#salesSettings');
       const group = el('section', 'sales-settings comp-group');
       group.setAttribute('aria-label', COMP[id].name);
       group.innerHTML = `<div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/${id}.svg" width="24" height="24" alt=""><span></span></div></div>`
         + `<button class="sales-settings__remove" type="button" data-comp-toggle="${id}"><span class="ico">&#xE66C;</span></button>`;
       $('.sales-settings__head span', group).textContent = COMP[id].name;
       group.lastChild.setAttribute('aria-label', `Отключить компонент «${COMP[id].name}»`);
+      const options = el('div', 'rs-site__chips comp-options');
+      compOptionsFill(options, id);
+      group.insertBefore(options, group.lastChild);
       return group;
     });
+    compOptionsFill($('#salesSettingsOptions'), 'restaurant');
     $('#compGroups').replaceChildren(...groups);
     $('#compChips').replaceChildren(...chips);
     $('#compChipsBlock').hidden = !chips.length;
-  }
-  function compCard(id, c) {
-    const on = compOn.has(id);
-    const item = el('section', 'comp-card' + (id === 'restaurant' ? ' comp-card--open' : ''));
-    item.setAttribute('aria-label', c.name);
-    if (id === 'restaurant') item.dataset.compOpen = id;
-    const icon = el('img', 'comp-card__icon');
-    icon.src = `assets/img/comp/${id}.svg`;
-    icon.width = icon.height = 24; // как у расширений: иконка в строку заголовка
-    icon.alt = '';
-    const body = el('div', 'comp-card__body');
-    const head = el('div', 'comp-card__head');
-    const title = el('span', 'comp-card__title');
-    title.textContent = c.name;
-    title.title = c.name; // обрезанное троеточием название видно в подсказке
-    const check = el('button', 'comp-card__check' + (on ? ' is-on' : ''));
-    check.type = 'button';
-    check.dataset.compToggle = id;
-    check.setAttribute('aria-pressed', on);
-    check.setAttribute('aria-label', (on ? 'Отключить компонент: ' : 'Подключить компонент: ') + c.name);
-    head.append(icon, title, check);
-    const desc = el('p', 'comp-card__desc');
-    desc.textContent = c.desc;
-    body.append(head, desc);
-    // под описанием — страницы, которые компонент добавляет на сайт: видно, какая страница с каким компонентом пришла
-    if (c.pages.length) {
-      const pages = el('p', 'comp-card__pages');
-      pages.textContent = 'Страницы: ' + c.pages.join(', ');
-      body.append(pages);
-    }
-    if (id === 'restaurant') body.append(compSalesRows());
-    item.append(body);
-    // индикатор клика: плашка «Ресторана» открывает его окно
-    if (id === 'restaurant') item.insertAdjacentHTML('beforeend', '<span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span>');
-    return item;
-  }
-  // Точки продаж на плашке: только названия, серым (как подпункты подписки)
-  function compSalesRows() {
-    const list = el('div', 'comp-card__rows');
-    salesSaved.forEach((row) => {
-      const name = el('span', 'comp-card__row-name');
-      name.textContent = SALES.find((point) => point.id === row.id).name;
-      list.append(name);
-    });
-    return list;
   }
   const salesCopy = (rows) => rows.map((row) => ({ ...row, prices: row.prices?.slice() }));
   const salesCurrent = () => salesDraft || salesSaved;
@@ -398,7 +358,7 @@
     }
   }
   function salesRender() {
-    compRender();
+    compChipsRender();
     // Прежний вид «Параметров сайта»: точки продаж с прайсами — когда есть каталог или подключён «Ресторан»
     $('#salesSettings').hidden = !catalogAdded && !compOn.has('restaurant');
     $('#salesSettingsRemove').hidden = !compOn.has('restaurant'); // каталог без компонента отключать нечего
@@ -584,7 +544,7 @@
         row.price = row.prices.join(', ') || 'Выбрать прайс';
       }
     }
-    // Выбор из окна компонента идёт в черновик окна: на сайт и на плашку «Ресторана» точки попадают только по «Сохранить» (галке) в окне
+    // Выбор из окна компонента идёт в черновик окна: на сайт точки попадают только по «Сохранить» (галке) в окне
     if (salesDraft) salesDraft = salesCopy(rows);
     else salesSave(rows);
     salesPickerCancel();
@@ -593,7 +553,7 @@
   $('#salesSearch').addEventListener('input', salesPickerRender);
   $('#salesPickerClose').addEventListener('click', salesPickerCancel);
   $('#salesClose').addEventListener('click', salesClose);
-  // Сохранённые точки продаж = компонент «Ресторан» настроен: он подключается (с зависимостями и страницами), плашка включается
+  // Сохранённые точки продаж = компонент «Ресторан» настроен: он подключается (с зависимостями и страницами)
   function salesSave(rows) {
     salesSaved = salesCopy(rows);
     if (salesSaved.length && !compOn.has('restaurant')) { compConnect('restaurant', true); lsRender(); }
@@ -1057,8 +1017,8 @@
     compDropPages((p) => ids.includes(p.comp));
     salesRender();
   }
-  // Галка на плашке: рыжая — подключён, снять = отключить (с подтверждением, вместе с зависящими и пришедшими с ним). Серая ставится — компонент подключается:
-  // приходят его страницы и зависимости со своими страницами. Клик по остальной плашке «Ресторана» — его окно
+  // Чипса подключает компонент, крестик группы отключает (с подтверждением):
+  // приходят его страницы и зависимости со своими страницами
   stage.addEventListener('click', (e) => {
     const toggle = e.target.closest('[data-comp-toggle], [data-comp-add]');
     if (toggle) {
@@ -1070,7 +1030,6 @@
       salesRender();
       return;
     }
-    if (e.target.closest('[data-comp-open]')) salesOpen(true);
   });
 
   // Подтверждение (Figma nuC4KFMiS36uDWDUp9wKGl 4064:21938, как в interface-prototype): по центру сцены, поверх всего. Esc — последний ответ («Отмена»)
@@ -1214,6 +1173,14 @@
         '<div class="pgw-h">Адреса доставки</div>' +
         '<div class="pgw-row"><b>Дом</b><span>Ярославль, ул. Свободы, 12, кв. 45</span><span class="pgw-tag">основной</span></div>' +
         '<div class="pgw-row"><b>Работа</b><span>Ярославль, пр-т Октября, 56, офис 310</span></div>' +
+      '</div>',
+    'Корзина':
+      '<div class="pgw-card">' +
+        cwItem('pepperoni', 'Пепперони', 2, '1 300') +
+        cwItem('tuna', 'Севиче из тунца', 1, '1 350') +
+        '<div class="pgw-sum"><span>Доставка</span><span>0 ₽</span></div>' +
+        '<div class="pgw-sum pgw-sum--total"><span>Итого</span><span>2 650 ₽</span></div>' +
+        '<span class="pgw-btn">Оформить заказ</span>' +
       '</div>',
     'История заказов':
       '<div class="pgw-orders">' +

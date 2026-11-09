@@ -625,11 +625,13 @@ ul { list-style: none; margin: 0; padding: 0; }
    Иконка — svg компонента в слоте .chips__icon; подъём глифа на 2px картинке не нужен */
 /* группы подключённых компонентов — как блок «Ресторан», только шапка */
 .comp-groups { display: flex; flex-direction: column; gap: 4px; }
-.comp-groups:empty { display: none; }
+.comp-groups:not(:has(> :not([hidden]))) { display: none; } /* скрытый блок «Ресторана» лежит внутри: без этого лишний gap */
 .rs-params .comp-group .sales-settings__head { margin-bottom: 0; }
+.comp-options { padding: 0 12px; } /* дополнительные настройки компонента — серые чипсы, как в блоке «Сайт» */
+.comp-options:empty { display: none; }
 .rs-comps { padding: 12px 8px 12px; } /* сверху 12 + 4 (gap тела) = 16 от плашки выше, как в Figma qRTnmlLncsGaoD9FD0u3Nh 17264:108765 */
-/* заголовок группы чипсов — «МОЖНО ДОБАВИТЬ» из Figma 21912:180563: 12px капсом, 12 от края чипсов, 8 до чипсов */
-.rs-comps__title { padding: 0 0 8px 12px; font-size: 12px; line-height: normal; letter-spacing: .24px; text-transform: uppercase; color: var(--text-label_contrast_text-color); }
+/* заголовок группы чипсов — «МОЖНО ДОБАВИТЬ» из Figma 21912:180563: 12px капсом, 8 до чипсов; слева 8 + 16 = 24 — на линии текста чипсов плашки «Сайт» */
+.rs-comps__title { padding: 0 0 8px 16px; font-size: 12px; line-height: normal; letter-spacing: .24px; text-transform: uppercase; color: var(--text-label_contrast_text-color); }
 .rs-comps[hidden] { display: none; }
 .rs-comps__chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .rs-comps .chips__icon { padding: 0; }
@@ -637,33 +639,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 /* Точки продаж — те же кнопки, шрифты и подсказки ui-kit, что в остальных окнах. */
 .rs-params__body { display: flex; flex-direction: column; gap: 4px; }
-.sales-settings[hidden], .sales-popup[hidden], .sales-picker[hidden], .comp-settings[hidden] { display: none; }
-/* Компоненты: все плашками в две колонки, галка — статус подключения (Figma Ea5CxwsZSyp3zoa5ODoqdm 7350:8132) */
-.comp-settings { display: flex; flex-direction: column; gap: 8px; }
-.comp-settings__title { padding: 4px 12px 0; font-size: 16px; font-weight: 600; letter-spacing: -.2256px; }
-.comp-settings__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: start; }
-.comp-settings__col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.comp-card { position: relative; display: flex; padding: 8px; background: #fff; border-radius: 8px; transition: box-shadow .12s; }
-.comp-card:hover { box-shadow: var(--shadow-c); } /* Figma WHZ4ZSm4wRMrxQPWqEk5Wk 3046:50358 */
-.comp-card--open { cursor: pointer; }
-.comp-card > .pin { z-index: 2; left: calc(50% - 12px); top: calc(50% - 12px); } /* как на карточках магазина */
-.comp-card__icon { display: block; flex: none; }
-.comp-card__body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.comp-card__head { display: flex; align-items: center; gap: 8px; height: 24px; margin-right: -8px; } /* иконка, название и галка — на одной линии; галка-язычок выходит из отступа 8px и прижата к правой грани плашки */
-.comp-card__rows { margin-left: 32px; } /* под названием: 24px иконки + 8px */
-.comp-card__title { display: block; flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 15px; font-weight: 600; line-height: normal; letter-spacing: -.2115px; color: var(--text); }
-.comp-card__desc { margin: 0 0 0 32px; font-size: 12px; line-height: normal; letter-spacing: -.1692px; color: #999; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-/* страницы компонента — отдельной строкой под описанием, тем же цветом */
-.comp-card__pages { margin: 4px 0 0 32px; font-size: 12px; line-height: normal; letter-spacing: -.1692px; color: #999; }
-/* галка (Figma 7327:11922): язычок 26×24 вплотную к правой грани плашки, на линии заголовка; серая — не подключён, рыжая — подключён */
-.comp-card__check { flex: none; margin-left: auto; width: 26px; height: 24px; padding: 0; border: 0; background: url('assets/img/comp/check-off.svg') no-repeat; cursor: pointer; }
-.comp-card__check:hover { background-image: url('assets/img/comp/check-off-hover.svg'); }
-.comp-card__check.is-on { background-image: url('assets/img/comp/check-on.svg'); }
-.comp-card__check.is-on:hover { background-image: url('assets/img/comp/check-on-hover.svg'); }
-/* точки продаж — серые подпункты: название слева, меню справа */
-.comp-card__rows { display: flex; flex-direction: column; margin-top: 6px; font-size: 12px; line-height: 16px; letter-spacing: -.1692px; color: #999; }
-.comp-card__rows:empty { display: none; }
-.comp-card__row-name { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.sales-settings[hidden], .sales-popup[hidden], .sales-picker[hidden] { display: none; }
 /* Тултип по ховеру: тёмная плашка над кнопкой */
 .has-tip[data-tip]::after { content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); padding: 4px 8px; border-radius: 4px; background: #333; color: #fff; font-family: inherit; font-size: 12px; font-weight: 400; line-height: 16px;letter-spacing: -.1692px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .12s; z-index: 10; }
 .has-tip[data-tip]:hover::after { opacity: 1; }
@@ -821,6 +797,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* ---------- Панель сценариев: разделы поверх demo-frame ---------- */
 /* в макете панели (Figma xMQ3ZEN4AUINgwjVoxR8hS 18715:93398) своего фона нет — карточки стоят на фоне страницы, в ките панель белая */
 .df-panel { background: transparent; overflow: hidden; } /* всё умещается в 900 по высоте, скролла нет */
+.df-team__label { width: auto; } /* в ките 54px: отступ до имён — только gap 8 из .df-team */
 /* .df-panel — чтобы перекрыть сброс кнопок в demo-frame (.df-panel button) */
 .df-panel .pop-sec__head { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 12px 6px 6px; font-size: 14px; letter-spacing: -.1974px; text-transform: uppercase; color: var(--text-text-color); }
 .df-panel .pop-sec:first-child .pop-sec__head { padding-top: 6px; }
