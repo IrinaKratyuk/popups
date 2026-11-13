@@ -26,7 +26,7 @@
     device: 'monitor',
     scenarios: [
       { group: 'Компоненты', items: [
-        { id: 'catalog-add', title: 'Добавление виджета' },
+        { id: 'catalog-add', title: 'Добавление виджета', hidden: true }, // пока скрыт
         { id: 'catalog-setup', title: 'С компонентами' },
       ] },
       { group: 'Работа с окнами/страницами', items: [
@@ -930,9 +930,6 @@
       catalogHomeSet(true);
     }
     salesRender();
-    scenSyncing = true;
-    frame.select('catalog-add');
-    scenSyncing = false;
     shopCatalog.hidden = false;
     siteCatalogShow(false);
     siteCatalog.classList.remove('is-active');
@@ -2888,14 +2885,22 @@
       compOn.clear();
       compRoots.clear();
       sitePlaceCatalog();
-      if (isComp) {
+      if (scenario === 'catalog-setup') {
+        // «С компонентами» — сайт уже собран (как «Типовое заполнение» в dynamic-pages): «Главная», «Меню» с каталогом,
+        // «Профиль» с виджетом покупателя, «Карточка товара» с карточкой. Это свои страницы сайта, не страницы компонента.
+        // «Электронное меню» подключено без своих страниц, у него две точки продаж; сайт открывается на «Меню»
+        const page = (name, extra) => ({ id: lsNextId++, name, off: false, mode: 'page', fixed: true, ...extra });
+        lsPages.push(page('Меню'), page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), page('Карточка товара', { blank: true, product: true }));
+        lsActive = lsPages.find((p) => p.name === 'Меню').id;
+        compOn.add('restaurant');
+        compRoots.add('restaurant');
+        salesSaved = ROOT_SALES.slice(0, 2).map((point) => ({ id: point.id, price: point.price }));
+      } else if (isComp) {
         catalogHomeSet(true);
-        catalogAdded = scenario === 'catalog-setup';
-        if (catalogAdded) compConnect('restaurant', true);
-        // «Настройки»: компонент уже настроен — у сайта две точки продаж
-        salesSaved = catalogAdded ? ROOT_SALES.slice(0, 2).map((point) => ({ id: point.id, price: point.price })) : [];
-        shopCatalog.hidden = catalogAdded;
-        siteCatalogShow(catalogAdded);
+        catalogAdded = false;
+        salesSaved = [];
+        shopCatalog.hidden = false;
+        siteCatalogShow(false);
       }
       salesRender();
       if (scenario === 'window-link') lsPages.push({ id: lsNextId++, name: 'Товар', off: false, blank: true, mode: 'window', product: true, fixed: true });
@@ -2904,7 +2909,6 @@
     if (scenario === 'window-create') $('#lsAdd').append(lsAddPin);
     else lsAddPin.remove();
     lsRender();
-    if (scenario === 'catalog-setup') siteCatalog.classList.add('is-active');
     const isLink = scenario === 'window-link' || scenario === 'ext-link';
     const extAt = scenario === 'ext-added' ? mode ?? 'float' : null; // где стоит добавленный внешний виджет
     siteLinkSelect(isLink);
