@@ -53,6 +53,10 @@ ul { list-style: none; margin: 0; padding: 0; }
   background: var(--ctor-bg); overflow: hidden; border-radius: 8px; /* скругление окна конструктора; у области под шапкой — свои верхние углы (.content) */
   transform-origin: 0 0;
 }
+/* сценарий «Реестр сайтов»: свой прототип во фрейме на всю сцену, поверх конструктора */
+.reg { position: absolute; left: 0; top: 0; width: 1600px; height: 900px; border: 0; z-index: 100; background: #fff; }
+.reg[hidden] { display: none; }
+.stage:has(> .reg:not([hidden])) > :not(.reg) { visibility: hidden; } /* конструктор под фреймом не рисуем: маркер активной кнопки правой панели (x 1596–1600) просвечивал у края при масштабе сцены */
 
 /* ---------- Шапка конструктора (Figma rHabzni5OI5D4fxBLQdj2m 5:28058) ---------- */
 /* сетка, а не flex: отступы у краёв разные (20 и 24 + 10), с равными колонками переключатель стоит точно по центру */
@@ -199,6 +203,38 @@ ul { list-style: none; margin: 0; padding: 0; }
 .pgw-sum { display: flex; justify-content: space-between; }
 .pgw-sum--total { padding-top: 12px; border-top: 1px solid #efe9e5; font-size: 18px; font-weight: 600; }
 .pgw-sum--total span:last-child { color: #cc3d00; }
+/* «Отель» и «Услуги»: каталог плитками, карточка с фото, мастера, выбор даты и времени */
+.pgw-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.pgw-card .pgw-chips { margin-bottom: 0; }
+.pgw-chips span { padding: 6px 16px; border-radius: 100px; font-size: 14px; background: rgba(51, 51, 51, .05); white-space: nowrap; }
+.pgw-chips .is-on { background: #e8c37d; font-weight: 500; }
+.pgw-chips .is-off { color: #c9bdb5; text-decoration: line-through; }
+.pgw-chips--static span { background: #f6eedf; color: #9a6b12; font-size: 13px; }
+.pgw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px 20px; }
+.pgw-tile { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.pgw-tile img { width: 100%; aspect-ratio: 488 / 296; margin-bottom: 6px; border-radius: 12px; object-fit: cover; background: #f3f3f3; }
+.pgw-tile b { font-size: 17px; font-weight: 600; }
+.pgw-tile__foot { display: flex; flex-direction: column; align-items: stretch; gap: 8px; margin-top: 6px; } /* цена и кнопка в плитку ~224 px в строку не входят — кнопка под ценой */
+.pgw-tile__foot .pgw-btn { align-self: stretch; justify-content: center; }
+.pgw-tile .pgw-price { font-size: 16px; }
+.pgw-btn--s { min-height: 36px; padding: 0 16px; font-size: 12px; }
+.pgw-detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.pgw-detail__img { width: 100%; border-radius: 16px; object-fit: cover; aspect-ratio: 488 / 296; }
+.pgw-dates { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pgw-dates .pgw-field b { font-size: 14px; }
+.pgw-person--s { gap: 12px; }
+.pgw-person--s .pgw-avatar { width: 44px; height: 44px; font-size: 15px; }
+.pgw-masters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.pgw-master-card { align-items: center; text-align: center; gap: 6px; }
+.pgw-master-card .pgw-avatar { margin-bottom: 6px; }
+.pgw-master-card b { font-size: 16px; color: inherit; }
+.pgw-row__end { margin-left: auto; flex: none; }
+.pgw-row--top { align-items: flex-start; }
+.pgw-days { display: flex; gap: 8px; }
+.pgw-days span { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0; border: 1px solid #e3dad4; border-radius: 12px; font-size: 18px; font-weight: 600; }
+.pgw-days small { font-size: 12px; font-weight: 400; color: #8c7d74; }
+.pgw-days .is-on { border-color: #e8c37d; background: #e8c37d; }
+.pgw-days .is-off { color: #c9bdb5; }
 .site-feedback { display: flex; flex-direction: column; }
 .site-feedback .input { --in-h: 40px; font-size: 16px; }
 .site-feedback__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 6px; }

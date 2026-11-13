@@ -25,7 +25,7 @@
 
       <!-- Шапка конструктора (Figma rHabzni5OI5D4fxBLQdj2m 5:28058): только ховер, без действий по клику -->
       <header class="ch">
-        <div class="ch-title">Название сайта</div>
+        <div class="ch-title">Ресторан «Мили»</div>
         <div class="ch-center">
           <div class="ch-tumbler" id="chDevice" aria-label="Устройство">
             <button class="ch-seg is-on" type="button" aria-label="Десктоп"><span class="ch-seg__ico">&#xE730;</span></button>
@@ -138,7 +138,7 @@
         <div class="site" id="site">
           <header class="wg wg--style-success site-header">
             <img class="site-logo" src="assets/img/site/logo.svg" width="61" height="46" alt="">
-            <div class="site-header__center"><span class="site-menu">Меню</span></div>
+            <div class="site-header__center"><span class="site-menu">Профиль</span><span class="site-menu">Меню</span></div>
             <span class="site-phone">+7 (4852) 12-13-14</span>
           </header>
           <div class="wg site-banner">
@@ -244,7 +244,7 @@
         <div class="site-blank" id="siteBlank" hidden>
           <header class="wg wg--style-success site-header">
             <img class="site-logo" src="assets/img/site/logo.svg" width="61" height="46" alt="">
-            <div class="site-header__center"><span class="site-menu">Меню</span></div>
+            <div class="site-header__center"><span class="site-menu">Профиль</span><span class="site-menu">Меню</span></div>
             <span class="site-phone">+7 (4852) 12-13-14</span>
           </header>
           <div class="site-blank__body" id="siteBlankBody">
@@ -383,7 +383,7 @@
            Внутри пока только ховер: выбор не меняется. Плитки вариантов рисует app.js (catSetTiles) -->
       <section class="pe catset" id="catSet" aria-label="Настройки каталога" hidden>
         <header class="pe__head">
-          <span class="pe__name pe__name--static">Каталог</span>
+          <span class="pe__name pe__name--static">Меню ресторана</span>
           <div class="pe__cmds">
             <button type="button" class="pe__reset" aria-label="Сбросить настройки">&#xe629;</button>
             <button type="button" class="pe__done" aria-label="Сохранить">&#xe75e;</button>
@@ -887,6 +887,9 @@
           <button class="mw-menu__item ls-menu__item" type="button" data-act="delete"><span class="ico24 ls-menu__danger">&#xEB72;</span><span class="mw-menu__text">Удалить</span></button>
         </div>
               </div>
+
+      <!-- Сценарий «Реестр сайтов»: отдельный прототип (mariesmi.github.io/sites/prototype.html) фреймом поверх конструктора; грузится при первом открытии -->
+      <iframe class="reg" id="reg" title="Реестр сайтов" data-src="registry/index.html" hidden></iframe>
     </div>
   </div>
 

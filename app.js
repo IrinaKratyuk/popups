@@ -27,7 +27,8 @@
     scenarios: [
       { group: 'Компоненты', items: [
         { id: 'catalog-add', title: 'Добавление виджета', hidden: true }, // пока скрыт
-        { id: 'catalog-setup', title: 'С компонентами' },
+        { id: 'sites', title: 'Реестр сайтов' }, // старт; отдельный прототип во фрейме, см. regShow
+        { id: 'catalog-setup', title: 'В конструкторе' },
       ] },
     ],
     // Окна и внешние виджеты пока внизу панели
@@ -60,6 +61,9 @@
         { id: 'ext-link', title: 'Связь кнопки с окном' },
       ] },
     ],
+    links: [
+      { title: 'Задача и макеты', href: 'https://online.sbis.ru/opendoc.html?guid=01a0c7e3-54f0-7007-a2ce-242d0b23fe4e&client=3' },
+    ],
     team: [
       { label: 'Design', name: 'Пахтусова Ирина', links: [
         { title: 'Описание', href: 'https://online.sbis.ru/shared/disk/8a1d0f8c-06f5-47f1-924b-23c7f2efd143' },
@@ -68,12 +72,13 @@
         { title: 'Разработка макета', href: 'https://tensor.saby.ru/opendoc.html?guid=01a10b9e-d00c-7be9-9307-91f4f08a3298&client=3' },
       ] },
     ],
-    value: { scenario: stage.dataset.scenario },
+    value: { scenario: 'sites' }, // старт — «Реестр сайтов»; конструктор под ним собирается по data-scenario (catalog-setup), см. scenApply внизу
     onScale: (s) => { scale = s; },
     onChange: ({ scenario, variant }) => {
       stage.dataset.scenario = scenario;
       stage.dataset.variant = variant ?? '';
-      if (scenSyncing) return;
+      regShow(scenario === 'sites');
+      if (scenSyncing || scenario === 'sites') return;
       rsCloseParams();
       scenApply(scenario, variant);
     },
@@ -107,6 +112,22 @@
     g.replaceWith(section);
   }
   scenGroups[0].remove(); // у первой группы («Компоненты») заголовка нет: сценарии идут сразу
+
+  // «Реестр сайтов» — прототип mariesmi.github.io/sites во фрейме поверх конструктора: стили и переходы у него свои.
+  // Грузится при первом открытии, каждое открытие начинается со стартового экрана.
+  function regShow(on) {
+    const reg = $('#reg');
+    if (on && !reg.src) reg.src = reg.dataset.src + '#/screen-1';
+    else if (on) reg.contentWindow.location.hash = '#/screen-1';
+    reg.hidden = !on;
+  }
+  // «Оформление» в карточке «Мили» внутри реестра → сценарий «В конструкторе»
+  window.addEventListener('message', (e) => {
+    if (e.source !== $('#reg').contentWindow || e.data?.type !== 'reg:open-constructor') return;
+    frame.select('catalog-setup');
+  });
+  // Галочка и крестик в шапке конструктора — обратно в «Реестр сайтов»
+  for (const btn of document.querySelectorAll('.ch-save > .btn')) btn.addEventListener('click', () => frame.select('sites'));
 
   $('.df-team__name', frame.panel).after(el('span', 'df-team__name', 'Смирнова Мария')); // второй дизайнер в той же плашке: team в demo-frame знает одно имя на строку
 
@@ -256,8 +277,8 @@
   const COMP = {
     restaurant: { name: 'Электронное меню', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда', widgetHome: 'Меню' },
     delivery: { name: 'Доставка', desc: 'Корзина, оформление и оплата заказа с доставкой, история заказов покупателя', pages: ['Корзина', 'Заказы', 'Карточка заказа'], widgets: { 'Корзина': 'Корзина', 'Заказы': 'История заказов', 'Карточка заказа': 'Карточка заказа' } },
-    services: { name: 'Услуги', desc: 'Каталог услуг и онлайн-запись к специалисту на свободное время', pages: [] },
-    hotel: { name: 'Отель', desc: 'Номера и цены, бронирование на даты с оплатой онлайн', pages: [] },
+    services: { name: 'Услуги', desc: 'Каталог услуг и онлайн-запись к специалисту на свободное время', pages: ['Услуги', 'Карточка услуги', 'Специалисты', 'Карточка специалиста', 'Выбор времени записи'], widgets: { 'Услуги': 'Каталог услуг', 'Карточка услуги': 'Карточка услуги', 'Специалисты': 'Мастера', 'Карточка специалиста': 'Карточка специалиста', 'Выбор времени записи': 'Выбор специалиста и времени' } },
+    hotel: { name: 'Отель', desc: 'Номера и цены, бронирование на даты с оплатой онлайн', pages: ['Номера', 'Карточка номера'], widgets: { 'Номера': 'Каталог номеров', 'Карточка номера': 'Сведения о номере' } },
   };
   const compOn = new Set();    // подключавшиеся, в порядке подключения: их страницы и настройки на сайте
   const compRoots = new Set(); // подключённые виджетом, а не как зависимость
@@ -343,10 +364,14 @@
       root.append(item);
     }
   }
+  // Виджеты из магазина не убираем: «Меню ресторана» там всегда. Когда его не добавить (уже на сайте или подключён другой компонент) — нет только подсказки клика
+  function shopMenuPinSync() {
+    const pin = $('#rsWidgets .rs-w__name--pin > .pin');
+    if (pin) pin.hidden = catalogAdded || [...compOn].some((id) => id !== 'restaurant');
+  }
   function salesRender() {
     compChipsRender();
-    const shopMenu = $('#rsWidgets [data-widget="catalog"]')?.closest('.rs-w');
-    if (shopMenu && !catalogAdded) shopMenu.hidden = [...compOn].some((id) => id !== 'restaurant'); // «Меню ресторана» — виджет «Электронного меню»: при другом компоненте его в магазине нет
+    shopMenuPinSync();
     // Прежний вид «Параметров сайта»: точки продаж с прайсами — когда есть каталог или подключено «Электронное меню»
     $('#salesSettings').hidden = !catalogAdded && !compOn.has('restaurant');
     $('#salesSettingsRemove').hidden = !compOn.has('restaurant'); // каталог без компонента отключать нечего
@@ -910,7 +935,7 @@
     if (lsActive !== home.id) lsSelect(home.id);
     catalogHomeSet(true);
     catalogAdded = true;
-    shopCatalog.hidden = true;
+    shopMenuPinSync();
     compConnect('restaurant', true);
     siteCatalogShow(true);
     siteCatalog.classList.add('is-active');
@@ -932,7 +957,7 @@
       catalogHomeSet(true);
     }
     salesRender();
-    shopCatalog.hidden = false;
+    shopMenuPinSync();
     siteCatalogShow(false);
     siteCatalog.classList.remove('is-active');
   }
@@ -961,7 +986,7 @@
     catalogHomeSet(false);
     catalogMenu = true;
     catalogAdded = true;
-    shopCatalog.hidden = true;
+    shopMenuPinSync();
     siteCatalogShow(true);
     siteCatalog.classList.remove('is-active');
   }
@@ -977,28 +1002,30 @@
   // Сначала окно: какие компоненты отключатся вместе с ним и что уйдёт с сайта — страницы и виджет
   function compRemoveAsk(id) {
     const ids = compRemoveSet(id);
-    const pages = lsPages.filter((p) => ids.includes(p.comp));
     const widget = catalogAdded && ids.includes('restaurant');
     const others = ids.filter((c) => c !== id);
-    // «Вместе с ним отключатся компоненты «…». Удалятся страницы «…» и виджет «…»»
+    // В тексте — страницы компонента по его описанию (страница виджета и остальные), про виджет не пишем
+    const pages = [...new Set(ids.flatMap((c) => [COMP[c].widgetHome, ...COMP[c].pages].filter(Boolean)))];
+    const quoted = pages.map((n) => `«${n}»`);
+    const list = quoted.length > 1 ? quoted.slice(0, -1).join(', ') + ' и ' + quoted.at(-1) : quoted[0];
     const lines = [];
     if (others.length) lines.push(`Вместе с ним ${others.length > 1 ? 'отключатся компоненты' : 'отключится компонент'} ` + others.map((c) => `«${COMP[c].name}»`).join(', ') + '.');
-    const parts = [];
-    if (pages.length) parts.push((pages.length > 1 ? 'страницы ' : 'страница ') + pages.map((p) => `«${p.name}»`).join(', '));
-    if (widget) parts.push(`виджет «${COMP.restaurant.widget}»`);
-    if (parts.length) lines.push(`${pages.length > 1 || parts.length > 1 ? 'Удалятся' : 'Удалится'} ${parts.join(' и ')}.`);
+    if (pages.length) lines.push(pages.length > 1 ? `Удалятся страницы ${list}.` : `Удалится страница ${list}.`);
     salesClose();
     confirmAsk({
       message: `Отключить компонент «${COMP[id].name}»?`,
       details: lines.join(' '),
       answers: [['yes', 'Да', true], ['cancel', 'Отмена']],
-    }, (answer) => { if (answer === 'yes') compRemove(ids, widget); });
+    }, (answer) => { if (answer === 'yes') compRemove(ids, widget, pages); });
   }
-  function compRemove(ids, widget) {
+  // names — страницы из текста окна: удаляются и они, даже если на сайте это свои страницы (как «Меню» в «В конструкторе»). Главная остаётся
+  function compRemove(ids, widget, names = []) {
     for (const c of ids) { compOn.delete(c); compRoots.delete(c); }
     if (widget) siteRemoveCatalog();
     if (ids.includes('restaurant')) salesSaved = []; // настройки компонента — точки продаж — уходят с ним
-    compDropPages((p) => ids.includes(p.comp));
+    // с меню уходит и карточка товара сайта (product) — она открывается из меню
+    const card = ids.includes('restaurant');
+    compDropPages((p) => ids.includes(p.comp) || (!p.home && (names.includes(p.name) || (card && p.product))));
     salesRender();
   }
   // Чипса подключает компонент, крестик группы отключает (с подтверждением):
@@ -1125,7 +1152,7 @@
   // Карточка товара: клик в магазине ставит её в зону контента секции новой страницы вместо пустой ячейки и выделяет, из магазина она пропадает.
   // На странице с контентом клик ничего не делает. «Удалить» в тулбаре возвращает пустую ячейку и виджет в магазин, удаление страницы с карточкой — тоже.
   function siteProductSyncShop() {
-    shopProduct.hidden = lsPages.some((p) => p.product);
+    shopProduct.hidden = false; // из магазина не убираем: на странице с карточкой клик просто ничего не делает
   }
   // Обратная связь добавлена — в магазине её больше нет, на всех страницах; удаление возвращает к сценарию добавления и в магазин
   function shopFeedbackSync() {
@@ -1136,6 +1163,13 @@
   const cwThumbs = (...imgs) => `<span class="pgw-thumbs">${imgs.map((img) => `<img src="${CW_IMG}${img}.png" alt="">`).join('')}</span>`;
   const cwItem = (img, name, qty, price) =>
     `<div class="pgw-item"><img src="${CW_IMG}${img}.png" alt=""><div class="pgw-item__name">${name}<span>${qty} шт.</span></div><div class="pgw-price">${price} ₽</div></div>`;
+  // Данные демо «Отеля» и «Услуг» — как на картинках их каталогов в магазине: [название, вместимость/вид, площадь/длительность, цена]
+  const ROOMS = [['Стандарт', '2 гостя', '18 м²', '4 900'], ['Комфорт', '2 гостя', '24 м²', '6 200'], ['Делюкс', '3 гостя', '32 м²', '8 400'], ['Люкс', '4 гостя', '56 м²', '14 900'], ['Полулюкс', '2 гостя', '38 м²', '9 800'], ['Апартаменты', '4 гостя', '64 м²', '16 500']];
+  const SERVICES = [['Массаж', 'Классический', '60 мин', '3 500'], ['Стрижка и укладка', 'Любая длина', '45 мин', '2 200'], ['Маникюр', 'С покрытием', '90 мин', '2 000'], ['Стоун-терапия', 'Горячие камни', '75 мин', '4 200'], ['Уход за лицом', 'Маска и массаж', '60 мин', '3 800'], ['СПА-программа', 'Для двоих', '120 мин', '6 500']];
+  // [имя, инициалы, специализация, рейтинг, стаж]
+  const MASTERS = [['Елена Корнеева', 'ЕК', 'Массажист', '4,9', '8 лет'], ['Ольга Миронова', 'ОМ', 'Массажист, СПА', '4,8', '5 лет'], ['Дарья Лебедева', 'ДЛ', 'Парикмахер-стилист', '5,0', '11 лет'], ['Мария Гусева', 'МГ', 'Мастер маникюра', '4,9', '6 лет'], ['Ирина Белова', 'ИБ', 'Косметолог', '4,7', '9 лет'], ['Анна Титова', 'АТ', 'Парикмахер', '4,8', '4 года']];
+  const pgwTile = (img, name, meta, price, btn) => `<div class="pgw-tile"><img src="assets/img/site/${img}.jpg" alt=""><b>${name}</b><span class="pgw-muted">${meta}</span><div class="pgw-tile__foot"><span class="pgw-price">${price}</span><span class="pgw-btn pgw-btn--s">${btn}</span></div></div>`;
+  const pgwMaster = (m) => `<div class="pgw-person pgw-person--s"><span class="pgw-avatar">${m[1]}</span><div><b>${m[0]}</b><div class="pgw-muted">${m[2]} · ★ ${m[3]} · стаж ${m[4]}</div></div></div>`;
   const COMP_DEMO = {
     'Вход и регистрация':
       '<div class="pgw-auth">' +
@@ -1185,6 +1219,67 @@
         '<div class="pgw-row"><b>Оплата</b><span>Картой онлайн · оплачен</span></div>' +
         '<span class="pgw-btn">Повторить заказ</span>' +
       '</div>',
+    // «Отель»: фото номеров — из картинки каталога в магазине (catalog-rooms.svg), в том же порядке
+    'Каталог номеров':
+      '<div class="pgw-chips"><span class="is-on">Все номера</span><span>На двоих</span><span>Для семьи</span><span>С видом на Волгу</span></div>' +
+      '<div class="pgw-grid">' + ROOMS.map((r, i) => pgwTile(`rooms/${i + 1}`, r[0], `${r[1]} · ${r[2]}`, r[3] + ' ₽/ночь', 'Забронировать')).join('') + '</div>',
+    'Сведения о номере':
+      '<div class="pgw-detail">' +
+        '<img class="pgw-detail__img" src="assets/img/site/rooms/3.jpg" alt="">' +
+        '<div class="pgw-card">' +
+          '<div class="pgw-person__name">Делюкс</div>' +
+          '<div class="pgw-muted">До 3 гостей · 32 м² · кровать king size · 4 этаж, вид на Волгу</div>' +
+          '<div class="pgw-chips pgw-chips--static"><span>Завтрак включён</span><span>Wi-Fi</span><span>Кондиционер</span><span>Мини-бар</span><span>Сейф</span></div>' +
+          '<div class="pgw-dates"><label class="pgw-field"><span>Заезд</span><b>20 ноября, с 14:00</b></label><label class="pgw-field"><span>Выезд</span><b>22 ноября, до 12:00</b></label><label class="pgw-field"><span>Гости</span><b>2 взрослых</b></label></div>' +
+          '<div class="pgw-sum"><span>8 400 ₽ × 2 ночи</span><span>16 800 ₽</span></div>' +
+          '<div class="pgw-sum pgw-sum--total"><span>Итого</span><span>16 800 ₽</span></div>' +
+          '<span class="pgw-btn">Забронировать</span>' +
+          '<div class="pgw-note">Бесплатная отмена до 18 ноября</div>' +
+        '</div>' +
+      '</div>',
+    // «Услуги»: фото — из картинки каталога услуг в магазине (catalog-services.svg)
+    'Каталог услуг':
+      '<div class="pgw-chips"><span class="is-on">Все услуги</span><span>Массаж</span><span>Волосы</span><span>Ногти</span><span>Лицо</span></div>' +
+      '<div class="pgw-grid">' + SERVICES.map((s, i) => pgwTile(`services/${i + 1}`, s[0], `${s[1]} · ${s[2]}`, s[3] + ' ₽', 'Записаться')).join('') + '</div>',
+    'Карточка услуги':
+      '<div class="pgw-detail">' +
+        '<img class="pgw-detail__img" src="assets/img/site/services/1.jpg" alt="">' +
+        '<div class="pgw-card">' +
+          '<div class="pgw-person__name">Классический массаж</div>' +
+          '<div class="pgw-muted">60 минут · спина, шея, плечи, руки и ноги</div>' +
+          '<div>Снимает мышечное напряжение и усталость после рабочего дня. Мастер подбирает силу нажатия и масло под вас.</div>' +
+          '<div class="pgw-chips pgw-chips--static"><span>60 мин — 3 500 ₽</span><span>90 мин — 4 900 ₽</span><span>Абонемент 5 сеансов — 15 000 ₽</span></div>' +
+          '<div class="pgw-h">Делают</div>' +
+          MASTERS.slice(0, 2).map(pgwMaster).join('') +
+          '<span class="pgw-btn">Записаться</span>' +
+        '</div>' +
+      '</div>',
+    'Мастера':
+      '<div class="pgw-chips"><span class="is-on">Все</span><span>Массаж</span><span>Парикмахеры</span><span>Маникюр</span><span>Косметологи</span></div>' +
+      '<div class="pgw-masters">' + MASTERS.map((m) => `<div class="pgw-stat pgw-master-card"><span class="pgw-avatar">${m[1]}</span><b>${m[0]}</b><span>${m[2]}</span><span>★ ${m[3]} · стаж ${m[4]}</span></div>`).join('') + '</div>',
+    'Карточка специалиста':
+      '<div class="pgw-profile">' +
+        '<div class="pgw-person"><span class="pgw-avatar">ЕК</span><div><div class="pgw-person__name">Елена Корнеева</div><div class="pgw-muted">Массажист · стаж 8 лет · ★ 4,9 (126 отзывов)</div></div></div>' +
+        '<div>Медицинское образование, сертификаты по классическому, спортивному и стоун-массажу. Работает в студии на Свободы, 46.</div>' +
+        '<div class="pgw-h">Услуги</div>' +
+        SERVICES.filter((s) => /Массаж|Стоун|СПА/.test(s[0])).map((s) => `<div class="pgw-row"><b>${s[0]}</b><span>${s[2]}</span><span class="pgw-price pgw-row__end">${s[3]} ₽</span></div>`).join('') +
+        '<div class="pgw-h">Отзывы</div>' +
+        '<div class="pgw-row pgw-row--top"><b>Анна С.</b><span>Лучший массаж в городе: через час как новая. Запишусь ещё.</span><span class="pgw-muted pgw-row__end">2 ноября</span></div>' +
+        '<div class="pgw-row pgw-row--top"><b>Игорь П.</b><span>Хорошо проработала спину, всё объяснила, дала советы по упражнениям.</span><span class="pgw-muted pgw-row__end">27 октября</span></div>' +
+        '<span class="pgw-btn">Записаться к Елене</span>' +
+      '</div>',
+    'Выбор специалиста и времени':
+      '<div class="pgw-card">' +
+        '<div class="pgw-muted">Классический массаж · 60 мин · 3 500 ₽</div>' +
+        '<div class="pgw-h">Специалист</div>' +
+        '<div class="pgw-chips"><span>Любой</span><span class="is-on">Елена Корнеева</span><span>Ольга Миронова</span></div>' +
+        '<div class="pgw-h">Дата</div>' +
+        '<div class="pgw-days">' + [['Пн', 17], ['Вт', 18], ['Ср', 19], ['Чт', 20], ['Пт', 21], ['Сб', 22], ['Вс', 23]].map(([d, n], i) => `<span class="${i === 2 ? 'is-on' : ''}${i === 6 ? ' is-off' : ''}"><small>${d}</small>${n}</span>`).join('') + '</div>' +
+        '<div class="pgw-h">Время</div>' +
+        '<div class="pgw-chips pgw-slots">' + ['10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00'].map((t, i) => `<span class="${i === 3 ? 'is-on' : ''}${i === 1 || i === 5 ? ' is-off' : ''}">${t}</span>`).join('') + '</div>' +
+        '<div class="pgw-sum pgw-sum--total"><span>Среда, 19 ноября, 14:30</span><span>3 500 ₽</span></div>' +
+        '<span class="pgw-btn">Записаться</span>' +
+      '</div>',
   };
   function siteProductRender(on) {
     siteProduct.hidden = !on;
@@ -1200,7 +1295,7 @@
     siteBlankCell.hidden = on;
     siteBlankSection.classList.toggle('has-widget', on);
     // Страница пришла с компонентом — её основной виджет (карточка товара/блюда) удалить нельзя: нет «Удалить» ни у виджета, ни у его секции
-    const locked = on && !!wsPage.comp;
+    const locked = on && !!(wsPage.comp || wsPage.key); // key — ключевой виджет собранного сайта («В конструкторе»)
     $('#siteProductDelete').hidden = locked;
     $('[data-sec-cmd="delete"]', siteBlankSection).hidden = locked;
     siteProduct.classList.remove('is-active');
@@ -2445,7 +2540,7 @@
     catalogHomeSet(false);
     catalogMenu = false;
     catalogAdded = true;
-    shopCatalog.hidden = true;
+    shopMenuPinSync();
     siteCatalogShow(true);
     siteCatalog.classList.remove('is-active');
   }
@@ -2888,12 +2983,12 @@
       compRoots.clear();
       sitePlaceCatalog();
       if (scenario === 'catalog-setup') {
-        // «С компонентами» — сайт уже собран (как «Типовое заполнение» в dynamic-pages): «Главная», «Меню» с каталогом,
-        // «Профиль» с виджетом покупателя, «Карточка товара» с карточкой. Это свои страницы сайта, не страницы компонента.
-        // «Электронное меню» подключено без своих страниц, у него две точки продаж; сайт открывается на «Меню»
+        // «В конструкторе» — сайт уже собран (как «Типовое заполнение» в dynamic-pages): «Главная», «Профиль» с виджетом покупателя,
+        // «Меню» с каталогом, «Карточка товара» с карточкой. Это свои страницы сайта, не страницы компонента.
+        // «Электронное меню» подключено без своих страниц, у него две точки продаж; сайт открывается на «Главной»
         const page = (name, extra) => ({ id: lsNextId++, name, off: false, mode: 'page', fixed: true, ...extra });
-        lsPages.push(page('Меню'), page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), page('Карточка товара', { blank: true, product: true }));
-        lsActive = lsPages.find((p) => p.name === 'Меню').id;
+        lsPages.push(page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), page('Меню', { menu: true }), page('Карточка товара', { blank: true, product: true, key: true }));
+        lsActive = lsPages.find((p) => p.home).id; // редактор открывается на «Главной»
         compOn.add('restaurant');
         compRoots.add('restaurant');
         salesSaved = ROOT_SALES.slice(0, 2).map((point) => ({ id: point.id, price: point.price }));
@@ -2901,7 +2996,7 @@
         catalogHomeSet(true);
         catalogAdded = false;
         salesSaved = [];
-        shopCatalog.hidden = false;
+        shopMenuPinSync();
         siteCatalogShow(false);
       }
       salesRender();
@@ -2952,7 +3047,7 @@
   // Панель показывает состояние открытой страницы, как бы та ни открылась: из списка, после сохранения или удаления.
   function scenSync() {
     const page = lsPage(lsActive);
-    const keepScenario = ['catalog-add', 'catalog-setup', 'window-link', 'ext-add', 'ext-added', 'ext-page', 'ext-link'].includes(stage.dataset.scenario);
+    const keepScenario = ['sites', 'catalog-add', 'catalog-setup', 'window-link', 'ext-add', 'ext-added', 'ext-page', 'ext-link'].includes(stage.dataset.scenario);
     // страницы сценария с готовой карточкой (fixed) — не новые
     const isNew = page.blank && !page.fixed;
     const scenario = isNew ? 'new' : keepScenario ? stage.dataset.scenario : 'window-create';
@@ -2965,6 +3060,10 @@
 
   lsSetCollapsed(lsReadCollapsed());
   scenApply(stage.dataset.scenario);
+  // старт — «Реестр сайтов» поверх собранного конструктора
+  // (сборка могла переключить панель на «В конструкторе» через scenSync — возвращаем)
+  if (frame.value.scenario !== 'sites') frame.select('sites');
+  if (stage.dataset.scenario !== 'sites') { stage.dataset.scenario = 'sites'; regShow(true); }
   // каталог выше секции с кнопкой дорисовывается вместе с картинками
   window.addEventListener('load', () => {
     if (!['window-link', 'ext-add', 'ext-added', 'ext-link'].includes(stage.dataset.scenario)) return;
