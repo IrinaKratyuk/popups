@@ -262,15 +262,6 @@
   let catalogHome = false;     // каталог стоит на главной (сценарии компонентов), а не на странице «Меню» прочих сценариев
   let catalogMenu = false;     // каталог стоит на странице «Меню», которую принесло «Электронное меню» (подключён в «Параметрах сайта» без виджета)
   const compConfigured = () => salesSaved.length > 0;
-  // Дополнительные настройки подключённого компонента (options) — серые чипсы, как в блоке «Сайт». Пока без действия
-  function compOptionsFill(root, id) {
-    root.replaceChildren(...(compOn.has(id) ? COMP[id].options ?? [] : []).map((name) => {
-      const chip = el('button', 'chips chips--size-m', '<span class="chips__caption"></span>');
-      chip.type = 'button';
-      chip.firstChild.textContent = name;
-      return chip;
-    }));
-  }
   // Чипсы «Параметров сайта»: неподключённые компоненты, иконка компонента + название. Подключённый уходит из чипсов
   function compChipsRender() {
     // Компоненты взаимоисключающие: пока один подключён, чипсов нет
@@ -293,12 +284,8 @@
         + `<button class="sales-settings__remove" type="button" data-comp-toggle="${id}"><span class="ico">&#xE66C;</span></button>`;
       $('.sales-settings__head span', group).textContent = COMP[id].name;
       group.lastChild.setAttribute('aria-label', `Отключить компонент «${COMP[id].name}»`);
-      const options = el('div', 'rs-site__chips comp-options');
-      compOptionsFill(options, id);
-      group.insertBefore(options, group.lastChild);
       return group;
     });
-    compOptionsFill($('#salesSettingsOptions'), 'restaurant');
     $('#compGroups').replaceChildren(...groups);
     $('#compChips').replaceChildren(...chips);
     $('#compChipsBlock').hidden = !chips.length;

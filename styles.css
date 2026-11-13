@@ -625,8 +625,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 .comp-groups { display: flex; flex-direction: column; gap: 4px; }
 .comp-groups:not(:has(> :not([hidden]))) { display: none; } /* скрытый блок «Ресторана» лежит внутри: без этого лишний gap */
 .rs-params .comp-group .sales-settings__head { margin-bottom: 0; }
-.comp-options { padding: 0 12px; } /* дополнительные настройки компонента — серые чипсы, как в блоке «Сайт» */
-.comp-options:empty { display: none; }
 .rs-comps { padding: 12px 8px 12px; } /* сверху 12 + 4 (gap тела) = 16 от плашки выше, как в Figma qRTnmlLncsGaoD9FD0u3Nh 17264:108765 */
 /* заголовок группы чипсов — «МОЖНО ДОБАВИТЬ» из Figma 21912:180563: 12px капсом, 8 до чипсов; слева 8 + 16 = 24 — на линии текста чипсов плашки «Сайт» */
 .rs-comps__title { padding: 0 0 8px 16px; font-size: 12px; line-height: normal; letter-spacing: .24px; text-transform: uppercase; color: var(--text-label_contrast_text-color); }
