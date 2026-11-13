@@ -29,6 +29,9 @@
         { id: 'catalog-add', title: 'Добавление виджета', hidden: true }, // пока скрыт
         { id: 'catalog-setup', title: 'С компонентами' },
       ] },
+    ],
+    // Окна и внешние виджеты пока внизу панели
+    bottomScenarios: [
       { group: 'Работа с окнами/страницами', items: [
         { id: 'window-create', title: 'Создание окна с товаром' },
         { id: 'window-setup', title: 'Настройки окна', disabled: true, hidden: true },
@@ -78,8 +81,7 @@
 
   // Панель сценариев: demo-frame даёт один уровень групп, разделы «Работа с окнами» и «Внешние виджеты» со сворачиванием,
   // заголовок первой группы убираем.
-  const scenCard = $('.df-card--scen', frame.panel);
-  const scenGroups = [...scenCard.querySelectorAll('.df-group')];
+  const scenGroups = [...frame.panel.querySelectorAll('.df-card--scen .df-group')];
 
   // Раздел по умолчанию свёрнут
   function scenSection(title, nodes) {
@@ -99,7 +101,7 @@
 
   for (const g of scenGroups) g.classList.add('pop-sub');
   // «Работа с окнами» и «Внешние виджеты» — сворачиваемые разделы на своих местах; заголовок группы становится заголовком раздела
-  for (const g of scenGroups.slice(1)) {
+  for (const g of scenGroups.filter((g) => g.closest('.df-card--bottom'))) {
     const options = g.nextElementSibling;
     const section = scenSection(g.textContent.trim(), [options]);
     g.replaceWith(section);
