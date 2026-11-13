@@ -18,7 +18,7 @@
   // disabled — сценарий пока не сделан
   const frame = DemoFrame.mount({
     stage,
-    head: { title: 'Попапы' },
+    head: { title: 'Компоненты' },
     devices: [
       { id: 'laptop', icon: 'laptop', label: 'Ноутбук', disabled: true },
       { id: 'monitor', icon: 'monitor', label: 'Монитор', size: '1600х900', name: 'монитор' },
@@ -77,7 +77,7 @@
   });
 
   // Панель сценариев: demo-frame даёт один уровень групп, разделы «Работа с окнами» и «Внешние виджеты» со сворачиванием,
-  // и статус показа добавляем поверх его разметки.
+  // заголовок первой группы убираем.
   const scenCard = $('.df-card--scen', frame.panel);
   const scenGroups = [...scenCard.querySelectorAll('.df-group')];
 
@@ -104,8 +104,8 @@
     const section = scenSection(g.textContent.trim(), [options]);
     g.replaceWith(section);
   }
+  scenGroups[0].remove(); // у первой группы («Компоненты») заголовка нет: сценарии идут сразу
 
-  $('.df-team', frame.panel).before(el('div', 'pop-status', '<span class="ico24">&#xE651;</span>Не показывали'));
   $('.df-team__name', frame.panel).after(el('span', 'df-team__name', 'Смирнова Мария')); // второй дизайнер в той же плашке: team в demo-frame знает одно имя на строку
 
   function stageRect(node) {
