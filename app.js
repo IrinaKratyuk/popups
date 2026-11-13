@@ -244,26 +244,23 @@
   let salesSelection = new Set();
   let salesPickerMode = null;
   let salesOnlySelected = false;
-  // Компоненты: виджет из магазина подключает свой компонент, а с ним приходят компоненты, от которых он зависит (deps) — они его часть. Компонент приносит страницы и настройки
-  // (в «Параметры сайта», группа «Компоненты»). Связи — из документа «Компоненты интернет магазина». Настройки пока есть только у «Ресторана» — точки продаж.
+  // Компоненты (простая версия): четыре компонента, они взаимоисключающие — подключён один, чипсы остальных пропадают, пока его не отключат.
+  // Связей между компонентами нет: компонент приносит только свои страницы (и настройки — пока только точки продаж у «Электронного меню»).
+  // Полная версия с зависимостями и группами страниц — тег components-2.0.
   // widget — виджет компонента в магазине, widgetPage — страница, которую виджет открывает. Страницы создаются под виджет: у каждой страницы компонента свой виджет
   // (widgetPage — карточка блюда, остальные — по widgets). widgetHome — страница для самого виджета: приходит, только если компонент подключили в «Параметрах сайта», а его виджета на сайте нет.
   // Виджет, поставленный из магазина, стоит там, куда его поставили (в сценариях компонентов — на главной), страницы для него не создаётся.
-  // Порядок — как в таблице документа; он же порядок чипсов в «Параметрах сайта»
+  // Порядок — порядок чипсов в «Параметрах сайта»
   const COMP = {
-    account: { name: 'Личный кабинет', desc: 'Вход и регистрация покупателя, профиль, бонусы и сохранённые адреса', deps: [], pages: ['Вход и регистрация', 'Профиль'], widgets: { 'Вход и регистрация': 'Вход и регистрация', 'Профиль': 'Профиль покупателя' } },
-    orders: { name: 'Заказы и оплата', desc: 'Корзина, оформление и оплата заказа онлайн, история заказов покупателя', deps: ['account'], pages: ['Корзина', 'Заказы', 'Карточка заказа'], widgets: { 'Корзина': 'Корзина', 'Заказы': 'История заказов', 'Карточка заказа': 'Карточка заказа' } },
-    shop: { name: 'Магазин', desc: 'Каталог товаров с ценами и остатками, корзина и заказ с доставкой', deps: ['orders'], options: ['Доставка', 'Самовывоз'], pages: [] },
-    restaurant: { name: 'Ресторан', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', deps: ['orders'], options: ['Доставка', 'Самовывоз'], pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда', widgetHome: 'Меню' },
-    services: { name: 'Сфера услуг', desc: 'Каталог услуг и онлайн-запись к специалисту на свободное время', deps: ['orders'], pages: [] },
-    hotel: { name: 'Отель', desc: 'Номера и цены, бронирование на даты с оплатой онлайн', deps: ['orders'], pages: [] },
-    loyalty: { name: 'Лояльность', desc: 'Бонусы, скидки и акции для покупателей, баланс в личном кабинете', deps: ['account'], pages: [] },
-    certificates: { name: 'Сертификаты и абонементы', desc: 'Продажа подарочных сертификатов и абонементов на сайте', deps: ['orders'], pages: [] },
+    restaurant: { name: 'Электронное меню', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда', widgetHome: 'Меню' },
+    delivery: { name: 'Доставка', desc: 'Корзина, оформление и оплата заказа с доставкой, история заказов покупателя', pages: ['Корзина', 'Заказы', 'Карточка заказа'], widgets: { 'Корзина': 'Корзина', 'Заказы': 'История заказов', 'Карточка заказа': 'Карточка заказа' } },
+    services: { name: 'Услуги', desc: 'Каталог услуг и онлайн-запись к специалисту на свободное время', pages: [] },
+    hotel: { name: 'Отель', desc: 'Номера и цены, бронирование на даты с оплатой онлайн', pages: [] },
   };
   const compOn = new Set();    // подключавшиеся, в порядке подключения: их страницы и настройки на сайте
   const compRoots = new Set(); // подключённые виджетом, а не как зависимость
   let catalogHome = false;     // каталог стоит на главной (сценарии компонентов), а не на странице «Меню» прочих сценариев
-  let catalogMenu = false;     // каталог стоит на странице «Меню», которую принёс «Ресторан» (подключён в «Параметрах сайта» без виджета)
+  let catalogMenu = false;     // каталог стоит на странице «Меню», которую принесло «Электронное меню» (подключён в «Параметрах сайта» без виджета)
   const compConfigured = () => salesSaved.length > 0;
   // Дополнительные настройки подключённого компонента (options) — серые чипсы, как в блоке «Сайт». Пока без действия
   function compOptionsFill(root, id) {
@@ -276,7 +273,8 @@
   }
   // Чипсы «Параметров сайта»: неподключённые компоненты, иконка компонента + название. Подключённый уходит из чипсов
   function compChipsRender() {
-    const chips = Object.entries(COMP).filter(([id]) => !compOn.has(id)).map(([id, c]) => {
+    // Компоненты взаимоисключающие: пока один подключён, чипсов нет
+    const chips = Object.entries(COMP).filter(() => !compOn.size).map(([id, c]) => {
       const chip = el('button', 'chips chips--optional'); // опциональное свойство ui-kit (PropertyGrid 37372:32955)
       chip.type = 'button';
       chip.dataset.compAdd = id;
@@ -358,7 +356,9 @@
   }
   function salesRender() {
     compChipsRender();
-    // Прежний вид «Параметров сайта»: точки продаж с прайсами — когда есть каталог или подключён «Ресторан»
+    const shopMenu = $('#rsWidgets [data-widget="catalog"]')?.closest('.rs-w');
+    if (shopMenu && !catalogAdded) shopMenu.hidden = [...compOn].some((id) => id !== 'restaurant'); // «Меню ресторана» — виджет «Электронного меню»: при другом компоненте его в магазине нет
+    // Прежний вид «Параметров сайта»: точки продаж с прайсами — когда есть каталог или подключено «Электронное меню»
     $('#salesSettings').hidden = !catalogAdded && !compOn.has('restaurant');
     $('#salesSettingsRemove').hidden = !compOn.has('restaurant'); // каталог без компонента отключать нечего
     salesRenderRows($('#salesSettingsRows'), salesSaved, true);
@@ -552,10 +552,10 @@
   $('#salesSearch').addEventListener('input', salesPickerRender);
   $('#salesPickerClose').addEventListener('click', salesPickerCancel);
   $('#salesClose').addEventListener('click', salesClose);
-  // Сохранённые точки продаж = компонент «Ресторан» настроен: он подключается (с зависимостями и страницами)
+  // Сохранённые точки продаж = «Электронное меню» настроено: оно подключается со своими страницами
   function salesSave(rows) {
     salesSaved = salesCopy(rows);
-    if (salesSaved.length && !compOn.has('restaurant')) { compConnect('restaurant', true); lsRender(); }
+    if (salesSaved.length && !compOn.size) { compConnect('restaurant', true); lsRender(); }
   }
   $('#salesDone').addEventListener('click', () => { salesSave(salesDraft); salesClose(); salesRender(); });
   $('#salesReset').addEventListener('click', () => { salesDraft = []; salesRender(); });
@@ -716,7 +716,7 @@
   // [название, описание, высота, картинка, белая подложка, положение картинки из макета, файл картинки, если не <картинка>.png]
   const COVER = 'inset:0;width:100%;height:100%;object-fit:cover';
   const CONTAIN = 'inset:0;width:100%;height:100%;object-fit:contain';
-  // Каталоги — по компонентам из документа: работаем только с «Меню ресторана» (компонент «Ресторан»), у остальных нет ни клика, ни ховера
+  // Каталоги — по компонентам из документа: работаем только с «Меню ресторана» (компонент «Электронное меню»), у остальных нет ни клика, ни ховера
   // Каталоги в магазине есть только в сценариях компонентов (catalog-*), в остальных сценариях их нет совсем
   const SHOP_WIDGETS = [
     ['Меню ресторана', 'Блюда и напитки по разделам меню с ценами', 290, 'catalog', false, CONTAIN, 'catalog-menu.svg'],
@@ -912,10 +912,10 @@
     catalogHome = on;
     siteMain.classList.toggle('is-catalog-home', on);
   }
-  // «Меню ресторана» встаёт на главную и подключает «Ресторан» со всей цепочкой зависимостей и их страницами.
+  // «Меню ресторана» встаёт на главную и подключает «Электронное меню» с его страницами.
   // Окно настроек открывается, только если компонент ещё не настроен (нет точек продаж), иначе виджет берёт настройки компонента.
   function siteAddCatalog() {
-    if (catalogAdded) return;
+    if (catalogAdded || [...compOn].some((id) => id !== 'restaurant')) return;
     const home = lsPages.find((p) => p.home);
     if (!home) return; // главную удалили — ставить некуда
     if (lsActive !== home.id) lsSelect(home.id);
@@ -950,7 +950,7 @@
     siteCatalogShow(false);
     siteCatalog.classList.remove('is-active');
   }
-  // Подключение: сначала сам компонент, потом его зависимости. Уже подключённый компонент возвращает свои страницы, если их удалили вместе с виджетом
+  // Подключение: компонент и его страницы. Уже подключённый компонент возвращает свои страницы, если их удалили вместе с виджетом
   function compConnect(id, root = false) {
     if (root) compRoots.add(id);
     compOn.add(id);
@@ -964,7 +964,6 @@
       const before = lsPages.findIndex((p) => order(p) > i);
       lsPages.splice(after >= 0 ? after + 1 : before >= 0 ? before : lsPages.length, 0, page);
     });
-    for (const dep of COMP[id].deps) compConnect(dep);
   }
   // Компонент подключён, а его виджета на сайте нет: приходит страница для виджета («Меню») — первой в группе компонента, с виджетом на ней
   function compAddWidgetHome(id) {
@@ -1017,7 +1016,7 @@
     salesRender();
   }
   // Чипса подключает компонент, крестик группы отключает (с подтверждением):
-  // приходят его страницы и зависимости со своими страницами
+  // приходят только его страницы
   stage.addEventListener('click', (e) => {
     const toggle = e.target.closest('[data-comp-toggle], [data-comp-add]');
     if (toggle) {
@@ -2499,13 +2498,12 @@
     try { localStorage.setItem(LS_KEY, collapsed ? 'collapsed' : 'pinned'); } catch {}
   }
 
-  // Порядок показа: сначала страницы сайта, потом страницы компонентов группами — в порядке компонентов, как в «Параметрах сайта»
+  // Порядок показа: сначала страницы сайта, потом страницы компонента — одним списком, без групп
   function lsOrdered() {
-    const own = lsPages.filter((p) => !p.comp);
-    return [own, ...Object.keys(COMP).map((id) => lsPages.filter((p) => p.comp === id))];
+    return [...lsPages.filter((p) => !p.comp), ...Object.keys(COMP).flatMap((id) => lsPages.filter((p) => p.comp === id))];
   }
   function lsRenderLines() {
-    lsLines.replaceChildren(...lsOrdered().flat().map((p) => el('span', 'ls-line' + (p.id === lsActive ? ' is-active' : ''))));
+    lsLines.replaceChildren(...lsOrdered().map((p) => el('span', 'ls-line' + (p.id === lsActive ? ' is-active' : ''))));
   }
 
   function lsRow(p) {
@@ -2518,38 +2516,8 @@
     row.querySelector('.ls-item__name').textContent = p.name;
     return row;
   }
-  const LS_GROUP_EXPANDER = false; // экспандер групп пока скрыт: true вернёт стрелку и сворачивание
-  const lsCollapsed = new Set(); // id компонентов со свёрнутой группой
-  // Группа компонента: заголовок — маленькая иконка компонента и его название, под ним — страницы, которые он принёс
-  function lsGroupHead(id) {
-    const head = el('div', 'ls-group' + (lsCollapsed.has(id) ? ' is-collapsed' : ''));
-    const icon = el('img', 'ls-group__icon');
-    icon.src = `assets/img/comp/${id}.svg`;
-    icon.width = icon.height = 24;
-    icon.alt = '';
-    const name = el('span', 'ls-group__name');
-    name.textContent = COMP[id].name;
-    // Экспандер — та же стрелка, что у полей в «Данных». Только прячет строки: страница и список не перерисовываются
-    head.append(icon, name);
-    if (!LS_GROUP_EXPANDER) return head;
-    head.classList.add('has-expander');
-    head.append(el('span', 'ico rs-field__arrow', '&#xEB89;'));
-    head.addEventListener('click', () => {
-      const collapsed = head.classList.toggle('is-collapsed');
-      if (collapsed) lsCollapsed.add(id); else lsCollapsed.delete(id);
-      for (let row = head.nextElementSibling; row && row.classList.contains('ls-item'); row = row.nextElementSibling) row.hidden = collapsed;
-    });
-    return head;
-  }
   function lsRender() {
-    const [own, ...groups] = lsOrdered();
-    const shown = groups.filter((g) => g.length);
-    lsList.classList.toggle('has-groups', shown.length > 0);
-    lsList.replaceChildren(...own.map(lsRow), ...shown.flatMap((g) => [lsGroupHead(g[0].comp), ...g.map((p) => {
-      const row = lsRow(p);
-      row.hidden = lsCollapsed.has(p.comp);
-      return row;
-    })]));
+    lsList.replaceChildren(...lsOrdered().map(lsRow));
     lsRenderLines();
     siteShowPage(lsPage(lsActive));
     siteProductSyncShop();

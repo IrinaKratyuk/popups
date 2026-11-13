@@ -351,7 +351,7 @@
             </div>
           </section>
           <section class="sales-settings" id="salesSettings" aria-label="Точки продаж сайта" hidden>
-            <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt="">Ресторан <button class="btn btn--filled btn--style-pale btn--size-m rs-plus has-tip" type="button" data-sales-add aria-label="Добавить точки продаж" data-tip="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span></button></div><span></span><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div>
+            <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt="">Электронное меню <button class="btn btn--filled btn--style-pale btn--size-m rs-plus has-tip" type="button" data-sales-add aria-label="Добавить точки продаж" data-tip="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span></button></div><span></span><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div>
             <div class="sales-rows" id="salesSettingsRows"></div>
             <div class="rs-site__chips comp-options" id="salesSettingsOptions"></div>
           </section>
@@ -368,9 +368,9 @@
       <!-- Точки продаж: Figma 2560:97159, 2596:110271. Выбор — отдельная стек-панель 2596:108382. -->
       <!-- Окно настроек компонента: то же, что его блок в «Параметрах сайта», заголовок — название компонента -->
       <!-- Шапка и облачко — .pe из ui-kit, как у окна новой страницы (#lsNew); название не меняется — .pe__name--static. PropertyEditor не монтируем: кнопки шапки ведёт app.js -->
-      <section class="pe sales-popup" id="salesPopup" role="dialog" aria-label="Ресторан" hidden>
+      <section class="pe sales-popup" id="salesPopup" role="dialog" aria-label="Электронное меню" hidden>
         <header class="pe__head">
-          <span class="pe__name pe__name--static">Ресторан</span>
+          <span class="pe__name pe__name--static">Электронное меню</span>
           <button class="btn btn--filled btn--style-pale btn--size-m rs-plus sales-popup__add has-tip" type="button" data-sales-add aria-label="Добавить точки продаж" data-tip="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
           <div class="pe__cmds">
             <button type="button" class="pe__reset" id="salesReset" aria-label="Сбросить точки продаж" disabled>&#xe629;</button>

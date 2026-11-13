@@ -375,19 +375,12 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ls-item { flex: none; position: relative; height: 31px; display: flex; align-items: center; gap: 5px; padding-right: 8px; border-radius: 4px; cursor: pointer; }
 .ls-item.is-active, .ls-item:hover, .ls-item.is-menu { background: #ebf4ff; }
 .ls-item__marker { flex: none; width: 3px; height: 16px; border-radius: 4px; }
-.ls-list.has-groups .ls-item__marker { margin-right: 30px; } /* 3 + 30 + зазор 5 = 38 px: при группах название страницы выровнено по тексту их заголовков (8 + иконка 24 + 6) */
 .ls-item.is-active .ls-item__marker { background: #cc3d00; }
 .ls-item__name { flex: 1; min-width: 0; font-size: 15px; letter-spacing: -.2115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
 .ls-item.is-active .ls-item__name { font-weight: 600; }
 .ls-item.is-off .ls-item__name { color: #999; } /* text/unaccented_text-color */
 /* группа страниц компонента: маленькая иконка и название, без ховера и клика; отступ слева — как у названий страниц */
-.ls-group { flex: none; display: flex; align-items: center; gap: 6px; height: 31px; margin-top: 6px; padding: 0 8px; cursor: default; }
-.ls-group.has-expander { cursor: pointer; }
-.ls-group .rs-field__arrow { flex: none; transform: rotate(90deg); }
-.ls-group.is-collapsed .rs-field__arrow { transform: none; }
 .ls-item[hidden] { display: none; }
-.ls-group__icon { flex: none; width: 24px; height: 24px; }
-.ls-group__name { min-width: 0; font-size: 15px; font-weight: 600; letter-spacing: -.2115px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
 .ls-item__cmds { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: none; gap: 6px; padding-left: 4px; background: #ebf4ff; }
 .ls-item:hover .ls-item__cmds, .ls-item.is-menu .ls-item__cmds { display: flex; }
 /* команды — .btn размера m из ui-kit: глиф 16 из cbuc-icons, у глазика и ✕ в макете 24 из cbuc-icons24 */
