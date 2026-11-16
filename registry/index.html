@@ -11,6 +11,8 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/tokens.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/chips/chips.css">
+<!-- .pe — окно «Сайт» у «Подключить» (вид — как #salesPopup конструктора); стили только под .pe, шрифты cbuc-icons/cbuc-icons24 — ниже -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.css">
 <link rel="stylesheet" href="../domain.css">
 <style>
 /* ==========================================================================
@@ -611,7 +613,8 @@ html, body{
   color: var(--c-text);
   cursor: pointer;
 }
-.menu__item:hover{ background: var(--c-list-hover); }
+/* components/dropdownpopup/item_hover_background-color_menu — как у меню конструктора (styles.css --menu-item-hover) */
+.menu__item:hover{ background: #f3f4f8; }
 
 /* Кнопка «+» стартового экрана — ховера в макете для неё нет,
    лёгкое затемнение, чтобы клик не был вслепую. */
@@ -1778,6 +1781,18 @@ html, body{
 .sales-picker__rail{ width: 52px; border-left: 2px solid #0000000a; display: flex; flex-direction: column; align-items: center; padding: 7px 10px 6px 8px; gap: 7px; } /* 2 рамки + 8 = 10 слева, как у .rail: команды не сдвигаются при открытии панели */
 .sales-picker__rail .sales-icon{ width: 32px; height: 32px; }
 .sales-picker .rp-help{ width: 32px; height: 32px; border-radius: 16px; background: #eeebff; border: 1px solid #d4ccff; display: flex; align-items: center; justify-content: center; }
+/* Окно «Сайт» у «Подключить» в меню «Добавить сайт» — .pe из ui-kit, как окно точек продаж конструктора (#salesPopup).
+   Адрес и название — метки слева, поля с линией снизу; ниже — подсказка про код счётчика. Встаёт на место меню */
+.connect-popup{ position: absolute; z-index: 3; left: -6px; top: -9px; width: 550px; }
+.connect-popup .pe__card{ gap: 8px; padding: 12px; }
+.connect-popup__rows{ display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; column-gap: 12px; row-gap: 8px; }
+.connect-popup__label{ font-size: 16px; color: #8991a9; }
+.connect-popup__input{ width: 100%; height: 28px; padding: 0; border: 0; border-bottom: 1px solid #cccccc; outline: 0; background: none; font: inherit; font-size: 16px; color: var(--c-text); }
+.connect-popup__input:hover{ border-bottom-color: #999999; }
+.connect-popup__input::placeholder{ color: #b5bccc; opacity: 1; }
+.connect-popup__hint{ margin: 8px 0 0; font-size: 16px; line-height: 1.4; color: #8991a9; }
+.connect-popup__hint a{ color: #2562aa; text-decoration: none; }
+.connect-popup__hint a:hover{ text-decoration: underline; }
 /* Крестик «Отключить компонент» и чипсы «Добавить компонент» — как .sales-settings__remove и .rs-comps в styles.css конструктора.
    Компоненты взаимоисключающие: пока один подключён, чипсов нет. */
 .sales-settings[hidden], .rs-comps[hidden]{ display: none; }
@@ -2925,7 +2940,7 @@ html, body{
   overflow: hidden;
 }
 button.tpl-cat{ cursor: pointer; }
-button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
+.tpl-cat:hover{ box-shadow: var(--shadow-b); }
 .tpl-cat__title{
   flex: none;
   padding: var(--o-m);
@@ -2933,9 +2948,6 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
   font-weight: 600;
   line-height: normal;
   letter-spacing: -.282px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .tpl-cat__img{
   position: relative;
@@ -2975,6 +2987,7 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
   overflow: hidden;
   cursor: pointer;
 }
+.tpl-doc:hover{ box-shadow: var(--shadow-b); }
 .tpl-doc img{
   position: absolute;
   inset: 0;
@@ -3207,13 +3220,27 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
         <main class="workspace">
           <header class="topbar topbar--popups">
             <div class="topbar__left">
-              <!-- «+» открывает панель «Шаблоны» (#tpl-panel). -->
-              <button class="btn btn--primary" type="button" aria-label="Добавить сайт"
-                      aria-haspopup="dialog" data-tpl-open>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M16 8C16 8.55228 15.5523 9 15 9H9V15C9 15.5523 8.55228 16 8 16C7.44772 16 7 15.5523 7 15V9H1C0.447715 9 0 8.55228 0 8C0 7.44772 0.447715 7 1 7H7V1C7 0.447715 7.44772 0 8 0C8.55228 0 9 0.447715 9 1V7H15C15.5523 7 16 7.44772 16 8Z" fill="white"/>
-                  </svg>
-              </button>
+              <!-- «+» открывает меню «Добавить сайт»; «Создать новый» — панель «Шаблоны» (#tpl-panel). -->
+              <div class="popup-anchor">
+                <button class="btn btn--primary" type="button" aria-label="Добавить сайт"
+                        aria-haspopup="menu" data-add-menu>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M16 8C16 8.55228 15.5523 9 15 9H9V15C9 15.5523 8.55228 16 8 16C7.44772 16 7 15.5523 7 15V9H1C0.447715 9 0 8.55228 0 8C0 7.44772 0.447715 7 1 7H7V1C7 0.447715 7.44772 0 8 0C8.55228 0 9 0.447715 9 1V7H15C15.5523 7 16 7.44772 16 8Z" fill="white"/>
+                    </svg>
+                </button>
+                <div class="menu" role="menu" aria-label="Добавить сайт" data-add-menu-pop hidden>
+                  <div class="menu__header">
+                    <span class="menu__title">Добавить сайт</span>
+                    <button class="menu__close" type="button" aria-label="Закрыть" data-add-menu-close>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    </button>
+                  </div>
+                  <ul class="menu__list">
+                    <li><button class="menu__item" type="button" role="menuitem" aria-haspopup="dialog" data-add-menu-close data-connect-open>Подключить</button></li>
+                    <li><button class="menu__item" type="button" role="menuitem" aria-haspopup="dialog" data-tpl-open>Создать новый</button></li>
+                  </ul>
+                </div>
+              </div>
             </div>
             <!-- У реестра своя правая часть шапки: поиск и фильтр без периода. -->
             <div class="topbar__right">
@@ -5761,10 +5788,26 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
     if (saved && (saved.site === BILLING || MODELS[saved.site])) { current = saved.site; origin = saved.origin || origin; }
   } catch (e) {}
 
+  /* Пункт левого меню в карточке сайта — тот, из чьего реестра её открыли («Сайты доставки» или «Сайты»). */
+  function markAcc(s){
+    var from = document.getElementById(origin);
+    var key = (from && from.dataset.acc) || 'sites';
+    $$('.accordion__item', s).forEach(function(it){
+      var on = it.dataset.acc === key;
+      it.classList.toggle('accordion__item--active', on);
+      var mk = $('.accordion__marker', it);
+      if (on && !mk) it.insertAdjacentHTML('afterbegin', '<span class="accordion__marker" aria-hidden="true"></span>');
+      if (!on && mk) mk.remove();
+      var link = $('.accordion__link', it);
+      if (on) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
+    });
+  }
+
   function apply(){
     var m = current === BILLING ? null : MODELS[current];
     IDS.forEach(function(id){
       var s = document.getElementById(id);
+      markAcc(s);
       $('.workspace', s).innerHTML = ORIG[id];
       var back = $('.sitehead', s);
       back.setAttribute('href', '#/' + origin);
@@ -5846,22 +5889,43 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
 
   var TPL_TREE = {
     root: { title: 'Шаблоны', cats: [
-      { name: 'Доставка', color: '#d9dbc7', img: 'cat-delivery.png' },
-      { name: 'Отель',    color: '#eae1d7', img: 'cat-hotel.png', crop: 'left:-7.49%; width:124.65%' },
+      { name: 'Доставка', color: '#d9dbc7', img: 'cat-delivery.png', go: 'delivery' },
+      { name: 'Отель',    color: '#eae1d7', img: 'cat-hotel.png', crop: 'left:-7.49%; width:124.65%', go: 'hotel' },
       { name: 'Услуги',   color: '#f7e2c5', img: 'cat-services.png', go: 'services' },
-      { name: 'Электронное меню', color: '#e8f4fb', img: 'cat-menu.png' }
+      { name: 'Электронное меню', color: '#e8f4fb', img: 'cat-menu.png', go: 'menu' }
+    ]},
+    delivery: { title: 'Доставка', parent: 'root', cats: [
+      { name: 'Ресторан', color: '#ede9e5', img: 'del-restaurant.png' },
+      { name: 'Кафе',     color: '#f2f2e8', img: 'del-cafe.png' },
+      { name: 'Кофейня',  color: '#e7d9cb', img: 'del-coffee.png' },
+      { name: 'Столовая', color: '#e5f2ff', img: 'del-canteen.png' },
+      { name: 'Пекарни и кондитерские', color: '#ffeee5', img: 'del-bakery.png' }
+    ]},
+    /* Превью отеля — сайт на белом по центру карточки, без подписи (пропорция картинки 434×435). */
+    hotel: { title: 'Отель', parent: 'root', docs: [
+      { img: 'hotel-1.png', crop: 'top:42px; height:435px' },
+      { img: 'hotel-2.png', crop: 'top:42px; height:435px' },
+      { img: 'hotel-3.png', crop: 'top:42px; height:435px' },
+      { img: 'hotel-4.png', crop: 'top:42px; height:435px' }
+    ]},
+    /* Превью — сайт на белом: сверху поле 20px, ниже подпись (пропорция картинки 332×322). */
+    menu: { title: 'Электронное меню', parent: 'root', docs: [
+      { img: 'menu-1.png', name: 'Универсальный шаблон', crop: 'top:20px; height:424px' },
+      { img: 'menu-2.png', name: 'Широкий сайт',         crop: 'top:20px; height:424px' },
+      { img: 'menu-3.png', name: 'Всё в одном месте',    crop: 'top:20px; height:424px' },
+      { img: 'menu-4.png', name: 'Мой шаблон',           crop: 'top:20px; height:424px' }
     ]},
     services: { title: 'Услуги', parent: 'root', cats: [
       { name: 'Салон красоты', color: '#f0e7e4', img: 'cat-beauty.png', go: 'beauty' },
       { name: 'Фитнес-клуб',   color: '#e8dded', img: 'cat-fitness.png',
         crop: 'left:-25.56%; top:-7.66%; width:142.89%; height:115.59%' }
     ]},
+    /* Превью салона — как у отеля: сайт на белом по центру карточки, без подписи (435×435). */
     beauty: { title: 'Салон красоты', parent: 'services', docs: [
-      { img: 'beauty-1.png' },
-      { img: 'beauty-2.png' },
-      { img: 'beauty-3.png', name: 'Мебельный салон' },
-      { img: 'beauty-4.png', name: 'Сайт доставки' },
-      { img: 'beauty-5.png', name: 'Салон красоты', crop: 'height:189.57%' }
+      { img: 'beauty-1.png', crop: 'top:42px; height:435px' },
+      { img: 'beauty-2.png', crop: 'top:42px; height:435px' },
+      { img: 'beauty-3.png', crop: 'top:42px; height:435px' },
+      { img: 'beauty-4.png', crop: 'top:42px; height:435px' }
     ]}
   };
 
@@ -5895,24 +5959,48 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
       '</div>';
   }
 
+  /* top — уровень, с которого открыли панель: выше него «назад» не ведёт. */
+  var top = 'root';
   function show(id){
     var lvl = TPL_TREE[id];
-    if (lvl.parent) {
+    if (lvl.parent && id !== top) {
       titleEl.innerHTML = '<button class="tpl__back" type="button" data-tpl-back="' + lvl.parent + '">' +
         '<span class="tpl__back-ico"><img src="' + IMG + 'back.svg" width="10" height="20" alt=""></span>' +
         '<span class="tpl__back-text">' + esc(lvl.title) + '</span></button>';
     } else {
-      titleEl.textContent = lvl.title;
+      titleEl.textContent = id === top ? 'Шаблоны' : lvl.title;
     }
     list.innerHTML = lvl.cats ? lvl.cats.map(catHtml).join('') : lvl.docs.map(docHtml).join('');
     list.scrollTop = 0;
   }
 
-  function open(){ show('root'); panel.hidden = false; }
+  /* Из «Сайтов доставки» — только шаблоны «Электронного меню»: сайты с уже установленным компонентом. */
+  function open(from){
+    top = from.closest('#screen-delivery') ? 'menu' : 'root';
+    show(top);
+    panel.hidden = false;
+  }
   function close(){ panel.hidden = true; }
 
+  /* Меню «Добавить сайт» у «+»: «Подключить», «Создать новый» (→ панель «Шаблоны»).
+     У копии экрана («Сайты доставки») своё меню — ищем от нажатой кнопки. */
+  function closeMenus(){ document.querySelectorAll('[data-add-menu-pop]').forEach(function(m){ m.hidden = true; }); }
   document.addEventListener('click', function(e){
-    if (e.target.closest('[data-tpl-open]')) { open(); return; }
+    var plus = e.target.closest('[data-add-menu]');
+    if (plus) {
+      var pop = plus.parentNode.querySelector('[data-add-menu-pop]');
+      var was = pop.hidden;
+      closeMenus();
+      pop.hidden = !was;
+      return;
+    }
+    if (e.target.closest('[data-add-menu-close]') || !e.target.closest('[data-add-menu-pop]')) closeMenus();
+  });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeMenus(); });
+
+  document.addEventListener('click', function(e){
+    var opener = e.target.closest('[data-tpl-open]');
+    if (opener) { closeMenus(); open(opener); return; }
     if (panel.hidden) return;
     var go = e.target.closest('[data-tpl-go]');
     if (go) { show(go.dataset.tplGo); return; }
@@ -5923,6 +6011,49 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
   document.addEventListener('keydown', function(e){
     if (e.key === 'Escape' && !panel.hidden) close();
   });
+  window.addEventListener('hashchange', close);
+})();
+</script>
+<script>
+/* «Подключить» в меню «Добавить сайт» — окно «Сайт» (.pe из ui-kit, как окно точек продаж конструктора):
+   поля «Адрес» и «Название», ниже — подсказка про код счётчика со ссылкой «инструкции». ✓ и ✕ пока просто закрывают окно.
+   Окно одно: встаёт в .popup-anchor того «+», из чьего меню открыто (у «Сайтов доставки» своё меню). */
+(function(){
+  'use strict';
+  var pop = document.createElement('section');
+  pop.className = 'pe connect-popup';
+  pop.setAttribute('role', 'dialog');
+  pop.setAttribute('aria-label', 'Сайт');
+  pop.hidden = true;
+  pop.innerHTML =
+    '<header class="pe__head">' +
+      '<span class="pe__name pe__name--static">Сайт</span>' +
+      '<div class="pe__cmds">' +
+        '<button type="button" class="pe__done" data-connect-done aria-label="Подключить сайт">&#xe75e;</button>' +
+        '<button type="button" class="pe__close" data-connect-close aria-label="Закрыть">&#xe66c;</button>' +
+      '</div>' +
+    '</header>' +
+    '<div class="pe__body"><div class="pe__card">' +
+      '<div class="connect-popup__rows">' +
+        '<label class="connect-popup__label" for="connectUrl">Адрес</label><input class="connect-popup__input" id="connectUrl" type="url" placeholder="Введите URL сайта" autocomplete="off">' +
+        '<label class="connect-popup__label" for="connectName">Название</label><input class="connect-popup__input" id="connectName" type="text" placeholder="Введите название сайта" autocomplete="off">' +
+      '</div>' +
+      '<p class="connect-popup__hint">Скопируйте код счетчика и разместите его на страницах вашего сайта, согласно <a href="#" data-connect-help>инструкции</a></p>' +
+    '</div></div>';
+  function close(){ pop.hidden = true; }
+  document.addEventListener('click', function(e){
+    var opener = e.target.closest('[data-connect-open]');
+    if (opener) {
+      opener.closest('.popup-anchor').appendChild(pop);
+      pop.querySelectorAll('input').forEach(function(i){ i.value = ''; });
+      pop.hidden = false;
+      return;
+    }
+    if (pop.hidden || !pop.contains(e.target)) return;
+    if (e.target.closest('[data-connect-help]')) e.preventDefault(); // инструкции в прототипе нет
+    if (e.target.closest('[data-connect-done], [data-connect-close]')) close();
+  });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') close(); });
   window.addEventListener('hashchange', close);
 })();
 </script>
