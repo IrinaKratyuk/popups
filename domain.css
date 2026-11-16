@@ -1,0 +1,44 @@
+/* Редактор «Адрес сайта» — компонент DomainSetupForm (Figma DRIJUUCPNarHomYAJ5eMqn, 14:1683).
+   Общий для «Параметров сайта» конструктора (index.html) и вкладки «Данные» реестра (registry/index.html):
+   разметка .dom[data-domain] в обоих файлах одна, поведение — domain.js.
+   Тип: домен Saby (поле + зона .saby.ru) или свой домен. Ширина 440, кнопки 124 × 24. */
+
+/* Метка «Адрес сайта» — слева от редактора, как «Владелец» и «Иконка»; по строке с полем, а не по центру с подсказкой */
+.rs-site__label:has(+ .dom) { align-self: start; line-height: 24px; }
+
+.dom { display: flex; flex-direction: column; gap: 4px; width: 440px; max-width: 100%; padding-bottom: 4px; white-space: normal; }
+.dom__form { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; width: 100%; }
+.dom__input { position: relative; display: flex; align-items: flex-end; flex: 1 0 0; min-width: 150px; height: 24px; border-bottom: 1px solid var(--border-unaccented_border-color, #d2d6da); cursor: text; }
+/* Узкое место (окно «Параметры сайта» конструктора): кнопки уходят на вторую строку, а поле не растягивается шире,
+   чем в карточке сайта реестра при полной ширине 440 — 440 − 10 − 2 × 124 − 8 = 174 */
+.dom { container-type: inline-size; }
+@container (max-width: 439px) { .dom__input { max-width: 174px; } }
+.dom__text { flex: 1; min-width: 0; height: 23px; padding: 4px 0 2px; border: 0; outline: 0; background: transparent; font: inherit; font-size: 14px; line-height: normal; letter-spacing: -.1974px; color: var(--text-text-color, #000); text-overflow: ellipsis; }
+.dom--saby .dom__text { padding-right: 53px; }
+.dom__text::placeholder { color: rgba(137,145,169,.6); opacity: 1; } /* components/input/placeholder-color_inputtext */
+.dom__text[readonly] { cursor: default; }
+.dom__zone { position: absolute; right: 0; bottom: 2px; font-size: 14px; font-weight: 600; line-height: normal; letter-spacing: -.1974px; color: rgba(137,145,169,.6); pointer-events: none; }
+.dom__zone[hidden] { display: none; }
+.dom--bold .dom__text { font-weight: 600; }
+.dom--warning .dom__text { color: var(--text-warning_text-color, #e6a119); }
+.dom--success .dom__text { color: var(--text-success_text-color, #298e3c); }
+.dom--saby.dom--success .dom__text { padding-right: 0; }
+.dom__btns { display: flex; gap: 8px; flex: none; }
+.dom__btn { display: flex; align-items: center; justify-content: center; box-sizing: border-box; width: 124px; height: 24px; padding: 0 12px 1px; border: 0; border-radius: 100px; background: transparent; font: inherit; font-size: 14px; line-height: normal; letter-spacing: -.1974px; color: var(--text-text-color, #000); white-space: nowrap; cursor: pointer; }
+.dom__btn--primary { background: var(--background-contrast-primary_color, #f6733c); color: #fff; filter: drop-shadow(0 0 3px rgba(0,0,0,.1)); }
+.dom__btn--primary:hover { background: #e8622a; }
+.dom__btn--pale { background: rgba(51,51,51,.05); }
+.dom__btn--pale:hover { box-shadow: inset 0 0 0 1px var(--border-hover_border-color, #ccc); }
+.dom__btn--off { border: 1px solid var(--border-readonly_border-color, #e4e4e4); color: var(--text-readonly_text-color, #ccc); cursor: default; }
+.dom__btn--ghost { color: var(--text-readonly_text-color, #ccc); cursor: default; }
+.dom__btn--label { color: var(--text-label_text-color, #8991a9); }
+.dom__btn--label:hover { color: var(--text-text-color, #000); }
+.dom__status { width: 100%; font-size: 12px; line-height: normal; letter-spacing: -.1692px; color: var(--text-unaccented_text-color, #999); }
+.dom__status--danger { color: var(--text-danger_text-color, #c2140a); }
+.dom__status--success { color: var(--text-success_text-color, #298e3c); }
+.dom__link { color: var(--text-link_text-color, #2562aa); cursor: pointer; }
+.dom__link:hover { text-decoration: underline; }
+/* Спиннер в кнопке — 12 лепестков 16 × 16, как в макете */
+.dom__spin { position: relative; width: 16px; height: 16px; animation: dom-spin 1s steps(12) infinite; }
+.dom__spin i { position: absolute; left: 7px; top: .5px; width: 1.5px; height: 4px; border-radius: 4px; background: #fff; transform-origin: .75px 7.5px; }
+@keyframes dom-spin { to { transform: rotate(360deg); } }

@@ -713,6 +713,13 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-empty { margin: 0; padding: 0 12px; color: #8991a9; font-size: 14px; line-height: 1.4; }
 .sales-empty__link { color: var(--link); } /* кнопка-ссылка в тексте: шрифт и строка — от текста */
 .sales-empty__link:hover { text-decoration: underline; }
+/* Свойства «Электронного меню» — «Страница каталога» и «Страница товара» (как .comp-props в dynamic-pages): свойство 24, между свойствами 8.
+   Та же разметка и те же значения — на вкладке «Данные» реестра (registry/index.html) */
+.comp-props { padding: 0 12px; grid-auto-rows: 24px; row-gap: 8px; }
+.comp-props__pick { font-size: 14px; }
+/* Заголовок «Точки продаж» с «+» — после свойств, перед строками точек: 8 от свойств, 4 до первой строки */
+.sales-settings__sub { display: flex; align-items: center; gap: 8px; height: 24px; margin: 8px 0 4px; padding: 0 12px; font-size: 14px; letter-spacing: -.1974px; color: #8991a9; }
+.mw-menu.page-pick-menu { width: max-content; min-width: 200px; max-width: 320px; }
 .sales-row { position: relative; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 10px; min-height: 32px; padding: 0 12px; font-size: 14px; letter-spacing: -.1974px; }
 .sales-settings .sales-row { padding-right: 66px; }
 .sales-row:hover, .sales-row:focus-within { background: var(--menu-item-hover); }
@@ -722,7 +729,11 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-price { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Текст без своего ховера и клика: подсвечивается только строка, строку можно перетащить */
 .sales-row { cursor: grab; }
-.sales-row.is-drag { opacity: .5; }
+/* Перетаскиваемая строка — своего размера (pointer-события, не HTML5 drag: у нативного призрака нет масштаба сцены) */
+/* белая, как в списках Saby */
+.sales-row.is-drag { background: #fff; }
+.sales-row.is-drag .sales-row__actions { display: none; }
+.is-row-dragging, .is-row-dragging * { cursor: grabbing !important; user-select: none; }
 /* Команды строки (Figma 2560:101239): кнопки 24, иконки 16, между кнопками 6, поля 4/6/3, фон — ховер строки */
 .sales-row__actions { position: absolute; top: 0; right: 0; bottom: 0; display: none; align-items: center; gap: 6px; padding: 4px 6px 3px; background: var(--menu-item-hover); }
 .sales-row:hover .sales-row__actions, .sales-row:focus-within .sales-row__actions { display: flex; }

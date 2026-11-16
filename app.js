@@ -114,10 +114,20 @@
   scenGroups[0].remove(); // у первой группы («Компоненты») заголовка нет: сценарии идут сразу
 
   // «Реестр сайтов» — прототип mariesmi.github.io/sites во фрейме поверх конструктора: стили и переходы у него свои.
-  // Грузится при первом открытии, каждое открытие начинается со стартового экрана.
+  // Грузится при первом открытии. После загрузки страницы сценарий начинается с карточки сайта «Мили», вкладка «Параметры»;
+  // выход из конструктора (галочка, крестик) — на ту же карточку, вкладка «Страницы» (regToCard);
+  // повторное открытие из панели сценариев — со стартового экрана.
+  let regToCard = false;
   function regShow(on) {
     const reg = $('#reg');
-    if (on && !reg.src) reg.src = reg.dataset.src + '#/screen-1';
+    const card = regToCard;
+    regToCard = false;
+    const openSite = (screen) => reg.contentWindow.postMessage({ type: 'reg:open-site', screen }, '*');
+    if (on && !reg.src) {
+      const screen = card ? 'screen-2' : 'screen-3';
+      reg.src = reg.dataset.src + '#/' + screen; // сразу на нужной вкладке, без мелькания стартового экрана
+      reg.addEventListener('load', () => openSite(screen), { once: true });
+    } else if (on && card) openSite('screen-2');
     else if (on) reg.contentWindow.location.hash = '#/screen-1';
     reg.hidden = !on;
   }
@@ -126,8 +136,8 @@
     if (e.source !== $('#reg').contentWindow || e.data?.type !== 'reg:open-constructor') return;
     frame.select('catalog-setup');
   });
-  // Галочка и крестик в шапке конструктора — обратно в «Реестр сайтов»
-  for (const btn of document.querySelectorAll('.ch-save > .btn')) btn.addEventListener('click', () => frame.select('sites'));
+  // Галочка и крестик в шапке конструктора — обратно в «Реестр сайтов», на карточку сайта
+  for (const btn of document.querySelectorAll('.ch-save > .btn')) btn.addEventListener('click', () => { regToCard = true; frame.select('sites'); });
 
   $('.df-team__name', frame.panel).after(el('span', 'df-team__name', 'Смирнова Мария')); // второй дизайнер в той же плашке: team в demo-frame знает одно имя на строку
 
@@ -193,6 +203,11 @@
     stage.classList.toggle('is-rs-closed', !rsPanel);
     for (const name of ['shop', 'data']) $('#rs-' + name).hidden = name !== rsPanel || rsParamsOpen;
     rsParams.hidden = !rsParamsOpen;
+    if (rsParamsOpen) pagePickRender(); // при старте окно закрыто: до объявления pagePick* не доходим
+    else { // меню выбора страницы закрывается вместе с окном; через DOM — rsRender зовётся и до объявления pagePick*
+      $('#pagePickMenu').hidden = true;
+      for (const b of document.querySelectorAll('[data-page-pick]')) b.setAttribute('aria-expanded', 'false');
+    }
     for (const b of document.querySelectorAll('.rp-btn[data-rp]')) {
       const on = rsParamsOpen ? b.dataset.rp === 'settings' : b.dataset.rp === rsPanel;
       b.classList.toggle('is-active', on);
@@ -329,7 +344,6 @@
     for (const [index, row] of rows.entries()) {
       // Строка не кликается: её можно только перетащить, первая — основная точка
       const item = el('div', 'sales-row');
-      item.draggable = true;
       item.dataset.salesRow = row.id;
       const name = el('div', 'sales-row__name');
       const label = el('span');
@@ -680,35 +694,46 @@
     salesRender();
   });
   // Перетаскивание строк точек продаж: порядок меняется, первая строка становится основной точкой
-  let salesDragId = null;
-  stage.addEventListener('dragstart', (e) => {
-    const row = e.target.closest?.('[data-sales-row]');
-    if (!row) return;
-    salesDragId = row.dataset.salesRow;
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', salesDragId);
-    row.classList.add('is-drag');
+  // На pointer-событиях, а не HTML5 drag: нативный призрак рисуется без масштаба сцены и выходит крупнее строки.
+  // Строка остаётся в списке своего размера и переезжает между соседями вслед за курсором (как в списках Saby). Так же — в реестре.
+  let salesDragStart = null; // { row, y } — нажали, но ещё не сдвинули
+  let salesDragged = null;
+  stage.addEventListener('pointerdown', (e) => {
+    const row = e.button === 0 && e.target.closest('[data-sales-row]');
+    if (row && !e.target.closest('button')) salesDragStart = { row, y: e.clientY };
   });
-  stage.addEventListener('dragover', (e) => {
-    const row = salesDragId && e.target.closest('[data-sales-row]');
-    if (!row) return;
+  document.addEventListener('pointermove', (e) => {
+    if (salesDragStart && !salesDragged && Math.abs(e.clientY - salesDragStart.y) > 3) {
+      salesDragged = salesDragStart.row;
+      salesDragged.classList.add('is-drag');
+      document.documentElement.classList.add('is-row-dragging');
+      window.getSelection()?.removeAllRanges();
+    }
+    if (!salesDragged) return;
     e.preventDefault();
-    const dragged = row.parentNode.querySelector('.is-drag');
-    if (!dragged || dragged === row) return;
-    const r = row.getBoundingClientRect();
-    row.parentNode.insertBefore(dragged, e.clientY < r.top + r.height / 2 ? row : row.nextSibling);
+    const list = salesDragged.parentNode;
+    const next = [...list.querySelectorAll('[data-sales-row]')].find((x) => {
+      if (x === salesDragged) return false;
+      const r = x.getBoundingClientRect();
+      return e.clientY < r.top + r.height / 2;
+    });
+    if (next !== salesDragged.nextElementSibling && (next || list.lastElementChild !== salesDragged)) list.insertBefore(salesDragged, next ?? null);
   });
-  stage.addEventListener('drop', (e) => { if (salesDragId) e.preventDefault(); });
-  stage.addEventListener('dragend', (e) => {
-    const dragged = e.target.closest?.('[data-sales-row]');
-    if (!salesDragId || !dragged) return;
-    salesDragId = null;
+  const salesDragEnd = () => {
+    salesDragStart = null;
+    const dragged = salesDragged;
+    if (!dragged) return;
+    salesDragged = null;
+    dragged.classList.remove('is-drag');
+    document.documentElement.classList.remove('is-row-dragging');
     const order = [...dragged.parentNode.querySelectorAll('[data-sales-row]')].map((row) => row.dataset.salesRow);
     const rows = salesCopy(salesCurrent()).sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
     if (salesDraft) salesDraft = rows;
     else salesSaved = rows;
     salesRender();
-  });
+  };
+  document.addEventListener('pointerup', salesDragEnd);
+  document.addEventListener('pointercancel', salesDragEnd);
   // Esc отменяет только верхнее окно; родитель остаётся открыт.
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || (salesPicker.hidden && salesPopup.hidden)) return;
@@ -1022,11 +1047,16 @@
   function compRemove(ids, widget, names = []) {
     for (const c of ids) { compOn.delete(c); compRoots.delete(c); }
     if (widget) siteRemoveCatalog();
-    if (ids.includes('restaurant')) salesSaved = []; // настройки компонента — точки продаж — уходят с ним
+    if (ids.includes('restaurant')) { // настройки компонента — точки продаж и выбранные страницы каталога и товара — уходят с ним
+      salesSaved = [];
+      pagePicks.catalog = pagePicks.product = null; // при новом подключении — снова «Выберите страницу», даже если выбрана была «Главная»
+      pagePickClose();
+    }
     // с меню уходит и карточка товара сайта (product) — она открывается из меню
     const card = ids.includes('restaurant');
     compDropPages((p) => ids.includes(p.comp) || (!p.home && (names.includes(p.name) || (card && p.product))));
     salesRender();
+    pagePickRender();
   }
   // Чипса подключает компонент, крестик группы отключает (с подтверждением):
   // приходят только его страницы
@@ -2953,6 +2983,62 @@
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lsCloseMenu(); });
 
+  // «Страница каталога» и «Страница товара» в группе «Электронное меню» «Параметров сайта» (как в dynamic-pages).
+  // Ссылка «Выберите страницу»: если страница на сайте одна, клик сразу ставит её; если несколько — радиоменю со страницами (как «Доступ»).
+  // Меню одно на оба свойства, pagePickBtn — кнопка, из которой оно открыто. Выбор пока ни на что не влияет.
+  // Та же разметка — на вкладке «Данные» реестра (registry/index.html), там список страниц демо.
+  const pagePickBtns = [...document.querySelectorAll('[data-page-pick]')];
+  const pagePickMenu = $('#pagePickMenu');
+  const pagePicks = { catalog: null, product: null }; // id выбранной страницы по свойству
+  let pagePickBtn = null;
+  function pagePickRender() {
+    for (const btn of pagePickBtns) {
+      const kind = btn.dataset.pagePick;
+      if (pagePicks[kind] != null && !lsPage(pagePicks[kind])) pagePicks[kind] = null; // выбранную страницу удалили
+      btn.textContent = lsPage(pagePicks[kind])?.name ?? 'Выберите';
+    }
+  }
+  function pagePickSet(kind, id) {
+    pagePicks[kind] = id;
+    pagePickRender();
+  }
+  function pagePickClose() {
+    pagePickMenu.hidden = true;
+    for (const btn of pagePickBtns) btn.setAttribute('aria-expanded', 'false');
+  }
+  for (const btn of pagePickBtns) btn.addEventListener('click', () => {
+    const kind = btn.dataset.pagePick;
+    const wasOpen = !pagePickMenu.hidden && pagePickBtn === btn;
+    pagePickClose();
+    if (wasOpen) return;
+    if (lsPages.length === 1) { pagePickSet(kind, lsPages[0].id); return; }
+    pagePickBtn = btn;
+    const list = $('.mw-menu__list', pagePickMenu);
+    list.replaceChildren(...lsPages.map((page) => {
+      const on = page.id === pagePicks[kind];
+      const item = el('button', 'mw-menu__item ls-mode__item' + (on ? ' is-selected' : ''), '<span class="ls-mode__toggle"></span><span class="mw-menu__text"></span>');
+      item.type = 'button';
+      item.setAttribute('role', 'menuitemradio');
+      item.setAttribute('aria-checked', on);
+      item.dataset.pageId = page.id;
+      $('.mw-menu__text', item).textContent = page.name;
+      return item;
+    }));
+    // первый пункт — на уровне ссылки, маркер левее текста, как у «Доступа»
+    const r = stageRect(btn);
+    const box = stageRect(rsParams);
+    pagePickMenu.style.left = Math.round(r.left - box.left - 30) + 'px';
+    pagePickMenu.style.top = Math.round(r.top + r.height / 2 - box.top - 22) + 'px';
+    pagePickMenu.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+  });
+  pagePickMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-page-id]');
+    if (item) pagePickSet(pagePickBtn.dataset.pagePick, Number(item.dataset.pageId));
+    if (item || e.target.closest('#pagePickClose')) pagePickClose();
+  });
+  document.addEventListener('mousedown', (e) => { if (!e.target.closest('#pagePickMenu, [data-page-pick]')) pagePickClose(); });
+
   // Сценарии панели — состояния страницы. «Новая страница»: открытая новая страница (или последняя, или созданная заново) получает режим сценария.
   // Остальные возвращают исходные страницы и каталог, подсказка на плюсе — только в «Создании окна с товаром».
   // «Связь кнопки с окном» — продолжение «Создания окна»: окно с карточкой товара уже есть, открыта секция с кнопкой на «Меню».
@@ -2981,6 +3067,8 @@
       lsCardPageId = null;
       compOn.clear();
       compRoots.clear();
+      pagePicks.catalog = pagePicks.product = null;
+      pagePickClose();
       sitePlaceCatalog();
       if (scenario === 'catalog-setup') {
         // «В конструкторе» — сайт уже собран (как «Типовое заполнение» в dynamic-pages): «Главная», «Профиль» с виджетом покупателя,
@@ -2992,6 +3080,9 @@
         compOn.add('restaurant');
         compRoots.add('restaurant');
         salesSaved = ROOT_SALES.slice(0, 2).map((point) => ({ id: point.id, price: point.price }));
+        // страницы каталога и товара уже выбраны: «Меню» и «Карточка товара» (как в «Типовом заполнении» dynamic-pages)
+        pagePicks.catalog = lsPages.find((p) => p.menu).id;
+        pagePicks.product = lsPages.find((p) => p.product).id;
       } else if (isComp) {
         catalogHomeSet(true);
         catalogAdded = false;
@@ -3000,6 +3091,7 @@
         siteCatalogShow(false);
       }
       salesRender();
+      pagePickRender();
       if (scenario === 'window-link') lsPages.push({ id: lsNextId++, name: 'Товар', off: false, blank: true, mode: 'window', product: true, fixed: true });
       if (scenario.startsWith('ext-')) lsAddCardPage();
     }

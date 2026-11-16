@@ -18,6 +18,7 @@
   <!-- шрифт сайта в макете -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="domain.css">
 </head>
 <body>
   <div class="viewport">
@@ -338,6 +339,18 @@
           <section class="rs-site" aria-label="Сайт">
             <div class="rs-site__title"><img class="sales-settings__icon" src="assets/img/comp/site.svg" width="24" height="24" alt="">Сайт</div>
             <div class="rs-site__props">
+              <span class="rs-site__label">Адрес сайта</span>
+              <!-- Редактор домена (Figma DRIJUUCPNarHomYAJ5eMqn, 14:1683) — та же разметка, что на вкладке «Данные» реестра; стили domain.css, поведение domain.js -->
+              <div class="dom dom--saby" data-domain>
+                <div class="dom__form">
+                  <label class="dom__input"><input class="dom__text" type="text" placeholder="mycompany" aria-label="Адрес сайта" spellcheck="false" autocomplete="off"><span class="dom__zone">.saby.ru</span></label>
+                  <div class="dom__btns">
+                    <button class="dom__btn dom__btn--primary" type="button" data-dom-act="connect">Подключить</button>
+                    <button class="dom__btn dom__btn--pale" type="button" data-dom-act="type">Свой домен</button>
+                  </div>
+                </div>
+                <div class="dom__status">Подключите домен на saby.ru или настройте свой по <span class="dom__link">инструкции</span></div>
+              </div>
               <span class="rs-site__label">Владелец</span><span class="rs-site__owner"><span class="rs-site__val">Тензор, ООО</span><span class="ico rs-site__clear" aria-hidden="true">&#xE66C;</span></span>
               <span class="rs-site__label">Иконка сайта (favicon)</span><img class="rs-site__favicon" src="assets/img/favicon.png" width="28" height="28" alt="">
             </div>
@@ -351,7 +364,14 @@
             </div>
           </section>
           <section class="sales-settings" id="salesSettings" aria-label="Точки продаж сайта" hidden>
-            <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt="">Электронное меню <button class="btn btn--filled btn--style-pale btn--size-m rs-plus has-tip" type="button" data-sales-add aria-label="Добавить точки продаж" data-tip="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span></button></div><span></span><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div>
+            <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt="">Электронное меню</div><span></span><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div>
+            <!-- Страница каталога и страница товара — как в «Параметрах сайта» dynamic-pages: ссылка «Выберите страницу», выбор — меню #pagePickMenu. Та же разметка — на вкладке «Данные» реестра -->
+            <div class="rs-site__props comp-props">
+              <span class="rs-site__label">Каталог</span><button class="sales-empty__link comp-props__pick" data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
+              <span class="rs-site__label">Товар</span><button class="sales-empty__link comp-props__pick" data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
+            </div>
+            <!-- «Точки продаж» и «+» — после выбора страниц; «+» перенесён сюда из шапки компонента -->
+            <div class="sales-settings__sub"><span>Точки продаж</span><button class="btn btn--filled btn--style-pale btn--size-m rs-plus has-tip" type="button" data-sales-add aria-label="Добавить точки продаж" data-tip="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span></button></div>
             <div class="sales-rows" id="salesSettingsRows"></div>
           </section>
           <!-- Группы остальных подключённых компонентов (у «Ресторана» — блок выше): иконка, название, крестик «отключить». Строит compChipsRender -->
@@ -361,6 +381,12 @@
             <div class="rs-comps__title">Добавить компонент</div>
             <div class="rs-comps__chips" id="compChips"></div>
           </section>
+        </div>
+        <!-- Выбор страницы каталога и страницы товара: одно радиоменю на оба свойства, как «Доступ» у новой страницы (dynamic-pages #productPageMenu).
+             Пункты — страницы сайта, строит pagePick* в app.js. Если страница одна, меню не открывается: она ставится сразу -->
+        <div class="mw-menu ls-mode page-pick-menu" id="pagePickMenu" role="menu" aria-label="Выбор страницы" hidden>
+          <div class="mw-menu__list"></div>
+          <button class="mw-menu__close" type="button" id="pagePickClose" aria-label="Закрыть меню страниц"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
         </div>
       </section>
 
@@ -895,6 +921,7 @@
 
   <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/demo-frame/demo-frame.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.js"></script>
+  <script src="domain.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

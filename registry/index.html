@@ -11,6 +11,7 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/tokens.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/chips/chips.css">
+<link rel="stylesheet" href="../domain.css">
 <style>
 /* ==========================================================================
    0. АССЕТЫ
@@ -1557,6 +1558,68 @@ html, body{
 
 /* Мастер-колонка «Данных» — группа 119:21447. Между пунктами — 2 px, как во всех мастерах (gap .master__list),
    ниже через 20 px — блок «Добавить компонент». */
+/* Группа «Точки продаж» (Figma 2841:47949): линия слева, подпись справа; над и под — 2 px, как между пунктами */
+.master__group{ display: flex; flex-direction: column; gap: var(--o-3xs); margin-top: var(--o-3xs); }
+.master__group[hidden]{ display: none; }
+.master__sep{ display: flex; align-items: center; gap: var(--o-xs); height: 32px; padding-right: var(--o-m); font-size: var(--fs-m); line-height: var(--lh-m); color: var(--c-text-label); }
+.master__sep::before{ content: ""; flex: 1 0 0; height: 1px; background: var(--c-border-unaccented); }
+.master--data .master__group .master__item{ font-weight: 400; cursor: grab; }
+/* Перетаскиваемая строка — своего размера; пока тянем, текст не выделяется, курсор «рука» */
+/* Перетаскиваемая строка — белая, как в списках Saby */
+.master__item.is-drag, .sales-row.is-drag{ background: #fff; }
+.master__item.is-drag .master__options, .sales-row.is-drag .sales-row__actions{ display: none; }
+.is-row-dragging, .is-row-dragging *{ cursor: grabbing !important; user-select: none; }
+/* Команда точки — удаление, как на строке .sales-row (короны в мастере нет), закрашена фоном ховера пункта */
+.master__item .sales-row__actions{ background: var(--c-list-hover); border-radius: 0 var(--r-xs) var(--r-xs) 0; }
+.master__item:hover .sales-row__actions{ display: flex; }
+.master__item .sales-row__actions .icon{ font-size: 16px; color: #656c87; }
+.master__item .sales-row__actions [data-sales-delete] .icon{ color: #c2140a; }
+.master__item .sales-row__actions [data-sales-delete]:hover .icon{ color: #8f0e07; }
+.master__group + .addable{ margin-top: 16px; }
+.master--data .master__list > .master__item{ cursor: pointer; }
+/* Выбранная точка (Figma 2829:79753): фон и маркер выбранного пункта, текст обычный */
+.master--data .master__group .master__item--selected:hover{ background: var(--c-bg-secondary); }
+
+/* Каталог точки продаж (Figma 2829:79851): вместо настроек, пока в мастере выбрана точка.
+   Белая панель на всю высоту, «Прайс» + ссылка с прайсом точки, плитки категорий 300×300. */
+.detail.is-sales-catalog{ align-self: stretch; position: relative; }
+/* Тень прокрутки (Figma nuC4KFMiS36uDWDUp9wKGl 15512:111): 8 px сверху, пока каталог прокручен вниз */
+.detail.is-sales-catalog::before{ content: ""; position: absolute; z-index: 2; left: 0; right: 0; top: 0; height: 8px; background: linear-gradient(to bottom, rgba(0,0,0,.15), rgba(0,0,0,0)); pointer-events: none; opacity: 0; }
+.detail.is-sales-catalog.is-scrolled::before{ opacity: 1; }
+.detail.is-sales-catalog > :not(#regSalesCatalog){ display: none; }
+.reg-cat{ align-self: stretch; flex: 1 1 0; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: var(--o-2xs); padding: var(--o-s) var(--o-m); border-radius: var(--r-s) var(--r-s) 0 0; background: #fff; }
+.reg-cat[hidden]{ display: none; }
+.reg-cat__price{ display: flex; align-items: center; gap: var(--o-s); height: 24px; font-size: var(--fs-m); letter-spacing: -.1974px; }
+.reg-cat__label{ line-height: 1.4; color: var(--c-text-label); }
+.reg-cat__link{ padding: 0; border: 0; background: none; font: inherit; color: var(--c-text-link); cursor: pointer; }
+.reg-cat__link:hover{ text-decoration: underline; text-underline-position: from-font; }
+/* Каталог — как виджет каталога на странице сайта в конструкторе (.site-catalog в ../styles.css):
+   «Найти» справа, плашки категорий 148×148 с названием сверху, под ними разделы с карточками на всю ширину */
+.reg-cat__price{ margin-bottom: 8px; }
+.reg-cat__empty{ margin: 0; font-size: var(--fs-m); color: var(--c-text-label); }
+.reg-cat__body{ display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.reg-cat__tiles{ display: flex; gap: 12px; }
+.reg-cat__tile{ position: relative; width: 148px; height: 148px; overflow: hidden; border-radius: 8px; }
+.reg-cat__tile img{ position: absolute; max-width: none; height: 100%; }
+.reg-cat__tile::after{ content: ""; position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+.reg-cat::-webkit-scrollbar{ display: none; }
+.reg-cat > *{ flex: none; }
+/* Меню под плитками — как .site-h1 / .site-card в ../styles.css (страница «Меню» сайта), карточки по ширине плиток */
+.reg-cat__h{ padding: 8px 0; font-size: 28px; font-weight: 600; line-height: normal; letter-spacing: -.3948px; color: #000; }
+.reg-cat__h--next{ padding: 8px 0 0; }
+.reg-cat__cards{ width: 100%; display: flex; gap: 12px; padding-bottom: 8px; }
+.reg-card{ flex: 1 0 0; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: #fff; border-radius: 8px; box-shadow: 0 0 8px rgba(0,0,0,.06); }
+.reg-card__img{ position: relative; aspect-ratio: 1; overflow: hidden; }
+.reg-card__img img{ position: absolute; left: 0; top: 0; width: 100%; max-width: none; }
+.reg-card__cover{ height: 100%; object-fit: cover; }
+.reg-card__tall{ height: 152.69%; }
+.reg-card__name{ padding: 12px 12px 0; font-size: 16px; font-weight: 600; letter-spacing: -.2256px; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.reg-card__desc{ padding: 12px 12px 6px; font-size: 14px; letter-spacing: -.1974px; color: #333; }
+.reg-card__desc--lead{ font-size: 15px; letter-spacing: -.2115px; color: #000; }
+.reg-card__foot{ min-height: 54px; margin-top: auto; display: flex; align-items: flex-end; justify-content: flex-end; padding: 6px 12px 12px; }
+.reg-card__buy{ display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 12px; background: rgba(51,51,51,.05); border-radius: 39px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; color: #cc3d00; }
+.reg-card__cart{ font-family: var(--font-icon-m); font-size: 24px; line-height: 1; padding-bottom: 4px; color: #f47843; }
+.reg-cat__title{ position: absolute; z-index: 1; left: 0; top: 0; width: 100%; padding: 12px; font-size: 20px; font-weight: 600; line-height: normal; letter-spacing: -.282px; color: #fff; }
 .master--data{ padding-top: 4px; } /* текст пункта — по базовой с заголовком «Сайт»: 8 (поле блока) = 4 (поле мастера) + 4 (поле пункта), строки по 24 px */
 
 .addable{
@@ -1616,17 +1679,42 @@ html, body{
 .rs-site__owner{ display: flex; align-items: center; gap: 4px; }
 .rs-site__val{ color: #2562aa; }
 .rs-site__clear{ font-size: 16px; color: #ccc; }
+/* Редактор «Адрес сайта» — общий ../domain.css (как в «Параметрах сайта» конструктора) */
 
 /* Точки продаж — как .rs-params .sales-settings в styles.css конструктора. */
 .sales-settings{ position: relative; margin-top: var(--o-s); padding: 8px 0; }
 .sales-settings__head{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 12px; height: 24px; margin-bottom: 4px; padding: 0 66px 0 12px; font-size: 14px; }
 .sales-settings__head > div{ display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: var(--c-text); }
 .sales-settings__icon{ flex: none; width: 24px; height: 24px; margin-right: -2px; }
+/* «Страница каталога» и «Страница товара», заголовок «Точки продаж» с «+» — как .comp-props и .sales-settings__sub в ../styles.css */
+.comp-props{ padding: 0 12px; grid-auto-rows: 24px; row-gap: 8px; }
+.comp-props__pick{ padding: 0; border: 0; background: none; font: inherit; font-size: 14px; letter-spacing: inherit; color: #2562aa; cursor: pointer; }
+.comp-props__pick:hover{ text-decoration: underline; }
+.sales-settings__sub{ display: flex; align-items: center; gap: 8px; height: 24px; margin: 8px 0 4px; padding: 0 12px; font-size: 14px; letter-spacing: -.1974px; color: #8991a9; }
+/* Меню выбора страницы — .mw-menu.ls-mode из ../styles.css */
+.mw-menu[hidden]{ display: none; }
+.mw-menu{ position: absolute; z-index: 30; }
+.mw-menu.page-pick-menu{ width: max-content; min-width: 200px; max-width: 320px; }
+.mw-menu__list{ display: flex; flex-direction: column; gap: 6px; padding: 8px 8px 12px; background: #fff; border-radius: 8px; box-shadow: 0 0 46px rgba(0,0,0,.12), 0 0 15px rgba(0,0,0,.12); }
+.mw-menu__item{ display: flex; align-items: flex-start; padding: 0 16px 0 8px; border: 0; border-radius: 16px; background: none; font: inherit; text-align: left; cursor: pointer; transition: background-color .12s; }
+.mw-menu__item:hover{ background: #f3f4f8; }
+.mw-menu__text{ flex: 1 0 0; min-width: 0; min-height: 32px; display: flex; align-items: center; padding-top: 1px; font-size: 16px; letter-spacing: -.2256px; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mw-menu__close{ position: absolute; right: -14px; top: 8px; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(205,205,205,.8); cursor: pointer; transition: background-color .12s; }
+.mw-menu__close:hover{ background: rgba(170,170,170,.85); }
+.mw-menu__close img{ display: block; }
+.ls-mode__toggle{ flex: none; width: 14px; height: 32px; display: flex; align-items: center; justify-content: center; padding-right: 2px; }
+.ls-mode__toggle::before{ content: ""; width: 7px; height: 7px; border-radius: 50%; visibility: hidden; }
+.ls-mode__item:hover .ls-mode__toggle::before{ visibility: visible; border: 1px solid var(--border-border-color, #ccc); background: var(--background-background-color, #fff); }
+.ls-mode__item.is-selected .ls-mode__toggle::before{ visibility: visible; border: 0; background: var(--extra-marker_color, #f6733c); }
 /* «+» — кнопка ui-kit filled / pale, M, 36 × 24 (rs-plus в конструкторе) */
 .sales-add{ display: flex; align-items: center; justify-content: center; width: 36px; height: 24px; padding: 0 0 1px; border: 0; border-radius: var(--components-button-border-radius_button); background: var(--background-contrast-pale_color); cursor: pointer; }
 .sales-add:hover{ box-shadow: inset 0 0 0 1px var(--border-hover_border-color); }
 .sales-add .icon{ font-size: 16px; color: var(--icon-icon-color); }
 .sales-rows{ align-self: stretch; }
+/* Точек нет (компонент переподключили или удалили последнюю) — текст со ссылкой, как .sales-empty в ../styles.css */
+.sales-empty{ margin: 0; padding: 0 12px; font-size: 14px; line-height: 1.4; letter-spacing: -.1974px; color: #8991a9; }
+.sales-empty__link{ padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: #2562aa; cursor: pointer; }
+.sales-empty__link:hover{ text-decoration: underline; }
 .sales-row{ position: relative; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 10px; min-height: 32px; padding: 0 66px 0 12px; font-size: 14px; letter-spacing: -.1974px; color: var(--c-text); cursor: grab; }
 .sales-row:hover{ background: #f3f4f8; }
 .sales-row__name{ display: flex; align-items: center; gap: 4px; min-width: 0; }
@@ -1639,6 +1727,57 @@ html, body{
 .sales-row__actions .icon{ font-size: 16px; color: #656c87; }
 .sales-row__actions [data-sales-delete] .icon{ color: #c2140a; } /* icon/danger_icon-color */
 .sales-row__actions [data-sales-delete]:hover .icon{ color: #8f0e07; }
+/* Панель выбора точек продаж — 1:1 с #salesPicker конструктора (.sales-picker в ../styles.css): стеком справа на всю высоту,
+   колонка 550 + тулбар 52. Открывают «+» блока, ссылка «точки продаж» и «Точка продаж» в «Можно добавить» */
+.sales-picker{ position: absolute; z-index: 6; top: 0; right: 0; bottom: 0; width: 602px; display: flex; background: #f8f8f8; box-shadow: -6px 0 22px #0000001c, -2px 0 8px #00000005; color: #000; }
+.sales-picker[hidden]{ display: none; }
+.sales-picker button{ padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: inherit; cursor: pointer; }
+.sales-picker .ico{ font-family: var(--font-icon); font-size: 16px; line-height: 1; color: #313e78; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; }
+.sales-picker .ico24{ font-family: var(--font-icon-m); font-size: 24px; line-height: 1; color: #656c87; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
+.sales-spacer{ flex: 1; }
+.sales-icon{ display: flex; align-items: center; justify-content: center; flex: none; width: 24px; height: 24px; border-radius: 50%; }
+.sales-picker .sales-icon:hover{ background: #3333330d; }
+.sales-picker .sales-done{ display: flex; align-items: center; justify-content: center; flex: none; width: 26px; height: 26px; border-radius: 50%; background: #12a12c; box-shadow: 0 0 6px #0000001a; }
+.sales-picker .sales-done:hover{ background: #0d8c24; }
+.sales-done .ico{ color: #fff; }
+.sales-picker__main{ width: 550px; min-width: 0; display: flex; flex-direction: column; }
+.sales-picker__head{ height: 46px; padding: 0 12px 0 16px; display: flex; align-items: center; gap: 12px; }
+.sales-picker__head strong{ font-size: 20px; font-weight: 600; letter-spacing: -.282px; }
+.sales-picker__head .sales-filter{ width: 32px; height: 32px; }
+.sales-picker .sales-filter[aria-pressed="true"]{ background: #eeebff; }
+.sales-picker__search{ display: flex; align-items: center; height: 32px; margin-bottom: 8px; padding: 0 12px 0 4px; font-size: 14px; letter-spacing: -.1974px; color: #313e78; }
+.sales-search{ flex: none; width: 300px; height: 28px; display: flex; align-items: center; margin: 0 4px 0 3px; padding: 0 12px; overflow: hidden; background: #fff; border: 1px solid #eaeaea; border-radius: 16px; }
+.sales-search input{ flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: none; background: none; font: inherit; color: #000; }
+.sales-search input::placeholder{ color: #8991a999; }
+.sales-checkbox.is-empty{ visibility: hidden; }
+.sales-picker #regSalesCount{ margin-left: 8px; color: #313e78; }
+#regSalesCount[hidden]{ display: none; }
+.sales-picker__list{ flex: 1; min-height: 0; background: #fff; overflow: auto; padding: 5px 0 0; }
+.sales-picker__group{ width: 100%; display: flex; align-items: center; min-height: 31px; padding: 0 16px 0 20px; gap: 4px; font-size: 16px; text-align: left; cursor: pointer; }
+.sales-picker__group .ico{ transition: transform .12s; }
+.sales-picker__node[open] > .sales-picker__group .ico{ transform: rotate(90deg); }
+.sales-picker__node > summary{ list-style: none; }
+.sales-picker__node > summary::-webkit-details-marker{ display: none; }
+.sales-picker__children .sales-option{ padding-left: 24px; }
+/* Прайсы (Figma 2829:85088): второй уровень дерева — группа на 20 правее, прайсы в ней ещё на 20 */
+.sales-picker__children .sales-picker__group{ padding-left: 40px; }
+.sales-picker__children .sales-picker__children .sales-option{ padding-left: 44px; }
+.sales-picker__rail [hidden]{ display: none; }
+.sales-picker__group:hover, .sales-option:hover{ background: #f3f4f8; }
+.sales-picker__company{ display: flex; align-items: center; height: 31px; font-size: 16px; font-weight: 600; padding: 0 20px; letter-spacing: -.2256px; }
+.sales-option{ display: flex; align-items: center; gap: 23px; min-height: 31px; padding: 4px 16px 3px 4px; font-size: 14px; letter-spacing: -.1974px; cursor: pointer; }
+.sales-option input, .sales-checkbox{ width: 13px; height: 13px; margin: 0; flex: none; }
+.sales-option input[type="checkbox"], .sales-checkbox{ appearance: none; border: 0; border-radius: 0; background: url('../assets/img/sales-unchecked.svg') center / 13px 13px no-repeat; cursor: pointer; }
+.sales-option input[type="checkbox"]:not(:checked){ opacity: 0; }
+.sales-option:hover input[type="checkbox"]{ opacity: 1; }
+.sales-option:hover input[type="checkbox"]:not(:checked), .sales-checkbox:hover{ background-image: url('../assets/img/sales-unchecked-hover.svg'); }
+.sales-option input[type="checkbox"]:checked, .sales-checkbox:checked{ background-image: url('../assets/img/sales-checked.svg'); }
+.sales-option:hover input[type="checkbox"]:checked{ background-image: url('../assets/img/sales-checked-hover.svg'); }
+.sales-checkbox:indeterminate{ background-image: url('../assets/img/sales-partial.svg'); }
+.sales-picker .sales-empty{ padding: 4px 20px; }
+.sales-picker__rail{ width: 52px; border-left: 2px solid #0000000a; display: flex; flex-direction: column; align-items: center; padding: 7px 10px 6px 8px; gap: 7px; } /* 2 рамки + 8 = 10 слева, как у .rail: команды не сдвигаются при открытии панели */
+.sales-picker__rail .sales-icon{ width: 32px; height: 32px; }
+.sales-picker .rp-help{ width: 32px; height: 32px; border-radius: 16px; background: #eeebff; border: 1px solid #d4ccff; display: flex; align-items: center; justify-content: center; }
 /* Крестик «Отключить компонент» и чипсы «Добавить компонент» — как .sales-settings__remove и .rs-comps в styles.css конструктора.
    Компоненты взаимоисключающие: пока один подключён, чипсов нет. */
 .sales-settings[hidden], .rs-comps[hidden]{ display: none; }
@@ -2868,7 +3007,7 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 0 var(--o-s);
+  padding: 7px 0 var(--o-xs); /* снизу как у .rail — «?» не прыгает */
   background: var(--c-bg-unaccented);
 }
 .tpl__close{
@@ -2960,7 +3099,7 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
 <template id="tpl-tabs">
   <ul class="tabs">
     <li><a class="tab" href="#/screen-2" data-goto="screen-2"><span class="tab__label" data-label="Страницы"><span>Страницы</span></span><span class="tab__marker"></span></a></li>
-    <li><a class="tab" href="#/screen-3" data-goto="screen-3"><span class="tab__label" data-label="Данные"><span>Данные</span></span><span class="tab__marker"></span></a></li>
+    <li><a class="tab" href="#/screen-3" data-goto="screen-3"><span class="tab__label" data-label="Параметры"><span>Параметры</span></span><span class="tab__marker"></span></a></li>
     <li><a class="tab" href="#/screen-4" data-goto="screen-4"><span class="tab__label" data-label="Статистика"><span>Статистика</span></span><span class="tab__marker"></span></a></li>
     <li><a class="tab" href="#/screen-5" data-goto="screen-5"><span class="tab__label" data-label="Источники"><span>Источники</span></span><span class="tab__marker"></span></a></li>
     <li><a class="tab" href="#/screen-6" data-goto="screen-6"><span class="tab__label" data-label="Посетители"><span>Посетители</span></span><span class="tab__marker"></span></a></li>
@@ -3369,10 +3508,10 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
       </section>
 
       <!-- ---------------------------------------------------------------
-           3 · Данные (бывшие «Параметры») — Figma: 3861:65830,
+           3 · Параметры (бывшие «Данные») — Figma: 3861:65830,
                мастер-колонка — «Создание и настройка сайтов», 119:21447
            --------------------------------------------------------------- -->
-      <section class="screen" id="screen-3" data-name="Данные" data-chrome data-sitebar
+      <section class="screen" id="screen-3" data-name="Параметры" data-chrome data-sitebar
               data-rail="Настроить, Аналитика, Ссылка, Просмотр, Снять с публикации">
         <main class="workspace">
           <div class="content">
@@ -3382,10 +3521,34 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
                  Разделы, а не страницы сайта: опций записи у пунктов нет. -->
             <aside class="master master--data" data-no-options>
               <ul class="master__list">
-                <li class="master__item master__item--selected">
-                  <span class="master__name">Параметры сайта</span>
+                <li class="master__item master__item--selected" data-reg-general>
+                  <span class="master__name">Общие</span>
                 </li>
               </ul>
+              <!-- Точки продаж «Электронного меню» (Figma 2841:47928): те же строки, что в .sales-rows блока #regSales,
+                   удаление синхронно в обоих местах (скрипт «Точки продаж в мастере» ниже). Группа видна, пока подключено меню и есть точки -->
+              <div class="master__group" id="regMasterSales">
+                <div class="master__sep"><span>Точки продаж</span></div>
+                <ul class="master__list">
+                  <li class="master__item" data-sales-point="Ресторан “Мили”">
+                    <span class="master__name">Ресторан “Мили”</span>
+                    <div class="sales-row__actions"><button type="button" data-sales-delete aria-label="Удалить точку: Ресторан “Мили”"><i class="icon" aria-hidden="true">&#xE65C;</i></button></div>
+                  </li>
+                  <li class="master__item" data-sales-point="Ресторан “Мили” на Угличской">
+                    <span class="master__name">Ресторан “Мили” на Угличской</span>
+                    <div class="sales-row__actions"><button type="button" data-sales-delete aria-label="Удалить точку: Ресторан “Мили” на Угличской"><i class="icon" aria-hidden="true">&#xE65C;</i></button></div>
+                  </li>
+                </ul>
+              </div>
+              <section class="addable" aria-label="Можно добавить">
+                <h3 class="addable__caption">Можно добавить</h3>
+                <ul class="addable__list">
+                  <li><button class="addable__item" type="button" data-reg-sales-add>Точка продаж</button></li>
+                  <li><button class="addable__item" type="button">Новости</button></li>
+                  <li><button class="addable__item" type="button">Акции</button></li>
+                  <li><button class="addable__item" type="button">Мероприятия</button></li>
+                </ul>
+              </section>
             </aside>
 
             <div class="detail detail--flush">
@@ -3394,6 +3557,18 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
               <section class="params rs-site" aria-label="Сайт">
                 <div class="rs-site__title"><img src="../assets/img/comp/site.svg" width="24" height="24" alt="">Сайт</div>
                 <div class="rs-site__props">
+                  <span class="rs-site__label">Адрес сайта</span>
+                  <!-- Редактор домена (Figma DRIJUUCPNarHomYAJ5eMqn, 14:1683). Состояние Default; дальше — скрипт «Редактор домена» -->
+                  <div class="dom dom--saby" data-domain>
+                    <div class="dom__form">
+                      <label class="dom__input"><input class="dom__text" type="text" placeholder="mycompany" aria-label="Адрес сайта" spellcheck="false" autocomplete="off"><span class="dom__zone">.saby.ru</span></label>
+                      <div class="dom__btns">
+                        <button class="dom__btn dom__btn--primary" type="button" data-dom-act="connect">Подключить</button>
+                        <button class="dom__btn dom__btn--pale" type="button" data-dom-act="type">Свой домен</button>
+                      </div>
+                    </div>
+                    <div class="dom__status">Подключите домен на saby.ru или настройте свой по <span class="dom__link">инструкции</span></div>
+                  </div>
                   <span class="rs-site__label">Владелец</span><span class="rs-site__owner"><span class="rs-site__val">Тензор, ООО</span><i class="icon rs-site__clear" aria-hidden="true">&#xE66C;</i></span>
                   <span class="rs-site__label">Иконка сайта (favicon)</span><img class="rs-site__favicon" src="../assets/img/favicon.png" width="28" height="28" alt="">
                 </div>
@@ -3412,26 +3587,39 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
                    в ../app.js; первая — основная (корона). На ховере строки — команды. -->
               <section class="params sales-settings" id="regSales" aria-label="Точки продаж сайта">
                 <div class="sales-settings__head">
-                  <div><img class="sales-settings__icon" src="../assets/img/comp/restaurant.svg" width="24" height="24" alt="">Электронное меню <button class="sales-add" type="button" aria-label="Добавить точки продаж" title="Добавить точки продаж"><i class="icon" aria-hidden="true">&#xEADD;</i></button></div>
+                  <div><img class="sales-settings__icon" src="../assets/img/comp/restaurant.svg" width="24" height="24" alt="">Электронное меню</div>
                   <span></span>
                 </div>
                 <button class="sales-settings__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE66C;</i></button>
+                <!-- Страница каталога и страница товара — как в «Параметрах сайта» конструктора (../index.html, .comp-props):
+                     ссылка со страницей, клик открывает меню #regPagePickMenu. Выбраны «Меню» и «Карточка товара», как в сценарии «В конструкторе» -->
+                <div class="rs-site__props comp-props">
+                  <span class="rs-site__label">Каталог</span><button class="comp-props__pick" data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Меню</button>
+                  <span class="rs-site__label">Товар</span><button class="comp-props__pick" data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Карточка товара</button>
+                </div>
+                <!-- «Точки продаж» и «+» — после выбора страниц; «+» перенесён сюда из шапки компонента -->
+                <div class="sales-settings__sub"><span>Точки продаж</span><button class="sales-add" type="button" aria-label="Добавить точки продаж" title="Добавить точки продаж"><i class="icon" aria-hidden="true">&#xEADD;</i></button></div>
                 <div class="sales-rows">
-                  <div class="sales-row">
+                  <div class="sales-row" data-sales-point="Ресторан “Мили”">
                     <div class="sales-row__name"><span>Ресторан “Мили”</span><i class="icon" aria-hidden="true">&#xEABA;</i></div>
                     <span class="sales-price">Меню A la carte</span>
                     <div class="sales-row__actions">
                       <button type="button" data-sales-delete aria-label="Удалить точку: Ресторан “Мили”"><i class="icon" aria-hidden="true">&#xE65C;</i></button>
                     </div>
                   </div>
-                  <div class="sales-row">
+                  <div class="sales-row" data-sales-point="Ресторан “Мили” на Угличской">
                     <div class="sales-row__name"><span>Ресторан “Мили” на Угличской</span></div>
                     <span class="sales-price">Меню Престо</span>
                     <div class="sales-row__actions">
-                      <button type="button" aria-label="Сделать текущей точкой: Ресторан “Мили” на Угличской" title="Сделать текущей точкой"><i class="icon" aria-hidden="true">&#xEABA;</i></button>
+                      <button type="button" data-sales-primary aria-label="Сделать текущей точкой: Ресторан “Мили” на Угличской" title="Сделать текущей точкой"><i class="icon" aria-hidden="true">&#xEABA;</i></button>
                       <button type="button" data-sales-delete aria-label="Удалить точку: Ресторан “Мили” на Угличской"><i class="icon" aria-hidden="true">&#xE65C;</i></button>
                     </div>
                   </div>
+                </div>
+                <!-- Выбор страницы: радиоменю, как в конструкторе (#pagePickMenu). Пункты — страницы сайта (демо, как в сценарии «В конструкторе»), строит скрипт ниже -->
+                <div class="mw-menu ls-mode page-pick-menu" id="regPagePickMenu" role="menu" aria-label="Выбор страницы" hidden>
+                  <div class="mw-menu__list"></div>
+                  <button class="mw-menu__close" type="button" data-page-pick-close aria-label="Закрыть меню страниц"><img src="../assets/img/close-menu.svg" width="12" height="12" alt=""></button>
                 </div>
               </section>
               <!-- Остальные подключённые компоненты: иконка, название, крестик (строит скрипт ниже) -->
@@ -3446,6 +3634,136 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
                   <button class="chips chips--optional" type="button" data-comp-add="hotel" title="Номера и цены, бронирование на даты с оплатой онлайн" aria-label="Подключить компонент: Отель"><span class="chips__icon"><img src="../assets/img/comp/hotel.svg" alt=""></span><span class="chips__caption">Отель</span></button>
                 </div>
               </section>
+              <!-- Каталог точки продаж (Figma 2829:79707): показывается вместо настроек по клику на точку в мастере.
+                   Прайс — тот, что у точки в блоке «Электронное меню»; категории — как на странице «Меню» сайта -->
+              <section class="reg-cat" id="regSalesCatalog" aria-label="Каталог точки продаж" hidden>
+                <div class="reg-cat__price"><span class="reg-cat__label">Прайс</span><button class="reg-cat__link" type="button">Меню A la carte</button></div>
+                <!-- Плашки категорий и разделы с блюдами — по прайсу точки (CATALOGS в скрипте ниже), вид — как каталог на сайте в конструкторе (#siteCatalog в ../index.html) -->
+                <div class="reg-cat__body" id="regCatBody"></div>
+              </section>
+              <script>
+              /* Выбор в мастере: точка продаж — справа её каталог вместо настроек, «Общие» — снова настройки.
+                 Клик после перетаскивания точки не выбирает её. Выбранной точки не стало (удалили, сняли в выборе точек) —
+                 снова «Общие». Разметку перевставляет apply(), поэтому слушаем document. */
+              (function(){
+                if (window.regSalesSelectBound) return;
+                window.regSalesSelectBound = true;
+                var down = null, moved = false, current = null;
+                // тень прокрутки: scroll не всплывает, ловим на погружении
+                document.addEventListener('scroll', function(e){
+                  if (e.target.id === 'regSalesCatalog') e.target.parentNode.classList.toggle('is-scrolled', e.target.scrollTop > 0);
+                }, true);
+                document.addEventListener('pointerdown', function(e){ down = { x: e.clientX, y: e.clientY }; moved = false; });
+                document.addEventListener('pointermove', function(e){
+                  if (down && Math.abs(e.clientY - down.y) + Math.abs(e.clientX - down.x) > 3) moved = true;
+                });
+                function show(point){
+                  var master = document.querySelector('#screen-3 .master--data');
+                  var cat = document.getElementById('regSalesCatalog');
+                  if (!master || !cat) return;
+                  master.querySelectorAll('.master__item').forEach(function(el){
+                    el.classList.toggle('master__item--selected', point ? el.dataset.salesPoint === point : el.hasAttribute('data-reg-general'));
+                  });
+                  cat.hidden = !point;
+                  cat.closest('.detail').classList.toggle('is-sales-catalog', !!point);
+                  if (point){
+                    var row = Array.prototype.find.call(document.querySelectorAll('#regSales .sales-row[data-sales-point]'), function(r){ return r.dataset.salesPoint === point; });
+                    var price = row ? row.querySelector('.sales-price').textContent : 'Меню A la carte';
+                    cat.querySelector('.reg-cat__link').textContent = price;
+                    // перерисовка только при смене прайса: иначе каждый клик сбрасывал бы прокрутку каталога
+                    if (cat.dataset.price !== price){ cat.dataset.price = price; renderCatalog(price); cat.scrollTop = 0; cat.parentNode.classList.remove('is-scrolled'); }
+                  }
+                }
+                /* Каталоги прайсов — демо. У точки свой прайс, у прайса свой каталог: категории (плашки) и разделы с блюдами.
+                   Картинка категории — [файл, стиль кадрирования]; у блюда — слои [файл, cover|tall], как .site-card в конструкторе.
+                   Несколько прайсов у точки — их каталоги подряд; у прайса без своего каталога — один из трёх по названию. */
+                var IMG = '../assets/img/site/';
+                var COVER = 'left:0;top:0;width:100%;object-fit:cover';
+                var CATALOGS = {
+                  'Меню A la carte': {
+                    cats: [['Основное меню', 'catalog/cat-1.png', 'left:-8.73%;top:-.06%;width:132.08%'], ['Авторская кухня', 'catalog/cat-2.png', 'left:-38.07%;top:.61%;width:144.47%'], ['Кейтеринг', 'catalog/cat-3.png', 'left:-2.75%;top:0;width:151.8%']],
+                    sections: [
+                      ['Основное меню', [
+                        ['Пепперони', 'Пряные колбаски пепперони, моцарелла и томатный соус', '650', [['catalog/pepperoni-bg.png', 'tall'], ['catalog/pepperoni.png', 'cover']], true],
+                        ['Севиче из тунца', 'Лосось, тунец и дорадо подаются с песто', '1 350', [['catalog/tuna.png', 'cover']]],
+                        ['Севиче из лангустинов', 'Лосось, тунец и дорадо подаются с песто', '540', [['catalog/langoustine.png', 'tall']]]]],
+                      ['Авторская кухня', [
+                        ['Тунец с песто', 'Нежный тунец, зелёный песто и свежие травы', '1 390', [['catalog/tuna.png', 'cover']]],
+                        ['Лангустины от шефа', 'Лангустины с авторским соусом и микрозеленью', '890', [['catalog/langoustine.png', 'tall']]],
+                        ['Пицца «Мили»', 'Пепперони, моцарелла и фирменный томатный соус', '790', [['catalog/pepperoni.png', 'cover']]]]]
+                    ]
+                  },
+                  'Меню Престо': {
+                    cats: [['Горячее', 'demo/dish-2.jpg', COVER], ['Десерты', 'demo/dish-4.jpg', COVER], ['Напитки', 'demo/dish-5.jpg', COVER]],
+                    sections: [
+                      ['Горячее', [
+                        ['Паста с овощами', 'Пенне, томаты черри, цукини и пармезан', '420', [['demo/dish-2.jpg', 'cover']]],
+                        ['Пицца пепперони', 'Томатный соус, моцарелла и пепперони', '690', [['catalog/pepperoni.png', 'cover']]],
+                        ['Утка с пюре', 'Утиная грудка, картофельное пюре и ягодный соус', '640', [['catalog/cat-1.png', 'cover']]]]],
+                      ['Десерты и напитки', [
+                        ['Панна-котта', 'Ванильные сливки и ягодный соус', '240', [['demo/dish-4.jpg', 'cover']]],
+                        ['Капкейк с клубникой', 'Сливочный крем и свежая клубника', '190', [['demo/dish-6.jpg', 'cover']]],
+                        ['Лимонад', 'Цитрус и мята', '180', [['demo/dish-5.jpg', 'cover']]]]]
+                    ]
+                  },
+                  'Прайс для кофейни': {
+                    cats: [['Кофе', 'demo/dish-1.jpg', COVER], ['Завтраки', 'demo/dish-2.jpg', COVER], ['Выпечка', 'demo/dish-6.jpg', COVER]],
+                    sections: [
+                      ['Кофе', [
+                        ['Матча-латте', 'На овсяном молоке', '280', [['demo/dish-1.jpg', 'cover']]],
+                        ['Эспрессо', 'Двойная порция, арабика свежей обжарки', '150', [['demo/dish-3.jpg', 'cover']]],
+                        ['Лимонад юдзу', 'Юдзу, мята и газированная вода', '290', [['demo/dish-5.jpg', 'cover']]]]],
+                      ['Выпечка и десерты', [
+                        ['Капкейк с клубникой', 'Сливочный крем и свежая клубника', '190', [['demo/dish-6.jpg', 'cover']]],
+                        ['Панна-котта', 'Ванильные сливки и ягодный соус', '240', [['demo/dish-4.jpg', 'cover']]],
+                        ['Паста на завтрак', 'Яйцо пашот, бекон и сливочный соус', '360', [['demo/dish-2.jpg', 'cover']]]]]
+                    ]
+                  }
+                };
+                var KEYS = Object.keys(CATALOGS);
+                function catalogOf(price){
+                  if (CATALOGS[price]) return CATALOGS[price];
+                  var h = 0;
+                  for (var i = 0; i < price.length; i++) h = (h + price.charCodeAt(i)) % KEYS.length;
+                  return CATALOGS[KEYS[h]];
+                }
+                function esc(s){ var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+                function renderCatalog(price){
+                  var body = document.getElementById('regCatBody');
+                  var prices = price.split(', ').filter(function(p){ return p && p !== 'Выбрать прайс'; });
+                  if (!prices.length){ body.innerHTML = '<p class="reg-cat__empty">Выберите прайс, чтобы увидеть каталог точки</p>'; return; }
+                  var cats = [], sections = [];
+                  prices.forEach(function(p){
+                    var c = catalogOf(p);
+                    c.cats.forEach(function(x){ if (!cats.some(function(y){ return y[0] === x[0]; })) cats.push(x); });
+                    sections = sections.concat(c.sections);
+                  });
+                  body.innerHTML = '<div class="reg-cat__tiles">' + cats.map(function(c){
+                    return '<div class="reg-cat__tile"><img src="' + IMG + c[1] + '" alt="" style="' + c[2] + '"><span class="reg-cat__title">' + esc(c[0]) + '</span></div>';
+                  }).join('') + '</div>' + sections.map(function(s, i){
+                    return '<div class="reg-cat__h' + (i ? ' reg-cat__h--next' : '') + '">' + esc(s[0]) + '</div><div class="reg-cat__cards">' + s[1].map(function(d){
+                      return '<div class="reg-card"><div class="reg-card__img">' + d[3].map(function(l){ return '<img class="reg-card__' + l[1] + '" src="' + IMG + l[0] + '" alt="">'; }).join('') + '</div>' +
+                        '<div class="reg-card__name">' + esc(d[0]) + '</div><div class="reg-card__desc' + (d[4] ? ' reg-card__desc--lead' : '') + '">' + esc(d[1]) + '</div>' +
+                        '<div class="reg-card__foot"><span class="reg-card__buy">' + d[2] + '<span class="reg-card__cart">&#xEAE9;</span></span></div></div>';
+                    }).join('') + '</div>';
+                  }).join('');
+                }
+                document.addEventListener('click', function(e){
+                  var cat = document.getElementById('regSalesCatalog');
+                  var item = e.target.closest('#screen-3 .master--data .master__item');
+                  if (item && !moved && !e.target.closest('button')){ current = item.dataset.salesPoint || null; show(current); return; }
+                  if (!cat || cat.hidden) return;
+                  // выбранная точка пропала из мастера — назад к «Общим»; осталась (список пересобран) — выделение и прайс заново.
+                  // После остальных обработчиков клика: удаление и выбор точек слушают document ниже по странице
+                  setTimeout(function(){
+                    var ms = document.getElementById('regMasterSales');
+                    var still = ms && !ms.hidden && Array.prototype.some.call(ms.querySelectorAll('[data-sales-point]'), function(el){ return el.dataset.salesPoint === current; });
+                    if (!still) current = null;
+                    show(current);
+                  });
+                });
+              })();
+              </script>
               <script>
               /* Компоненты как в «Параметрах сайта» конструктора: подключён один, крестик отключает, чипс подключает.
                  У «Электронного меню» — блок точек продаж выше, у остальных — только шапка с крестиком.
@@ -3457,6 +3775,11 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
                 var sales, groups, chips, on;
                 function render(){
                   sales.hidden = on !== 'restaurant';
+                  var ms = document.getElementById('regMasterSales');
+                  if (ms) ms.hidden = sales.hidden || !ms.querySelector('[data-sales-point]');
+                  // «Точка продаж» в «Можно добавить» — только при подключённом «Электронном меню»
+                  var addPoint = document.querySelector('#screen-3 [data-reg-sales-add]');
+                  if (addPoint) addPoint.parentNode.hidden = sales.hidden;
                   chips.hidden = !!on;
                   groups.innerHTML = '';
                   if (!on || on === 'restaurant') return;
@@ -3479,8 +3802,178 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
                   groups = document.getElementById('regCompGroups');
                   chips = document.getElementById('regCompChips');
                   on = add ? add.dataset.compAdd : null;
+                  // переподключённое «Электронное меню» приходит без настроек, как в конструкторе (compRemove в ../app.js):
+                  // «Выберите страницу» у каталога и товара, точек продаж нет — ни в блоке, ни в мастере
+                  if (on === 'restaurant'){
+                    sales.querySelectorAll('[data-page-pick]').forEach(function(b){ b.textContent = 'Выберите'; });
+                    document.querySelectorAll('#screen-3 [data-sales-point]').forEach(function(el){ el.remove(); });
+                    window.regSalesEmpty();
+                  }
                   render();
                 });
+              })();
+              </script>
+              <script>
+              /* Точки продаж в мастере: те же точки, что в блоке «Электронное меню». Удаление из мастера или из блока
+                 убирает точку в обоих местах (связь — data-sales-point); без точек группа в мастере скрывается.
+                 Разметку перевставляет apply(), поэтому слушаем document. */
+              (function(){
+                if (window.regSalesDeleteBound) return;
+                window.regSalesDeleteBound = true;
+                // Точек не осталось: в мастере группа скрыта, в блоке — «Добавьте ваши точки продаж…» (как salesRenderRows в ../app.js)
+                window.regSalesEmpty = function(){
+                  var ms = document.getElementById('regMasterSales');
+                  if (ms && !ms.querySelector('[data-sales-point]')) ms.hidden = true;
+                  var rows = document.querySelector('#regSales .sales-rows');
+                  if (rows && !rows.querySelector('[data-sales-point], .sales-empty'))
+                    rows.innerHTML = '<p class="sales-empty">Добавьте ваши <button class="sales-empty__link" type="button">точки продаж</button>, чтобы получать актуальную информацию о них</p>';
+                };
+                document.addEventListener('click', function(e){
+                  var del = e.target.closest('#screen-3 [data-sales-delete]');
+                  if (!del) return;
+                  var point = del.closest('[data-sales-point]').dataset.salesPoint;
+                  document.querySelectorAll('#screen-3 [data-sales-point]').forEach(function(el){
+                    if (el.dataset.salesPoint === point) el.remove();
+                  });
+                  window.regSalesEmpty();
+                  window.regSalesCrown();
+                });
+              })();
+              </script>
+              <script>
+              /* Порядок точек — перетаскиванием, как в «Параметрах сайта» конструктора (../app.js, salesDragged):
+                 тянется строка блока «Электронное меню» или пункт группы в мастере, порядок сразу повторяется
+                 в другом списке (связь — data-sales-point). Первая точка — основная: корона у неё,
+                 «Сделать текущей точкой» — у остальных; эта команда поднимает точку наверх. */
+              (function(){
+                if (window.regSalesDragBound) return;
+                window.regSalesDragBound = true;
+                var dragged = null;
+                var CROWN_BTN = '<button type="button" data-sales-primary title="Сделать текущей точкой"><i class="icon" aria-hidden="true">&#xEABA;</i></button>';
+                function lists(){
+                  return [document.querySelector('#regSales .sales-rows'), document.querySelector('#regMasterSales .master__list')];
+                }
+                // повторить порядок списка from в остальных списках и переставить корону
+                function sync(from){
+                  var order = Array.prototype.map.call(from.querySelectorAll('[data-sales-point]'), function(el){ return el.dataset.salesPoint; });
+                  lists().forEach(function(list){
+                    if (!list || list === from) return;
+                    order.forEach(function(point){
+                      var el = Array.prototype.find.call(list.querySelectorAll('[data-sales-point]'), function(x){ return x.dataset.salesPoint === point; });
+                      if (el) list.appendChild(el);
+                    });
+                  });
+                  window.regSalesCrown();
+                }
+                window.regSalesCrown = function(){
+                  // корона (у названия и командой) — только в блоке; в мастере у точки одно удаление
+                  [lists()[0]].forEach(function(list){ if (list) Array.prototype.forEach.call(list.querySelectorAll('[data-sales-point]'), function(row, i){
+                    var name = row.querySelector('.sales-row__name'), crown = name && name.querySelector('.icon');
+                    var actions = row.querySelector('.sales-row__actions'), primary = actions.querySelector('[data-sales-primary]');
+                    if (name && !i && !crown) name.insertAdjacentHTML('beforeend', '<i class="icon" aria-hidden="true">&#xEABA;</i>');
+                    if (crown && i) crown.remove();
+                    if (!i && primary) primary.remove();
+                    if (i && !primary){
+                      actions.insertAdjacentHTML('afterbegin', CROWN_BTN);
+                      actions.firstChild.setAttribute('aria-label', 'Сделать текущей точкой: ' + row.dataset.salesPoint);
+                    }
+                  }); });
+                };
+                // Перетаскивание на pointer-событиях, а не HTML5 drag: у нативного призрака нет масштаба сцены, он крупнее строки.
+                // Строка остаётся в списке своего размера и переезжает между соседями вслед за курсором (как в списках Saby).
+                // Разметку перевставляет apply(), поэтому слушаем document.
+                var start = null; // { el, y } — нажали, но ещё не сдвинули
+                document.addEventListener('pointerdown', function(e){
+                  var el = e.button === 0 && e.target.closest('#screen-3 [data-sales-point]');
+                  if (el && !e.target.closest('button')) start = { el: el, y: e.clientY };
+                });
+                document.addEventListener('pointermove', function(e){
+                  if (start && !dragged && Math.abs(e.clientY - start.y) > 3){
+                    dragged = start.el;
+                    dragged.classList.add('is-drag');
+                    document.documentElement.classList.add('is-row-dragging');
+                    var sel = window.getSelection(); if (sel) sel.removeAllRanges();
+                  }
+                  if (!dragged) return;
+                  e.preventDefault();
+                  var list = dragged.parentNode;
+                  var next = Array.prototype.find.call(list.querySelectorAll('[data-sales-point]'), function(x){
+                    if (x === dragged) return false;
+                    var r = x.getBoundingClientRect();
+                    return e.clientY < r.top + r.height / 2;
+                  });
+                  if (next !== dragged.nextElementSibling && (next || list.lastElementChild !== dragged)) list.insertBefore(dragged, next || null);
+                });
+                document.addEventListener('pointerup', function(){
+                  start = null;
+                  if (!dragged) return;
+                  dragged.classList.remove('is-drag');
+                  document.documentElement.classList.remove('is-row-dragging');
+                  var from = dragged.parentNode;
+                  dragged = null;
+                  sync(from);
+                });
+                document.addEventListener('pointercancel', function(){ start = null; if (dragged){ dragged.classList.remove('is-drag'); document.documentElement.classList.remove('is-row-dragging'); sync(dragged.parentNode); dragged = null; } });
+                // «Сделать текущей точкой» — точка встаёт первой в обоих списках
+                document.addEventListener('click', function(e){
+                  var btn = e.target.closest('#screen-3 [data-sales-primary]');
+                  if (!btn) return;
+                  var row = btn.closest('[data-sales-point]');
+                  row.parentNode.insertBefore(row, row.parentNode.firstElementChild);
+                  sync(row.parentNode);
+                });
+              })();
+              </script>
+              <script>
+              /* «Страница каталога» и «Страница товара» — как pagePick* в ../app.js: клик по ссылке открывает радиоменю
+                 со страницами сайта (одно меню на оба свойства), выбор ставит страницу в ссылку; ✕ и клик мимо закрывают.
+                 Страницы — демо, как в сценарии «В конструкторе». Разметку экрана перевставляет apply(), поэтому
+                 слушаем document, а выбор живёт в тексте ссылки (после смены сайта — снова «Меню» и «Карточка товара»). */
+              (function(){
+                if (window.regPagePickBound) return;
+                window.regPagePickBound = true;
+                var PAGES = ['Главная', 'Профиль', 'Меню', 'Карточка товара'];
+                var from = null; // ссылка, из которой открыто меню
+                function close(){
+                  var menu = document.getElementById('regPagePickMenu');
+                  if (menu) menu.hidden = true;
+                  document.querySelectorAll('[data-page-pick]').forEach(function(b){ b.setAttribute('aria-expanded', 'false'); });
+                }
+                document.addEventListener('click', function(e){
+                  var menu = document.getElementById('regPagePickMenu');
+                  var pick = e.target.closest('[data-page-pick]');
+                  var item = e.target.closest('#regPagePickMenu [data-page]');
+                  if (item){ from.textContent = item.dataset.page; close(); return; }
+                  if (e.target.closest('[data-page-pick-close]')){ close(); return; }
+                  if (!pick || !menu) return;
+                  var wasOpen = !menu.hidden && from === pick;
+                  close();
+                  if (wasOpen) return;
+                  from = pick;
+                  var list = menu.querySelector('.mw-menu__list');
+                  list.innerHTML = '';
+                  PAGES.forEach(function(name){
+                    var on = name === pick.textContent;
+                    var b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'mw-menu__item ls-mode__item' + (on ? ' is-selected' : '');
+                    b.setAttribute('role', 'menuitemradio');
+                    b.setAttribute('aria-checked', on);
+                    b.dataset.page = name;
+                    b.innerHTML = '<span class="ls-mode__toggle"></span><span class="mw-menu__text"></span>';
+                    b.lastChild.textContent = name;
+                    list.appendChild(b);
+                  });
+                  // первый пункт — на уровне ссылки, маркер левее текста (как в конструкторе); offsetParent есть только у видимого меню
+                  menu.hidden = false;
+                  var box = menu.offsetParent.getBoundingClientRect(), r = pick.getBoundingClientRect();
+                  var k = box.width / menu.offsetParent.offsetWidth || 1; // сцена может быть масштабирована
+                  menu.style.left = Math.round((r.left - box.left) / k - 30) + 'px';
+                  menu.style.top = Math.round((r.top + r.height / 2 - box.top) / k - 22) + 'px';
+                  pick.setAttribute('aria-expanded', 'true');
+                });
+                document.addEventListener('mousedown', function(e){ if (!e.target.closest('#regPagePickMenu, [data-page-pick]')) close(); });
+                document.addEventListener('keydown', function(e){ if (e.key === 'Escape') close(); });
               })();
               </script>
             </div>
@@ -4302,6 +4795,211 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
         </aside>
       </section>
 
+      <!-- Панель «Точки продаж» — как #salesPicker конструктора (../index.html): дерево «Вся компания» → организации → точки,
+           отмечены уже подключённые. Галка применяет выбор к блоку «Электронное меню» и группе в мастере; строит скрипт «Выбор точек продаж» -->
+      <section class="sales-picker" id="regSalesPicker" role="dialog" aria-modal="true" aria-labelledby="regSalesPickerTitle" hidden>
+        <div class="sales-picker__main">
+          <div class="sales-picker__head"><strong id="regSalesPickerTitle">Точки продаж</strong><span class="sales-spacer"></span><button class="sales-icon sales-filter" id="regSalesFilter" type="button" aria-label="Показать только отмеченные" aria-pressed="false"><span class="ico24">&#xE94C;</span></button><button class="sales-done" id="regSalesPickerDone" type="button" aria-label="Подтвердить выбор"><span class="ico">&#xE75E;</span></button></div>
+          <div class="sales-picker__search"><input class="sales-checkbox" id="regSalesSelectAll" type="checkbox" aria-label="Выбрать все точки продаж"><div class="sales-search"><input id="regSalesSearch" type="search" placeholder="Найти" aria-label="Поиск точек продаж"></div><button id="regSalesCount" type="button" aria-label="Показать только отмеченные точки" aria-pressed="false"></button></div>
+          <div class="sales-picker__list" id="regSalesPickerList"></div>
+        </div>
+        <div class="sales-picker__rail"><button class="sales-icon" id="regSalesPickerClose" type="button" aria-label="Отменить выбор"><img src="../assets/img/sales-close.svg" width="28" height="28" alt=""></button><span class="sales-icon" id="regSalesPickerSettings" title="Настройки списка"><span class="ico24">&#xEB66;</span></span><span class="sales-icon" id="regSalesPickerPlus" title="Добавить прайс" hidden><span class="ico24" style="color:#333">&#xEADD;</span></span><span class="sales-spacer"></span><span class="rp-help" aria-label="Помощь"><img src="../assets/img/help.svg" width="12" height="16" alt=""></span></div>
+      </section>
+      <script>
+      /* Выбор точек продаж — как salesPickerOpen / salesPickerRender в ../app.js (данные — ROOT_SALES и SALES_GROUPS оттуда).
+         Открывается «+» в блоке «Электронное меню», ссылкой «точки продаж» в пустом блоке и пунктом «Точка продаж» в «Можно добавить».
+         Отмечены подключённые точки (нет ни одной — два ресторана «Мили»). Галка: снятые точки уходят, новые встают в конец —
+         в блоке и в мастере сразу (связь — data-sales-point); ✕ закрывает без изменений. */
+      (function(){
+        var ROOT = [['Ресторан “Мили”', 'Меню A la carte'], ['Ресторан “Мили” на Угличской', 'Меню Престо'], ['Теремок', 'Меню A la carte'], ['Хостел ДВИНА', 'Меню Престо']];
+        var GROUPS = [
+          ['Тензор', ['Кафе «Московский проспект»', 'Столовая «На Угличской»']],
+          ['Квеста Бухобслуживание', ['Кафе «На Свободе»', 'Столовая «Центральная»']],
+          ['SabyHotel', ['Ресторан «Волжская ривьера»', 'Лобби-бар «Панорама»']],
+          ['Тинькофф', ['Кафе «Перерыв»', 'Кофейня «Пятый этаж»']],
+          ['01- Республика Адыгея', ['Ресторан «Майкоп»', 'Кафе «Адыгея»']],
+          ['ИП Плюшкин', ['Пекарня «У Плюшкина»', 'Кофейня «Булка и кофе»']]
+        ];
+        var PRICE = {};
+        ROOT.forEach(function(p){ PRICE[p[0]] = p[1]; });
+        GROUPS.forEach(function(g){ g[1].forEach(function(n, i){ PRICE[n] = i ? 'Меню Престо' : 'Меню A la carte'; }); });
+        var POINTS = Object.keys(PRICE), ALL = POINTS;
+        // Прайсы (Figma 2829:85088): [группа, подгруппы, прайсы]. «Мили» раскрыта, в ней столовые и два прайса
+        var PRICE_TREE = [
+          ['Мили', [
+            ['Столовая Кострома', [], ['Обеды Кострома', 'Банкетное меню Кострома']],
+            ['Столовая Питер', [], ['Обеды Питер']],
+            ['Столовые Ярославль', [], ['Обеды Ярославль', 'Прайс в ресторане на Московском']],
+            ['Столовая Новосибирск', [], ['Обеды Новосибирск']],
+            ['Гастромаркет ЕКБ', [], ['Гастромаркет ЕКБ']]
+          ], ['Меню A la carte', 'Меню Престо']],
+          ['Квеста Бухобслуживание', [], ['Прайс для кофейни', 'Демо прайс']],
+          ['SabyHotel', [], ['Меню ресторана отеля', 'Room service']],
+          ['Тинькофф', [], ['Обеды в офисе']],
+          ['01- Республика Адыгея', [], ['Меню «Майкоп»']]
+        ];
+        var PRICES = [];
+        (function walk(nodes){ nodes.forEach(function(g){ walk(g[1]); PRICES = PRICES.concat(g[2]); }); })(PRICE_TREE);
+        var mode = null; // null — точки продаж, иначе название точки, чьи прайсы выбираем
+        var panel = document.getElementById('regSalesPicker');
+        var list = document.getElementById('regSalesPickerList');
+        var search = document.getElementById('regSalesSearch');
+        var selected = new Set(), onlySelected = false, expanded = new Set(), priceExpanded = new Set();
+        function esc(s){ var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+        function current(){
+          return Array.prototype.map.call(document.querySelectorAll('#regSales .sales-row[data-sales-point]'), function(row){
+            return { name: row.dataset.salesPoint, price: row.querySelector('.sales-price').textContent };
+          });
+        }
+        function header(){
+          var empty = !selected.size;
+          if (empty) onlySelected = false;
+          var count = document.getElementById('regSalesCount'), all = document.getElementById('regSalesSelectAll');
+          count.textContent = 'Отмечено ' + selected.size;
+          count.hidden = empty;
+          count.setAttribute('aria-pressed', onlySelected);
+          document.getElementById('regSalesFilter').setAttribute('aria-pressed', onlySelected);
+          all.classList.toggle('is-empty', empty);
+          all.checked = ALL.every(function(n){ return selected.has(n); });
+          all.indeterminate = selected.size > 0 && !all.checked;
+        }
+        function option(name){
+          var label = document.createElement('label');
+          label.className = 'sales-option';
+          label.innerHTML = '<input type="checkbox" name="reg-sales-selection">' + esc(name);
+          var input = label.firstChild;
+          input.checked = selected.has(name);
+          input.addEventListener('change', function(){
+            if (input.checked) selected.add(name); else selected.delete(name);
+            header();
+            if (onlySelected) render();
+          });
+          return label;
+        }
+        function render(){
+          var q = search.value.trim().toLocaleLowerCase('ru'), count = 0;
+          function fits(n){ return n.toLocaleLowerCase('ru').indexOf(q) > -1 && (!onlySelected || selected.has(n)); }
+          header();
+          list.innerHTML = '';
+          if (mode){
+            // дерево прайсов: группа видна, если подходит она сама или что-то внутри; при поиске и «только отмеченных» всё раскрыто
+            var build = function(g, parent, groupFits){
+              var fitsName = groupFits || g[0].toLocaleLowerCase('ru').indexOf(q) > -1;
+              var node = document.createElement('details');
+              node.className = 'sales-picker__node';
+              node.innerHTML = '<summary class="sales-picker__group"><span class="ico">&#xE96E;</span>' + esc(g[0]) + '</summary><div class="sales-picker__children"></div>';
+              var inner = 0;
+              g[1].forEach(function(sub){ inner += build(sub, node.lastChild, fitsName); });
+              g[2].forEach(function(n){
+                if ((fitsName || n.toLocaleLowerCase('ru').indexOf(q) > -1) && (!onlySelected || selected.has(n))){ node.lastChild.appendChild(option(n)); inner++; }
+              });
+              var show = q || onlySelected ? inner > 0 : true;
+              if (!show) return 0;
+              node.open = !!q || onlySelected || priceExpanded.has(g[0]);
+              node.addEventListener('toggle', function(){ if (node.open) priceExpanded.add(g[0]); else priceExpanded.delete(g[0]); });
+              parent.appendChild(node);
+              return Math.max(inner, 1);
+            };
+            PRICE_TREE.forEach(function(g){ count += build(g, list, false); });
+            if (!count) list.insertAdjacentHTML('beforeend', '<p class="sales-empty">Ничего не найдено</p>');
+            return;
+          }
+          if (!q && !onlySelected) list.insertAdjacentHTML('beforeend', '<div class="sales-picker__company">Вся компания</div>');
+          GROUPS.forEach(function(g){
+            var groupFits = g[0].toLocaleLowerCase('ru').indexOf(q) > -1;
+            var points = g[1].filter(function(n){ return (groupFits || n.toLocaleLowerCase('ru').indexOf(q) > -1) && (!onlySelected || selected.has(n)); });
+            if (!points.length) return;
+            var node = document.createElement('details');
+            node.className = 'sales-picker__node';
+            node.open = !!q || onlySelected || expanded.has(g[0]);
+            node.innerHTML = '<summary class="sales-picker__group"><span class="ico">&#xE96E;</span>' + esc(g[0]) + '</summary><div class="sales-picker__children"></div>';
+            points.forEach(function(n){ node.lastChild.appendChild(option(n)); count++; });
+            node.addEventListener('toggle', function(){ if (node.open) expanded.add(g[0]); else expanded.delete(g[0]); });
+            list.appendChild(node);
+          });
+          ROOT.forEach(function(p){ if (fits(p[0])){ list.appendChild(option(p[0])); count++; } });
+          if (!count) list.insertAdjacentHTML('beforeend', '<p class="sales-empty">Ничего не найдено</p>');
+        }
+        // point — название точки: панель «Прайсы» этой точки (отмечены её прайсы), без него — выбор точек продаж
+        function open(point){
+          var rows = current();
+          mode = point || null;
+          ALL = mode ? PRICES : POINTS;
+          if (mode){
+            var row = rows.filter(function(r){ return r.name === mode; })[0];
+            selected = new Set(row ? row.price.split(', ').filter(function(n){ return PRICES.indexOf(n) > -1; }) : []);
+            priceExpanded = new Set(['Мили']);
+          } else selected = new Set(rows.length ? rows.map(function(r){ return r.name; }) : [ROOT[0][0], ROOT[1][0]]);
+          document.getElementById('regSalesPickerTitle').textContent = mode ? 'Прайсы' : 'Точки продаж';
+          search.setAttribute('aria-label', mode ? 'Поиск прайсов' : 'Поиск точек продаж');
+          document.getElementById('regSalesSelectAll').setAttribute('aria-label', mode ? 'Выбрать все прайсы' : 'Выбрать все точки продаж');
+          document.getElementById('regSalesCount').setAttribute('aria-label', mode ? 'Показать только отмеченные прайсы' : 'Показать только отмеченные точки');
+          document.getElementById('regSalesPickerSettings').hidden = !!mode;
+          document.getElementById('regSalesPickerPlus').hidden = !mode;
+          onlySelected = false;
+          search.value = '';
+          panel.hidden = false;
+          render();
+        }
+        // точки в блоке и в мастере — одной разметкой с исходной; корону ставит regSalesCrown
+        function apply(points){
+          var rows = document.querySelector('#regSales .sales-rows');
+          var ms = document.getElementById('regMasterSales');
+          var sales = document.getElementById('regSales');
+          if (!rows || !ms) return;
+          rows.innerHTML = points.map(function(p){
+            var n = esc(p.name);
+            return '<div class="sales-row" data-sales-point="' + n + '"><div class="sales-row__name"><span>' + n + '</span></div>' +
+              '<span class="sales-price">' + esc(p.price) + '</span><div class="sales-row__actions">' +
+              '<button type="button" data-sales-delete aria-label="Удалить точку: ' + n + '"><i class="icon" aria-hidden="true">&#xE65C;</i></button></div></div>';
+          }).join('');
+          ms.querySelector('.master__list').innerHTML = points.map(function(p){
+            var n = esc(p.name);
+            return '<li class="master__item" data-sales-point="' + n + '"><span class="master__name">' + n + '</span>' +
+              '<div class="sales-row__actions"><button type="button" data-sales-delete aria-label="Удалить точку: ' + n + '"><i class="icon" aria-hidden="true">&#xE65C;</i></button></div></li>';
+          }).join('');
+          ms.hidden = sales.hidden || !points.length;
+          if (window.regSalesCrown) window.regSalesCrown();
+          if (!points.length && window.regSalesEmpty) window.regSalesEmpty();
+        }
+        document.addEventListener('click', function(e){
+          if (e.target.closest('#regSales .sales-add, #regSales .sales-empty__link, [data-reg-sales-add]')) open();
+          // прайс в каталоге точки — панель «Прайсы» выбранной в мастере точки
+          if (e.target.closest('#regSalesCatalog .reg-cat__link')){
+            var sel = document.querySelector('#regMasterSales .master__item--selected');
+            if (sel) open(sel.dataset.salesPoint);
+          }
+        });
+        document.getElementById('regSalesPickerDone').addEventListener('click', function(){
+          if (mode){
+            // прайсы точки — в её строку блока «Электронное меню» (каталог берёт прайс оттуда), порядок — как в дереве
+            var picked = PRICES.filter(function(n){ return selected.has(n); });
+            document.querySelectorAll('#regSales .sales-row[data-sales-point]').forEach(function(row){
+              if (row.dataset.salesPoint === mode) row.querySelector('.sales-price').textContent = picked.join(', ') || 'Выбрать прайс';
+            });
+            panel.hidden = true;
+            return;
+          }
+          var points = current().filter(function(p){ return selected.has(p.name); });
+          ALL.forEach(function(n){
+            if (selected.has(n) && !points.some(function(p){ return p.name === n; })) points.push({ name: n, price: PRICE[n] });
+          });
+          apply(points);
+          panel.hidden = true;
+        });
+        document.getElementById('regSalesPickerClose').addEventListener('click', function(){ panel.hidden = true; });
+        document.addEventListener('keydown', function(e){ if (e.key === 'Escape') panel.hidden = true; });
+        search.addEventListener('input', render);
+        [document.getElementById('regSalesCount'), document.getElementById('regSalesFilter')].forEach(function(b){
+          b.addEventListener('click', function(){ onlySelected = !onlySelected; render(); });
+        });
+        document.getElementById('regSalesSelectAll').addEventListener('change', function(e){
+          selected = new Set(e.target.checked ? ALL : []);
+          render();
+        });
+      })();
+      </script>
+
     </div>
   </div>
 
@@ -5122,6 +5820,17 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
     if (!e.target.closest('.topbar--site .topbar__mid .btn') || current !== CONSTRUCTOR_SITE) return;
     if (window.parent !== window) window.parent.postMessage({ type: 'reg:open-constructor' }, '*');
   });
+  /* Карточка этого сайта по команде снаружи фрейма: после загрузки страницы — вкладка «Параметры» (screen-3),
+     выход из конструктора (галочка или крестик) — «Страницы» (screen-2);
+     «назад» из карточки — в реестр «Сайты» */
+  window.addEventListener('message', function(e){
+    if (e.source !== window.parent || !e.data || e.data.type !== 'reg:open-site') return;
+    current = CONSTRUCTOR_SITE;
+    origin = 'screen-1';
+    try { sessionStorage.setItem('reg-site', JSON.stringify({ site: current, origin: origin })); } catch (err) {}
+    apply();
+    location.hash = '#/' + (/^screen-\d+$/.test(e.data.screen) ? e.data.screen : 'screen-2');
+  });
 
   apply();
 })();
@@ -5217,5 +5926,6 @@ button.tpl-cat:hover{ box-shadow: var(--shadow-b); }
   window.addEventListener('hashchange', close);
 })();
 </script>
+<script src="../domain.js"></script>
 </body>
 </html>
