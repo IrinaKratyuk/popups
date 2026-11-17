@@ -3024,6 +3024,7 @@ button.tpl-cat{ cursor: pointer; }
   background: var(--c-bg-unaccented);
 }
 .tpl__close{
+  position: relative; /* от него стоит пин */
   width: var(--h-xl);
   height: var(--h-xl);
   display: flex;
@@ -4818,6 +4819,7 @@ button.tpl-cat{ cursor: pointer; }
         <aside class="tpl__bar">
           <button class="tpl__close" type="button" aria-label="Закрыть" data-tpl-close>
             <img src="../assets/img/templates/close.svg" width="12" height="12" alt="">
+            <span class="pin" style="--pin-x: 50%; --pin-y: 50%" aria-hidden="true"><img src="../assets/img/templates/pin.svg" width="15" height="15" alt=""></span>
           </button>
         </aside>
       </section>
