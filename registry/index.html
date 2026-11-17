@@ -5823,6 +5823,9 @@ button.tpl-cat{ cursor: pointer; }
       var back = $('.sitehead', s);
       back.setAttribute('href', '#/' + origin);
       back.dataset.goto = origin;
+      // адрес в редакторе домена — тот же, что подписан на плитке (подключённый домен, см. ../domain.js)
+      var dom = $('[data-domain]', s);
+      if (dom) dom.dataset.siteAddress = current;
       if (!m) return;
       var ttl = $('.sitehead__title', s); ttl.textContent = m.title; ttl.title = m.title;
       $$('.summary__num', s).forEach(function(n, i){ n.textContent = fmt(i ? m.back : m.fresh); });

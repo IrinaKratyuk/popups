@@ -121,10 +121,25 @@
     while (TAKEN.indexOf(v) > -1) v = base + (n === 1 ? '-site' : '-' + n), n++;
     return v;
   }
+  /* У сайта уже есть адрес (data-site-address — в реестре его ставит карточка сайта по подписи плитки):
+     редактор сразу в состоянии Connected с этим адресом. *.saby.ru — домен от Saby, остальное — свой домен. */
+  function connected(el){
+    var addr = el.dataset.siteAddress, s = st(el);
+    var saby = /\.saby\.ru$/i.test(addr);
+    s.type = saby ? 'saby' : 'custom';
+    s.value = saby ? addr.replace(/\.saby\.ru$/i, '') : addr;
+    s.state = 'Connected';
+    s.auto = false;
+    render(el);
+  }
   function suggest(){
+    document.querySelectorAll('[data-domain][data-site-address]').forEach(function(el){
+      if (!states.has(el)) connected(el);
+    });
     var v = suggestion();
     if (!v) return;
     document.querySelectorAll('[data-domain]').forEach(function(el){
+      if (el.dataset.siteAddress) return;
       var fresh = !states.has(el), s = st(el);
       if (fresh) s.auto = !el.querySelector('.dom__text').value;
       if (!s.auto || s.type !== 'saby' || s.state !== 'Default' || s.value === v) return;
