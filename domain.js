@@ -80,18 +80,57 @@
   }
   function set(el, state){ st(el).state = state; render(el); }
 
-  document.addEventListener('input', function(e){
-    var input = e.target.closest && e.target.closest('[data-domain] .dom__text');
-    if (!input || input.readOnly) return;
-    var el = input.closest('[data-domain]'), s = st(el);
-    s.value = input.value.trim();
+  function check(el){
+    var s = st(el);
     clearTimeout(s.timer);
     if (s.type === 'custom'){ set(el, s.value ? 'Filled' : 'Default'); return; }
     if (!s.value){ set(el, 'Default'); return; }
     if (!/^[a-z0-9_-]+$/i.test(s.value)){ set(el, 'FormatError'); return; }
     set(el, 'Pending');
     later(el, function(s){ s.state = TAKEN.indexOf(s.value.toLowerCase()) > -1 ? 'NotFree' : 'Filled'; });
+  }
+
+  document.addEventListener('input', function(e){
+    var input = e.target.closest && e.target.closest('[data-domain] .dom__text');
+    if (!input || input.readOnly) return;
+    var el = input.closest('[data-domain]');
+    st(el).value = input.value.trim();
+    check(el);
   });
+
+  /* Адрес из названия сайта: часть до « — », «:», «,», «(» или «|», латиницей, слова через дефис, до 30 символов.
+     «Биллинговые системы» → billingovye-sistemy. Название — текст элемента [data-site-name] (в реестре — заголовок карточки сайта).
+     Подставляется один раз, когда редактор появился пустым, и сразу проверяется; дальше поле — как обычно.
+     Если такой адрес занят, предлагаем свободный: saby → saby-site. */
+  var LAT = { а:'a', б:'b', в:'v', г:'g', д:'d', е:'e', ё:'e', ж:'zh', з:'z', и:'i', й:'y', к:'k', л:'l', м:'m', н:'n', о:'o', п:'p',
+    р:'r', с:'s', т:'t', у:'u', ф:'f', х:'kh', ц:'ts', ч:'ch', ш:'sh', щ:'shch', ъ:'', ы:'y', ь:'', э:'e', ю:'yu', я:'ya' };
+  function slug(name){
+    var base = name.split(/\s[—–-]\s|[:,(|]/)[0].toLowerCase();
+    var s = base.replace(/[а-яё]/g, function(ch){ return LAT[ch]; }).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    while (s.length > 30 && s.indexOf('-') > -1) s = s.slice(0, s.lastIndexOf('-'));
+    return s.slice(0, 30);
+  }
+  function suggest(){
+    var src = document.querySelector('[data-site-name]');
+    var name = src && src.textContent.trim();
+    if (!name) return;
+    document.querySelectorAll('[data-domain]').forEach(function(el){
+      if (states.has(el)) return;
+      var s = st(el);
+      if (el.querySelector('.dom__text').value) return;
+      // предлагаем свободный адрес: занят — пробуем -site, потом -2, -3…
+      var base = slug(name), v = base, n = 1;
+      while (TAKEN.indexOf(v) > -1) v = base + (n === 1 ? '-site' : '-' + n), n++;
+      s.value = v;
+      check(el);
+    });
+  }
+  // В реестре экраны перевставляются через innerHTML — новый редактор ловим наблюдателем
+  function watch(){
+    suggest();
+    new MutationObserver(suggest).observe(document.body, { childList: true, subtree: true });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
 
   document.addEventListener('click', function(e){
     var b = e.target.closest && e.target.closest('[data-domain] [data-dom-act]');
