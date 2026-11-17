@@ -3078,7 +3078,7 @@ button.tpl-cat{ cursor: pointer; }
     <ul class="accordion__list">
       <!-- Выбранный пункт (фон, полоса, aria-current) ставит скрипт по data-acc экрана: «delivery» или «sites» (по умолчанию) -->
       <li class="accordion__item" data-acc="delivery">
-        <a class="accordion__link" href="#/screen-delivery"><i class="icon icon--acc" aria-hidden="true">&#xE933;</i><span class="accordion__title">Электронное меню</span></a>
+        <a class="accordion__link" href="#/screen-delivery"><i class="icon icon--acc" aria-hidden="true">&#xE933;</i><span class="accordion__title">Меню</span></a>
       </li>
       <li class="accordion__item" data-acc="sites">
         <a class="accordion__link" href="#/screen-1">
@@ -5277,11 +5277,11 @@ button.tpl-cat{ cursor: pointer; }
   start.querySelector('.registry').insertAdjacentHTML('afterbegin', tileHtml(MILI));
   start.querySelector('.registry').insertAdjacentHTML('beforeend', SITES.map(tileHtml).join(''));
 
-  /* --- «Электронное меню» — тот же реестр, но только сайты «Электронного меню».
+  /* --- «Меню» — тот же реестр, но только сайты «Электронного меню».
      Экран — копия стартового: шапка та же, у меню «Добавить сайт» свой id. */
   var delivery = start.cloneNode(true);
   delivery.id = 'screen-delivery';
-  delivery.dataset.name = 'Электронное меню';
+  delivery.dataset.name = 'Меню';
   delivery.dataset.acc = 'delivery';
   delivery.classList.remove('is-active');
   Array.prototype.forEach.call(delivery.querySelectorAll('[id]'), function(n){ n.id += '--delivery'; });
@@ -5471,7 +5471,7 @@ button.tpl-cat{ cursor: pointer; }
 
 <script>
 /* --- Карточка сайта у каждой плитки ------------------------------------------
-   Экраны 2–7 общие: их открывает любая плитка реестра (и «Электронного меню»).
+   Экраны 2–7 общие: их открывает любая плитка реестра (и «Меню»).
    «Биллинговые системы» — данные из макета как есть. У остальных сайтов всё
    считается из визитов и откликов на плитке, поэтому числа сходятся:
    · посетители, отклики и продажи по страницам и по источникам в сумме дают «Всего»;
@@ -5799,7 +5799,7 @@ button.tpl-cat{ cursor: pointer; }
     if (saved && (saved.site === BILLING || MODELS[saved.site])) { current = saved.site; origin = saved.origin || origin; }
   } catch (e) {}
 
-  /* Пункт левого меню в карточке сайта — тот, из чьего реестра её открыли («Электронное меню» или «Сайты»). */
+  /* Пункт левого меню в карточке сайта — тот, из чьего реестра её открыли («Меню» или «Сайты»). */
   function markAcc(s){
     var from = document.getElementById(origin);
     var key = (from && from.dataset.acc) || 'sites';
@@ -5994,7 +5994,7 @@ button.tpl-cat{ cursor: pointer; }
   function close(){ panel.hidden = true; }
 
   /* Меню «Добавить сайт» у «+»: «Подключить», «Создать новый» (→ панель «Шаблоны»).
-     У копии экрана («Электронное меню») своё меню — ищем от нажатой кнопки. */
+     У копии экрана («Меню») своё меню — ищем от нажатой кнопки. */
   function closeMenus(){ document.querySelectorAll('[data-add-menu-pop]').forEach(function(m){ m.hidden = true; }); }
   document.addEventListener('click', function(e){
     var plus = e.target.closest('[data-add-menu]');
