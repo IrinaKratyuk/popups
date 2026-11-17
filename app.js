@@ -18,7 +18,7 @@
   // disabled — сценарий пока не сделан
   const frame = DemoFrame.mount({
     stage,
-    head: { title: 'Компоненты' },
+    head: { title: '' }, // шапка без названия
     devices: [
       { id: 'laptop', icon: 'laptop', label: 'Ноутбук', disabled: true },
       { id: 'monitor', icon: 'monitor', label: 'Монитор', size: '1600х900', name: 'монитор' },
