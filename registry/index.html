@@ -450,6 +450,15 @@ html, body{
   height: 20px;
   font-size: var(--fs-3xl);
   color: var(--c-icon);
+  flex: 0 0 auto;
+}
+/* Подпись пункта — как .accordion__title в ui-kit: не влезает — многоточие в одну строку. */
+.accordion__title{
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* ==========================================================================
@@ -3069,21 +3078,21 @@ button.tpl-cat{ cursor: pointer; }
     <ul class="accordion__list">
       <!-- Выбранный пункт (фон, полоса, aria-current) ставит скрипт по data-acc экрана: «delivery» или «sites» (по умолчанию) -->
       <li class="accordion__item" data-acc="delivery">
-        <a class="accordion__link" href="#/screen-delivery"><i class="icon icon--acc" aria-hidden="true">&#xE933;</i>Электронное меню</a>
+        <a class="accordion__link" href="#/screen-delivery"><i class="icon icon--acc" aria-hidden="true">&#xE933;</i><span class="accordion__title">Электронное меню</span></a>
       </li>
       <li class="accordion__item" data-acc="sites">
         <a class="accordion__link" href="#/screen-1">
-          <i class="icon" aria-hidden="true">&#xEB5C;</i>Сайты
+          <i class="icon" aria-hidden="true">&#xEB5C;</i><span class="accordion__title">Сайты</span>
         </a>
       </li>
       <li class="accordion__item">
-        <a class="accordion__link" href="#/screen-1"><i class="icon icon--img" style="background-image:var(--icon-widgets)" aria-hidden="true"></i>Виджеты</a>
+        <a class="accordion__link" href="#/screen-1"><i class="icon icon--img" style="background-image:var(--icon-widgets)" aria-hidden="true"></i><span class="accordion__title">Виджеты</span></a>
       </li>
       <li class="accordion__item">
-        <a class="accordion__link" href="#/screen-1"><i class="icon" aria-hidden="true">&#xEBBB;</i>Оформление</a>
+        <a class="accordion__link" href="#/screen-1"><i class="icon" aria-hidden="true">&#xEBBB;</i><span class="accordion__title">Оформление</span></a>
       </li>
       <li class="accordion__item">
-        <a class="accordion__link" href="#/screen-1"><i class="icon icon--img" style="background-image:var(--icon-disk)" aria-hidden="true"></i>Диск</a>
+        <a class="accordion__link" href="#/screen-1"><i class="icon icon--img" style="background-image:var(--icon-disk)" aria-hidden="true"></i><span class="accordion__title">Диск</span></a>
       </li>
     </ul>
   </nav>
