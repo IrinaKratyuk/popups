@@ -1783,7 +1783,7 @@ html, body{
 .sales-picker .rp-help{ width: 32px; height: 32px; border-radius: 16px; background: #eeebff; border: 1px solid #d4ccff; display: flex; align-items: center; justify-content: center; }
 /* Окно «Сайт» у «Подключить» в меню «Добавить сайт» — .pe из ui-kit, как окно точек продаж конструктора (#salesPopup).
    Адрес и название — метки слева, поля с линией снизу; ниже — подсказка про код счётчика. Встаёт на место меню */
-.connect-popup{ position: fixed; z-index: 30; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 300px; }
+.connect-popup{ position: fixed; z-index: 30; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 400px; }
 .connect-popup .pe__card{ gap: 8px; padding: 12px; }
 .connect-popup__rows{ display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; column-gap: 12px; row-gap: 8px; }
 .connect-popup__label{ font-size: 16px; color: #8991a9; }
@@ -6017,7 +6017,7 @@ button.tpl-cat{ cursor: pointer; }
 <script>
 /* «Подключить» в меню «Добавить сайт» — окно «Сайт» (.pe из ui-kit, как окно точек продаж конструктора):
    поля «Адрес» и «Название», ниже — подсказка про код счётчика со ссылкой «инструкции». ✓ и ✕ пока просто закрывают окно.
-   Окно одно, 300px, по центру экрана — какое бы меню «+» его ни открыло. */
+   Окно одно, 400px, по центру экрана — какое бы меню «+» его ни открыло. */
 (function(){
   'use strict';
   var pop = document.createElement('section');
