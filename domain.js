@@ -93,14 +93,16 @@
   document.addEventListener('input', function(e){
     var input = e.target.closest && e.target.closest('[data-domain] .dom__text');
     if (!input || input.readOnly) return;
-    var el = input.closest('[data-domain]');
-    st(el).value = input.value.trim();
+    var el = input.closest('[data-domain]'), s = st(el);
+    s.value = input.value.trim();
+    s.auto = false; // адрес ввёл человек — больше не подставляем
     check(el);
   });
 
   /* Адрес из названия сайта: часть до « — », «:», «,», «(» или «|», латиницей, слова через дефис, до 30 символов.
-     «Биллинговые системы» → billingovye-sistemy. Название — текст элемента [data-site-name] (в реестре — заголовок карточки сайта).
-     Подставляется один раз, когда редактор появился пустым, и сразу проверяется; дальше поле — как обычно.
+     «Биллинговые системы» → billingovye-sistemy. Название — текст элемента [data-site-name] (в реестре — заголовок карточки сайта,
+     в конструкторе — название в шапке). Подставляется в состоянии по умолчанию, без проверки: когда редактор появился
+     и когда переключили на «Домен от Saby». Пока адрес не правили руками, он идёт за названием сайта.
      Если такой адрес занят, предлагаем свободный: saby → saby-site. */
   var LAT = { а:'a', б:'b', в:'v', г:'g', д:'d', е:'e', ё:'e', ж:'zh', з:'z', и:'i', й:'y', к:'k', л:'l', м:'m', н:'n', о:'o', п:'p',
     р:'r', с:'s', т:'t', у:'u', ф:'f', х:'kh', ц:'ts', ч:'ch', ш:'sh', щ:'shch', ъ:'', ы:'y', ь:'', э:'e', ю:'yu', я:'ya' };
@@ -110,19 +112,24 @@
     while (s.length > 30 && s.indexOf('-') > -1) s = s.slice(0, s.lastIndexOf('-'));
     return s.slice(0, 30);
   }
-  function suggest(){
+  function suggestion(){
     var src = document.querySelector('[data-site-name]');
     var name = src && src.textContent.trim();
-    if (!name) return;
+    if (!name) return '';
+    // свободный адрес: занят — пробуем -site, потом -2, -3…
+    var base = slug(name), v = base, n = 1;
+    while (TAKEN.indexOf(v) > -1) v = base + (n === 1 ? '-site' : '-' + n), n++;
+    return v;
+  }
+  function suggest(){
+    var v = suggestion();
+    if (!v) return;
     document.querySelectorAll('[data-domain]').forEach(function(el){
-      if (states.has(el)) return;
-      var s = st(el);
-      if (el.querySelector('.dom__text').value) return;
-      // предлагаем свободный адрес: занят — пробуем -site, потом -2, -3…
-      var base = slug(name), v = base, n = 1;
-      while (TAKEN.indexOf(v) > -1) v = base + (n === 1 ? '-site' : '-' + n), n++;
+      var fresh = !states.has(el), s = st(el);
+      if (fresh) s.auto = !el.querySelector('.dom__text').value;
+      if (!s.auto || s.type !== 'saby' || s.state !== 'Default' || s.value === v) return;
       s.value = v;
-      check(el);
+      render(el);
     });
   }
   // В реестре экраны перевставляются через innerHTML — новый редактор ловим наблюдателем
@@ -138,7 +145,10 @@
     var el = b.closest('[data-domain]'), s = st(el), act = b.dataset.domAct;
     clearTimeout(s.timer);
     if (act === 'type'){
-      s.type = s.type === 'saby' ? 'custom' : 'saby'; s.value = ''; set(el, 'Default');
+      s.type = s.type === 'saby' ? 'custom' : 'saby';
+      s.auto = s.type === 'saby'; // «Домен от Saby» — снова адрес из названия сайта, свой домен — пустое поле
+      s.value = s.auto ? suggestion() : '';
+      set(el, 'Default');
     } else if (act === 'edit'){
       set(el, 'Filled');
     } else if (act === 'check'){
