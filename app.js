@@ -3199,7 +3199,7 @@
   // «Использовать» снимает только просмотр: шаблон остаётся, экран становится обычным конструктором.
   const chTitle = $('.ch-title');
   let chTitleText = ''; // название сайта в шапке до просмотра: крестик его возвращает
-  const TPL_NAV = ['Меню', 'Заказы', 'О нас', 'Профиль'];
+  const TPL_NAV = ['Главная', 'О нас', 'Профиль', 'Меню']; // страницы сайта, как в конструкторе; «Карточка товара» в меню не выводится
   const TPL_TG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.4 4.3 2.9 11.4c-1.1.4-1.1 1.6 0 1.9l4.6 1.5 1.8 5.5c.2.7 1.1.9 1.6.4l2.6-2.4 4.6 3.4c.6.4 1.4.1 1.6-.6l3.1-14.8c.2-1-.7-1.7-1.4-1.4Zm-11.8 10 8.7-6.6-7 7.7-.3 3.1-1.4-4.2Z"/></svg>';
   for (const header of document.querySelectorAll('.site-header')) {
     header.append(
@@ -3241,15 +3241,9 @@
     stage.dataset.tpl = n;
     chTitleText = chTitle.textContent;
     chTitle.textContent = name || 'Шаблон';
-    // страницы шаблона — пункты его меню; каталог на главной («Меню»), «Карточка товара» — из сценария
-    const page = (pageName, extra) => ({ id: lsNextId++, name: pageName, off: false, mode: 'page', fixed: true, ...extra });
+    // страницы шаблона — те же, что «В конструкторе» и на карточке сайта в реестре (состав и порядок одни):
+    // Главная, О нас, Профиль, Меню (каталог), Карточка товара — их собрал frame.select('catalog-setup')
     const home = lsPages.find((p) => p.home);
-    home.name = 'Меню';
-    lsPages = [home, page('Заказы', { blank: true, compWidget: 'История заказов' }), page('О нас', { about: true }),
-      page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), lsPages.find((p) => p.product)].filter(Boolean);
-    catalogHomeSet(true);
-    pagePicks.catalog = home.id;
-    pagePickRender();
     // шаблон — сайт без данных: точек продаж нет, каталог с демоданными (.is-demo, как в превью шаблонов)
     salesSaved = [];
     salesRender();

@@ -3001,7 +3001,7 @@ button.tpl-cat{ cursor: pointer; }
 }
 
 /* Превью шаблона «Электронного меню» — уменьшенная копия того, что открывает конструктор
-   (styles.css «Просмотр шаблона сайта», app.js TPL_CATALOG): сайт 1280px, ужат до ширины плашки. */
+   (styles.css «Просмотр шаблона сайта»): «Главная» сайта 1280px, ужат до ширины плашки. */
 .tpl-mini{
   --g: 32px;
   position: absolute;
@@ -3036,29 +3036,25 @@ button.tpl-cat{ cursor: pointer; }
 .tpl-mini__tags{ display: none; font-size: 15px; }
 .tpl-mini__title{ font-size: 48px; font-weight: 500; line-height: 1.2; letter-spacing: -.02em; }
 .tpl-mini__lead{ font-size: 17px; }
-.tpl-mini__cat{ display: flex; flex-direction: column; padding: 32px var(--g); }
-.tpl-mini__find{ align-self: flex-end; width: 220px; height: 36px; display: flex; align-items: center; margin: 4px 0 16px; padding: 0 14px; border-radius: 18px; background: #fff; font-size: 14px; color: rgba(137,145,169,.7); }
-.tpl-mini__cats{ display: flex; gap: 12px; margin-bottom: 20px; }
-.tpl-mini__tile{ position: relative; width: 240px; height: 124px; overflow: hidden; border-radius: 12px; }
-.tpl-mini__tile img, .tpl-mini__card img{ display: block; width: 100%; height: 100%; object-fit: cover; }
-.tpl-mini__tile::after{ content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,0) 60%); }
-.tpl-mini__tile span{ position: absolute; z-index: 1; left: 12px; top: 10px; font-size: 16px; font-weight: 600; color: #fff; }
-.tpl-mini__h{ font-size: 26px; font-weight: 600; letter-spacing: -.02em; }
-.tpl-mini__cards + .tpl-mini__h{ margin-top: 28px; }
-.tpl-mini__sub{ margin: 4px 0 10px; font-size: 14px; color: #8c8c8c; }
-.tpl-mini__cards + .tpl-mini__sub{ margin-top: 18px; }
-.tpl-mini__cards{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.tpl-mini__card{ display: flex; flex-direction: column; overflow: hidden; border-radius: 12px; background: #fff; }
-.tpl-mini__card img{ height: auto; aspect-ratio: 4 / 3; }
-.tpl-mini__name{ padding: 14px 14px 0; font-size: 15px; font-weight: 500; }
-.tpl-mini__foot{ display: flex; justify-content: flex-end; padding: 16px 14px 14px; }
-.tpl-mini__buy{ height: 32px; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 14px; border-radius: 16px; background: #fdeee8; font-size: 15px; font-weight: 600; }
-/* 1 «Универсальный»: узкий сайт, меню по центру, скруглённый баннер под вуалью, карточки по 3 */
+.tpl-mini__about{ flex: none; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 80px; min-height: 450px; padding: 0 var(--g); background: #f9f4ef; font-family: "Montserrat", sans-serif; color: #47382f; }
+.tpl-mini__about-img{ position: relative; align-self: start; margin-top: 96px; height: 250px; overflow: hidden; border-radius: 10px; }
+.tpl-mini__about-img img{ display: block; width: 100%; height: 100%; object-fit: cover; object-position: bottom; }
+.tpl-mini__about-img::after{ content: ""; position: absolute; inset: 0; background: #22161036; }
+.tpl-mini__about-text{ display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.tpl-mini__about-text b{ font-size: 28px; font-weight: 500; }
+.tpl-mini__about-text span{ color: #47382fbf; font-size: 14px; line-height: 24px; letter-spacing: .56px; text-transform: uppercase; }
+.tpl-mini__about-text i{ margin-top: 20px; min-height: 48px; display: flex; align-items: center; padding: 0 24px; border-radius: 100px; background: #ecd096; font-size: 14px; font-style: normal; font-weight: 500; letter-spacing: .56px; text-transform: uppercase; }
+.tpl-mini__foot-site{ flex: none; display: flex; flex-direction: column; align-items: center; padding: 32px 80px 0; font-family: "Montserrat", sans-serif; font-size: 16px; letter-spacing: .64px; color: #47382f; white-space: nowrap; }
+.tpl-mini__foot-site img{ margin-bottom: 28px; }
+.tpl-mini__foot-nav{ display: flex; gap: 4px; margin-bottom: 34px; font-size: 18px; letter-spacing: 0; }
+.tpl-mini__foot-nav span{ padding: 3px 12px 0; }
+.tpl-mini__foot-info{ width: 100%; max-width: 1200px; display: flex; justify-content: space-between; }
+.tpl-mini__foot-terms{ height: 64px; margin-top: 40px; display: flex; align-items: center; }
+/* 1 «Универсальный»: узкий сайт, меню по центру, скруглённый баннер под вуалью */
 .tpl-mini--1{ --g: 120px; }
 .tpl-mini--1 .tpl-mini__nav{ justify-content: center; }
 .tpl-mini--1 .tpl-mini__ban{ aspect-ratio: 1300 / 500; border-radius: 24px; }
 .tpl-mini--1 .tpl-mini__ban-img{ background-image: linear-gradient(rgba(0,0,0,.3), rgba(0,0,0,.3)), url("../assets/img/templates/banners/universal.jpg"); background-position: center 70%; }
-.tpl-mini--1 .tpl-mini__cards{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
 /* 2 «Широкий сайт»: баннер на всю ширину, текст слева */
 .tpl-mini--2 .tpl-mini__banner{ padding: 0; }
 .tpl-mini--2 .tpl-mini__ban{ justify-content: flex-start; padding: 0 var(--g); }
@@ -5311,6 +5307,11 @@ button.tpl-cat{ cursor: pointer; }
         '<div class="mk-mili__about"><span class="mk-mili__pic"' + bg(MILI.img) + '></span>' +
           '<div class="mk-mili__text"><b>' + esc(MILI.hero) + '</b><span>' + esc(MILI.sub) + '</span><i>' + esc(MILI.btn) + '</i></div></div>' + miliFoot();
     },
+    'О нас': function(){
+      return miliHead() + '<div class="mk-mili__page"><div class="mk-mili__h">О ресторане «Мили»</div></div>' +
+        '<div class="mk-mili__about"><span class="mk-mili__pic"' + bg(MILI.img) + '></span>' +
+          '<div class="mk-mili__text"><b>' + esc(MILI.hero) + '</b><span>' + esc(MILI.sub) + '</span></div></div>' + miliFoot();
+    },
     'Меню': function(){
       return miliHead() + '<div class="mk-mili__menu"><span class="mk-mili__find">Найти</span>' +
         '<div class="mk-mili__cats">' + map([['Основное меню', 'cat-1.png'], ['Авторская кухня', 'cat-2.png'], ['Кейтеринг', 'cat-3.png']], function(c){
@@ -5613,7 +5614,8 @@ button.tpl-cat{ cursor: pointer; }
   /* по домену: средний чек, позиции для откликов, страницы */
   var EXTRA = {
     'mili-yar.saby.ws': { avg: 2900, items: ['Пицца пепперони', 'Тартар из тунца', 'Севиче из лангустинов', 'Кейтеринг на 20 персон'],
-      pages: [P('Главная', '', 38, .8, 168), P('Меню', '/menu', 36, 1.6, 241), P('Карточка товара', '/product', 17, 2.4, 133), P('Профиль', '/profile', 9, .4, 72)] },
+      // состав и порядок — как в конструкторе («В конструкторе») и в шаблоне: Главная, О нас, Профиль, Меню, Карточка товара
+      pages: [P('Главная', '', 34, .8, 168), P('О нас', '/about', 7, .2, 95), P('Профиль', '/profile', 9, .4, 72), P('Меню', '/menu', 33, 1.6, 241), P('Карточка товара', '/product', 17, 2.4, 133)] },
     'saby.ru': { avg: 11900, items: ['Saby Бухгалтерия', 'Saby ЭДО', 'Saby Отчетность', 'Saby Престо'],
       pages: [P('Главная', '', 46, 1, 215), P('Тарифы', '/tariffs', 24, 2.2, 262), P('Решения', '/solutions', 21, .8, 318), P('Контакты', '/contacts', 9, 0, 64)] },
     'mili-rest.ru': { avg: 3200, items: ['Стейк рибай', 'Паста карбонара', 'Тирамису', 'Бургер с трюфелем'],
@@ -6038,34 +6040,24 @@ button.tpl-cat{ cursor: pointer; }
   }
 
   /* Мини-копия шаблона n — те же шапка, баннер и каталог, что в конструкторе (app.js tplOpen / TPL_CATALOG). */
-  var DEMO = '../assets/img/site/demo/';
-  var MINI_CATALOG = [
-    ['Кофе и напитки', [['Кофе', [['Матча-латте', '280', 1], ['Эспрессо', '150', 3]]], ['Холодные', [['Лимонад', '180', 5]]]]],
-    ['Десерты', [['Сладкое', [['Панна-котта', '240', 4], ['Капкейк с клубникой', '190', 6]]]]],
-    ['Кухня', [['Паста', [['Паста с овощами', '420', 2]]]]]
-  ];
   function miniHtml(n){
-    function card(c){
-      return '<div class="tpl-mini__card"><img src="' + DEMO + 'dish-' + c[2] + '.jpg" alt=""><div class="tpl-mini__name">' + esc(c[0]) + '</div>' +
-        '<div class="tpl-mini__foot"><span class="tpl-mini__buy">' + c[1] + ' ₽<span>+</span></span></div></div>';
-    }
     return '<div class="tpl-mini tpl-mini--' + n + '" aria-hidden="true">' +
       '<div class="tpl-mini__head"><img class="tpl-mini__logo" src="../assets/img/site/logo.svg" alt="">' +
-        '<div class="tpl-mini__nav"><span>Меню</span><span>Заказы</span><span>О нас</span><span>Профиль</span></div>' +
+        '<div class="tpl-mini__nav"><span>Главная</span><span>О нас</span><span>Профиль</span><span>Меню</span></div>' +
         '<div class="tpl-mini__tools"><span class="tpl-mini__phone">+7 (4852) 11-22-33</span><span class="tpl-mini__soc">VK</span>' +
         '<span class="tpl-mini__bal">120 ₽</span><span class="tpl-mini__ava">АС</span></div></div>' +
       '<div class="tpl-mini__banner"><div class="tpl-mini__ban"><span class="tpl-mini__ban-img"></span><div class="tpl-mini__ban-text">' +
         '<span class="tpl-mini__tags">Боулы · Салаты · Закуски</span><span class="tpl-mini__title">Ресторан Мили</span>' +
         '<span class="tpl-mini__lead">Авторская кухня – прямиком к вашему столу</span></div></div></div>' +
-      '<div class="tpl-mini__cat"><div class="tpl-mini__find">Найти</div><div class="tpl-mini__cats">' +
-        MINI_CATALOG.map(function(c){ return '<div class="tpl-mini__tile"><img src="' + DEMO + 'dish-' + c[1][0][1][0][2] + '.jpg" alt=""><span>' + esc(c[0]) + '</span></div>'; }).join('') +
-        '</div>' +
-        MINI_CATALOG.map(function(c){
-          return '<div class="tpl-mini__h">' + esc(c[0]) + '</div>' + c[1].map(function(g){
-            return '<div class="tpl-mini__sub">' + esc(g[0]) + '</div><div class="tpl-mini__cards">' + g[1].map(card).join('') + '</div>';
-          }).join('');
-        }).join('') +
-      '</div></div>';
+      // шаблон открывается на «Главной», как сайт в конструкторе: под баннером — «Что такое «Мили»?»; каталог — на странице «Меню»
+      '<div class="tpl-mini__about"><span class="tpl-mini__about-img"><img src="../assets/img/site/about.png" alt=""></span>' +
+        '<div class="tpl-mini__about-text"><b>Что такое «Мили»?</b><span>Это множество дорог, расходящихся по странам мира. Это уникальные традиции мест, хранящих историю веков.</span>' +
+        '<i>Подробнее о нас</i></div></div>' +
+      '<div class="tpl-mini__foot-site"><img src="../assets/img/site/footer-logo.svg" width="50" height="48" alt="">' +
+        '<div class="tpl-mini__foot-nav"><span>Главная</span><span>О нас</span><span>Профиль</span><span>Меню</span></div>' +
+        '<div class="tpl-mini__foot-info"><span>Санкт-Петербург</span><span>с 10:00 до 01:00</span><span>+7 (4852) 12-13-14</span></div>' +
+        '<div class="tpl-mini__foot-terms">Пользовательское соглашение</div></div>' +
+      '</div>';
   }
 
   /* n — номер шаблона «Электронного меню»: по клику конструктор открывает его в просмотре (сообщение reg:open-template) */
