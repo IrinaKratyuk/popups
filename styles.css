@@ -676,7 +676,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .has-tip[data-tip]::after { content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); padding: 4px 8px; border-radius: 4px; background: #333; color: #fff; font-family: inherit; font-size: 12px; font-weight: 400; line-height: 16px;letter-spacing: -.1692px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .12s; z-index: 10; }
 .has-tip[data-tip]:hover::after { opacity: 1; }
 .sales-settings__head { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; height: 40px; padding: 0 66px 0 12px; gap: 10px; font-size: 14px; }
-.sales-settings__head > div { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
+.sales-settings__head > div { display: flex; align-items: center; gap: 8px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
 .sales-settings__head > span { color: #8991a9; }
 .sales-settings__icon { flex: none; width: 24px; height: 24px; margin-right: -2px; } /* иконка компонента, как у группы в панели страниц */
 .sales-settings .btn--icon, .sales-popup .btn--icon { position: relative; width: 24px; height: 24px; padding: 0; }
@@ -684,7 +684,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-rows { background: #fff; border-radius: 8px; padding: 8px 0; }
 /* Прежний вид «Параметров сайта»: блок «Сайт» и точки продаж — белые карточки, заголовок точек внутри карточки */
 .rs-site { display: flex; flex-direction: column; align-items: flex-start; padding: 8px 12px; background: #fff; border-radius: 8px; } /* Figma 2854:63032 */
-.rs-site__title { display: flex; align-items: center; gap: 8px; height: 24px; font-size: 15px; font-weight: 600; letter-spacing: -.2115px; color: var(--text); }
+/* Заголовки плашек «Сайт» и компонентов («Электронное меню» и др.) — 16 полужирный, токены ui-kit tokens.css */
+.rs-site__title { display: flex; align-items: center; gap: 8px; height: 24px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
 /* свойства: метки в первой колонке, редакторы — в 8px от самой длинной метки */
 .rs-site__props { display: grid; grid-template-columns: max-content minmax(0, 1fr); column-gap: 8px; align-items: center; justify-items: start; grid-auto-rows: minmax(24px, auto); font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
 .rs-site__favicon { display: block; margin: 2px 0; border: 1px solid #eaeaea; border-radius: 28px; }
@@ -717,8 +718,18 @@ ul { list-style: none; margin: 0; padding: 0; }
    Та же разметка и те же значения — на вкладке «Данные» реестра (registry/index.html) */
 .comp-props { padding: 0 12px; grid-auto-rows: 24px; row-gap: 8px; }
 .comp-props__pick { font-size: 14px; }
-/* Заголовок «Точки продаж» с «+» — после свойств, перед строками точек: 8 от свойств, 4 до первой строки */
-.sales-settings__sub { display: flex; align-items: center; gap: 8px; height: 24px; margin: 8px 0 4px; padding: 0 12px; font-size: 14px; letter-spacing: -.1974px; color: #8991a9; }
+/* Подгруппы «Электронного меню» — «Страницы» (каталог и товар) и «Точки продаж» с «+»: заголовок 15 полужирный чёрный (токены ui-kit), «Прайс» — 14 обычный,
+   8 от предыдущей подгруппы, от шапки компонента — 4 (её 4 и свои 4 схлопываются), 4 до содержимого */
+.sales-settings__sub { display: flex; align-items: center; gap: 8px; height: 24px; margin: 8px 0 4px; padding: 0 12px; font-size: var(--font-font-size-font-size_l); font-weight: var(--font-font-weight-bold); letter-spacing: -.2115px; color: var(--components-heading-default_text-color_heading); }
+.sales-settings__head + .sales-settings__sub { margin-top: 4px; }
+/* «Точки продаж» с подписью «Прайс»: те же колонки, что у строк точек (1fr 1fr, gap 10, справа 66), «Прайс» — над колонкой прайса,
+   серым обычным начертанием, по базовой линии с заголовком. Без точек подписи нет */
+.sales-settings__sub--points { align-self: stretch; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: baseline; gap: 10px; padding-right: 66px; }
+.sales-settings__sub--points > div { display: flex; align-items: center; gap: 8px; height: 24px; }
+.sales-settings__price { font-size: var(--font-font-size-font-size_m); font-weight: var(--font-font-weight-regular); letter-spacing: -.1974px; color: #8991a9; }
+.sales-settings__sub--points:has(+ .sales-rows .sales-empty) .sales-settings__price,
+.sales-settings__sub--points:has(+ .sales-rows:empty) .sales-settings__price { visibility: hidden; }
+
 .mw-menu.page-pick-menu { width: max-content; min-width: 200px; max-width: 320px; }
 .sales-row { position: relative; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 10px; min-height: 32px; padding: 0 12px; font-size: 14px; letter-spacing: -.1974px; }
 .sales-settings .sales-row { padding-right: 66px; }
@@ -727,8 +738,11 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-row__name > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sales-row__name .ico { color: #8991a9; flex: none; }
 .sales-price { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* Текст без своего ховера и клика: подсвечивается только строка, строку можно перетащить */
-.sales-row { cursor: grab; }
+/* Компонент без прайса («Услуги», «Отель»): у точек только название — колонки «Прайс» нет */
+.sales-settings--no-price .sales-settings__price, .sales-settings--no-price .sales-price { display: none; }
+.sales-settings--no-price .sales-row { grid-template-columns: minmax(0,1fr); }
+/* Текст без своего ховера: подсвечивается только строка; курсор — рука, как у пунктов мастера (перетаскивание остаётся) */
+.sales-row { cursor: pointer; }
 /* Перетаскиваемая строка — своего размера (pointer-события, не HTML5 drag: у нативного призрака нет масштаба сцены) */
 /* белая, как в списках Saby */
 .sales-row.is-drag { background: #fff; }
@@ -1102,3 +1116,116 @@ ul { list-style: none; margin: 0; padding: 0; }
 .catset__rect--b { border: 1px solid var(--c); }
 .catset__rect--d { border: 1px dashed var(--c); }
 
+
+/* ---------- Просмотр шаблона сайта (.stage.is-tpl, app.js tplOpen) ----------
+   Шаблоны «Электронного меню» с панели «Шаблоны» реестра: сайт «Мили» и каталог одни, у шаблона свои шапка сайта и баннер.
+   .is-tpl-view — просмотр: без правой панели, команд правки и ховера виджетов; «Использовать» его снимает */
+.ch-use { --btn-h: 26px; display: none; }
+.stage.is-tpl-view .ch-use { display: inline-flex; }
+.stage.is-tpl-view :is(.ch-done, .ch-view, .ch-cmd:not([aria-label="Предпросмотр"])) { display: none; }
+.stage.is-tpl-view :is(.rs-panel, .rs-params, .right-panel, #lsAdd, .ls-item__cmds, .site-plus, .content .wg__toolbar) { display: none; }
+.stage.is-tpl-view .content { right: 8px; }
+.stage.is-tpl-view :is(.site, .site-blank, .site-float) { pointer-events: none; } /* прокрутка остаётся: колесо ловит .content */
+
+/* шапка сайта: меню из пунктов шаблона, справа телефон, соцсети, баланс и профиль */
+.tpl-nav, .tpl-head, .tpl-banner { display: none; }
+.stage.is-tpl .site-header { gap: 16px; font-size: 15px; }
+.stage.is-tpl :is(.site-header__center, .site-header > .site-phone) { display: none; }
+.stage.is-tpl .tpl-nav { flex: 1; min-width: 0; display: flex; gap: 4px; }
+.tpl-nav span { height: 32px; display: flex; align-items: center; padding: 2px 10px 0; border-bottom: 2px solid transparent; }
+.tpl-nav span.is-on { border-color: #cc3d00; font-weight: 500; }
+.stage.is-tpl .tpl-head { flex: none; display: flex; align-items: center; gap: 14px; margin-left: auto; }
+.tpl-head__phone { display: flex; align-items: center; gap: 6px; }
+.tpl-head__ico { font-family: "cbuc-icons"; font-size: 16px; }
+.tpl-head__soc { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
+.tpl-head__soc svg { width: 18px; height: 18px; }
+.tpl-head__soc--vk { font-size: 13px; font-weight: 700; letter-spacing: -.5px; }
+.tpl-head__bal { height: 26px; display: flex; align-items: center; padding: 0 10px; border-radius: 13px; background: #5b3fd9; color: #fff; font-size: 14px; font-weight: 500; }
+.tpl-head__ava { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #e8c37d; font-size: 13px; font-weight: 500; }
+.stage[data-tpl="1"] .tpl-nav { justify-content: center; }
+.stage[data-tpl="3"] .tpl-nav { display: none; }
+.stage:is([data-tpl="1"], [data-tpl="3"]) .tpl-head > :not(.tpl-head__bal, .tpl-head__ava) { display: none; }
+
+/* баннер шаблона вместо баннера сайта — Figma QJ9NRz32bhm1BUkVGsuti0 1453:3499; пропорции кадров макета (1600×500, 1300×500, 1300×450) */
+.stage.is-tpl .site-banner { height: auto; padding: 8px var(--site-gutter) 0; background: none; }
+.stage.is-tpl .site-banner .wg__content > :not(.tpl-banner) { display: none; }
+.stage.is-tpl .tpl-banner { position: relative; aspect-ratio: 1600 / 500; display: flex; align-items: center; justify-content: center; overflow: hidden; color: #fff; font-family: "Inter", sans-serif; }
+.tpl-banner__img { position: absolute; inset: 0; background: center / cover no-repeat; }
+.tpl-banner__text { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.tpl-banner__tags { display: none; font-size: 15px; }
+.tpl-banner__title { font-size: 48px; font-weight: 500; line-height: 1.2; letter-spacing: -.02em; }
+.tpl-banner__lead { font-size: 17px; }
+/* 1 «Универсальный» (1601): узкий сайт, скруглённый баннер, фото под вуалью, текст по центру */
+.stage[data-tpl="1"] .content { --site-gutter: 120px; }
+.stage[data-tpl="1"] .tpl-banner { aspect-ratio: 1300 / 500; border-radius: 24px; }
+.stage[data-tpl="1"] .tpl-banner__img { background-image: linear-gradient(rgba(0, 0, 0, .3), rgba(0, 0, 0, .3)), url("assets/img/templates/banners/universal.jpg"); background-position: center 70%; }
+/* 2 «Широкий сайт» (1605): на всю ширину, фото с тёмной фактурой, текст слева */
+.stage[data-tpl="2"] .site-banner { padding: 0; }
+.stage[data-tpl="2"] .tpl-banner { justify-content: flex-start; padding: 0 var(--site-gutter); }
+.stage[data-tpl="2"] .tpl-banner__img { background-image: url("assets/img/templates/banners/wide.jpg"); }
+.stage[data-tpl="2"] .tpl-banner__text { align-items: flex-start; text-align: left; }
+/* 3 «Всё в одном месте» (зелёный): градиент без фото, над названием — разделы */
+.stage[data-tpl="3"] .tpl-banner { aspect-ratio: 1300 / 450; border-radius: 24px; background: linear-gradient(135deg, #3f6e4c, #1e3627); }
+.stage[data-tpl="3"] .tpl-banner__img { display: none; }
+.stage[data-tpl="3"] .tpl-banner__tags { display: block; }
+/* 4 «Мой шаблон» (1606): фото слева — 770 из 1600, текст справа на сером, выровнен влево */
+.stage[data-tpl="4"] .tpl-banner { justify-content: flex-start; background: #f3f4f6; color: #222; }
+.stage[data-tpl="4"] .tpl-banner__img { right: auto; width: 48.125%; border-radius: 24px; background-image: url("assets/img/templates/banners/split.jpg"); }
+.stage[data-tpl="4"] .tpl-banner__text { align-items: flex-start; margin-left: calc(48.125% + 60px); text-align: left; }
+
+/* каталог шаблона (app.js TPL_CATALOG) — как на превью шаблонов: поиск справа, плитки разделов, раздел и подраздел, карточки с ценой в плашке */
+.tpl-catalog { display: none; }
+.stage.is-tpl .site-catalog > .wg__content > :not(.tpl-catalog) { display: none; }
+.stage.is-tpl .tpl-catalog { display: flex; flex-direction: column; font-family: "Inter", sans-serif; color: #222; }
+.tpl-catalog__find { align-self: flex-end; width: 220px; height: 36px; display: flex; align-items: center; margin: 4px 0 16px; padding: 0 14px; border-radius: 18px; background: #fff; font-size: 14px; color: rgba(137, 145, 169, .7); }
+.tpl-catalog__cats { display: flex; gap: 12px; margin-bottom: 20px; }
+.tpl-catalog__cat { position: relative; width: 240px; height: 124px; overflow: hidden; border-radius: 12px; }
+.tpl-catalog__cat img { width: 100%; height: 100%; object-fit: cover; }
+.tpl-catalog__cat::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(0, 0, 0, .45), rgba(0, 0, 0, 0) 60%); }
+.tpl-catalog__cat span { position: absolute; z-index: 1; left: 12px; top: 10px; font-size: 16px; font-weight: 600; color: #fff; }
+.tpl-catalog__h { font-size: 26px; font-weight: 600; letter-spacing: -.02em; }
+.tpl-catalog__cards + .tpl-catalog__h { margin-top: 28px; }
+.tpl-catalog__sub { margin: 4px 0 10px; font-size: 14px; color: #8c8c8c; }
+.tpl-catalog__cards + .tpl-catalog__sub { margin-top: 18px; }
+.tpl-catalog__cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.stage[data-tpl="1"] .tpl-catalog__cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tpl-card { display: flex; flex-direction: column; overflow: hidden; border-radius: 12px; background: #fff; }
+.tpl-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.tpl-card__name { padding: 14px 14px 0; font-size: 15px; font-weight: 500; }
+.tpl-card__foot { display: flex; justify-content: flex-end; padding: 16px 14px 14px; }
+.tpl-card__buy { height: 32px; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 14px; border-radius: 16px; background: #fdeee8; font-size: 15px; font-weight: 600; }
+.tpl-card__plus { font-size: 20px; font-weight: 400; line-height: 1; }
+.stage.is-tpl .site { background: #f5f5f5; }
+
+/* «О нас» (шаблон и «В конструкторе»): свой контент (.site-story) — без каталога и секции «О ресторане» главной */
+.site-story { display: none; }
+.site.is-about .site-story { flex: none; display: flex; flex-direction: column; gap: 64px; padding: 64px var(--site-gutter) 72px; background: #f9f4ef; font-family: 'Montserrat', sans-serif; color: #47382f; }
+.site.is-about .site-section { display: none; }
+.site-story h2 { margin: 0; max-width: 760px; font-size: 40px; font-weight: 500; line-height: 48px; }
+.site-story h3 { margin: 0 0 16px; font-size: 28px; font-weight: 500; }
+.site-story h4 { margin: 16px 0 8px; font-size: 18px; font-weight: 600; }
+.site-story p { margin: 0; color: #47382fbf; font-size: 16px; line-height: 26px; }
+.site-story__hero { display: flex; flex-direction: column; gap: 20px; }
+.site-story__hero p { max-width: 640px; }
+.site-story__kicker { font-size: 14px; font-weight: 500; letter-spacing: .56px; text-transform: uppercase; color: #b48a3c; }
+.site-story__stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 24px; padding: 32px 0; border-top: 1px solid #47382f26; border-bottom: 1px solid #47382f26; }
+.site-story__stats div { display: flex; flex-direction: column; gap: 6px; }
+.site-story__stats b { font-size: 40px; font-weight: 600; line-height: 48px; }
+.site-story__stats span { font-size: 14px; color: #47382fbf; }
+.site-story__history { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 64px; align-items: center; }
+.site-story__photo { height: 320px; overflow: hidden; border-radius: 10px; }
+.site-story__photo img { width: 100%; height: 100%; object-fit: cover; }
+.site-story__text { display: flex; flex-direction: column; gap: 16px; }
+.site-story__text h3 { margin: 0; }
+.site-story__values { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 24px; }
+.site-story__value { padding: 16px 16px 24px; background: #fff; border-radius: 10px; }
+.site-story__value img { display: block; width: 100%; height: 180px; object-fit: cover; border-radius: 6px; }
+.site-story__value p { font-size: 14px; line-height: 22px; }
+.site-story__quote { margin: 0; padding: 40px 48px; border-left: 4px solid #e8c37d; background: #fff; border-radius: 0 10px 10px 0; }
+.site-story__quote p { font-size: 22px; line-height: 34px; color: #47382f; }
+.site-story__quote cite { display: block; margin-top: 16px; font-size: 14px; font-style: normal; color: #47382fbf; }
+.site-story__visit { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 32px 40px; background: #47382f; border-radius: 10px; }
+.site-story__visit h3 { margin: 0 0 8px; color: #fff; }
+.site-story__visit p { color: #ffffffbf; }
+.site-story__visit .site-about__button { flex: none; color: #47382f; }
+.stage.is-tpl .site.is-home .site-about { display: none; }

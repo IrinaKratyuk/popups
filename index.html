@@ -54,6 +54,8 @@
             </div>
           </div>
           <div class="ch-save">
+            <!-- «Использовать» — только в просмотре шаблона (.stage.is-tpl-view): переводит этот же экран в редактирование. Кнопка — .btn из ui-kit -->
+            <button class="btn btn--filled btn--style-primary btn--size-m ch-use" type="button" id="chUse"><span class="btn__caption">Использовать</span></button>
             <button class="btn btn--filled btn--style-success btn--icon ch-done" type="button" aria-label="Сохранить"><span class="btn__icon">&#xE75E;</span></button>
             <button class="btn btn--filled btn--style-pale btn--icon" type="button" aria-label="Закрыть"><img src="assets/img/close-union.svg" width="12" height="12" alt=""></button>
           </div>
@@ -239,6 +241,41 @@
             <div class="site-about__image"><img src="assets/img/site/about.png" alt="Глобус в интерьере ресторана Мили"><span></span></div>
             <div class="site-about__content"><div><h2>Что такое «Мили»?</h2><p>Это множество дорог, расходящихся по странам мира. Это уникальные традиции мест, хранящих историю веков.</p></div><button type="button" class="site-about__button">Подробнее о нас</button></div>
           </section>
+          <!-- Страница «О нас» (is-about): свой контент — история, цифры, принципы, шеф, адрес. На других страницах скрыта -->
+          <section class="wg site-story" aria-label="О ресторане Мили">
+            <div class="site-story__hero">
+              <span class="site-story__kicker">О ресторане</span>
+              <h2>«Мили» — кухня, которая путешествует</h2>
+              <p>Мы собираем рецепты в поездках и готовим их из продуктов местных фермеров. Каждый сезон меню меняется вслед за новым маршрутом.</p>
+            </div>
+            <div class="site-story__stats">
+              <div><b>2014</b><span>открыли первый зал</span></div>
+              <div><b>3</b><span>ресторана в городе</span></div>
+              <div><b>27</b><span>кухонь мира в меню</span></div>
+              <div><b>120</b><span>гостей за вечер</span></div>
+            </div>
+            <div class="site-story__history">
+              <div class="site-story__photo"><img src="assets/img/site/about.png" alt="Зал ресторана Мили"></div>
+              <div class="site-story__text">
+                <h3>Наша история</h3>
+                <p>Всё началось с небольшого зала на двенадцать столов и карты, на которой мы отмечали города, откуда привезли рецепт. Сегодня отметок больше сотни, а глобус из первого зала по-прежнему встречает гостей у входа.</p>
+                <p>Мы не гонимся за модой: готовим то, что пробовали сами, и рассказываем, откуда пришло каждое блюдо.</p>
+              </div>
+            </div>
+            <div class="site-story__values">
+              <div class="site-story__value"><img src="assets/img/site/demo/dish-2.jpg" alt=""><h4>Сезонные продукты</h4><p>Овощи, сыры и мясо — от фермеров области, рыба — с утреннего привоза.</p></div>
+              <div class="site-story__value"><img src="assets/img/site/demo/dish-4.jpg" alt=""><h4>Рецепты из поездок</h4><p>Раз в сезон команда кухни едет за новыми вкусами и возвращается с новым меню.</p></div>
+              <div class="site-story__value"><img src="assets/img/site/demo/dish-6.jpg" alt=""><h4>Свой кондитерский цех</h4><p>Хлеб, десерты и мороженое делаем сами каждое утро.</p></div>
+            </div>
+            <blockquote class="site-story__quote">
+              <p>«Хорошее блюдо — это короткий рассказ о месте, где оно родилось. Наша задача — пересказать его честно».</p>
+              <cite>Андрей Волков, шеф-повар</cite>
+            </blockquote>
+            <div class="site-story__visit">
+              <div><h3>Приходите в гости</h3><p>Невский проспект, 48 · ежедневно с 10:00 до 01:00</p></div>
+              <button type="button" class="site-about__button">Забронировать стол</button>
+            </div>
+          </section>
           <footer class="wg wg--style-success site-footer" data-site-footer></footer>
         </div>
         <!-- Новая страница: на странице — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:28596, в окне — 2167:87296. Секция и пустой виджет — .wg из ui-kit, кнопка «+ секция» — Figma rHabzni5OI5D4fxBLQdj2m 4590:7239 -->
@@ -364,14 +401,15 @@
             </div>
           </section>
           <section class="sales-settings" id="salesSettings" aria-label="Точки продаж сайта" hidden>
-            <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt="">Электронное меню</div><span></span><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div>
+            <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt=""><span id="salesSettingsTitle">Электронное меню</span></div><span></span><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div>
             <!-- Страница каталога и страница товара — как в «Параметрах сайта» dynamic-pages: ссылка «Выберите страницу», выбор — меню #pagePickMenu. Та же разметка — на вкладке «Данные» реестра -->
+            <div class="sales-settings__sub"><span>Страницы</span></div>
             <div class="rs-site__props comp-props">
               <span class="rs-site__label">Каталог</span><button class="sales-empty__link comp-props__pick" data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
               <span class="rs-site__label">Товар</span><button class="sales-empty__link comp-props__pick" data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
             </div>
-            <!-- «Точки продаж» и «+» — после выбора страниц; «+» перенесён сюда из шапки компонента -->
-            <div class="sales-settings__sub"><span>Точки продаж</span><button class="btn btn--filled btn--style-pale btn--size-m rs-plus has-tip" type="button" data-sales-add aria-label="Добавить точки продаж" data-tip="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span></button></div>
+            <!-- Две подгруппы: «Страницы» (каталог и товар) и «Точки продаж» с «+». Так же — в «Параметрах» реестра -->
+            <div class="sales-settings__sub sales-settings__sub--points"><div><span id="salesSettingsPoints">Точки продаж</span><button class="btn btn--filled btn--style-pale btn--size-m rs-plus has-tip" type="button" data-sales-add aria-label="Добавить точку продаж" data-tip="Добавить точку продаж"><span class="btn__icon">&#xEADD;</span></button></div><span class="sales-settings__price">Прайс</span></div>
             <div class="sales-rows" id="salesSettingsRows"></div>
           </section>
           <!-- Группы остальных подключённых компонентов (у «Ресторана» — блок выше): иконка, название, крестик «отключить». Строит compChipsRender -->
@@ -396,7 +434,7 @@
       <section class="pe sales-popup" id="salesPopup" role="dialog" aria-label="Точки продаж" hidden>
         <header class="pe__head">
           <span class="pe__name pe__name--static">Точки продаж</span>
-          <button class="btn btn--filled btn--style-pale btn--size-m rs-plus sales-popup__add has-tip" type="button" data-sales-add aria-label="Добавить точки продаж" data-tip="Добавить точки продаж"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
+          <button class="btn btn--filled btn--style-pale btn--size-m rs-plus sales-popup__add has-tip" type="button" data-sales-add aria-label="Добавить точку продаж" data-tip="Добавить точку продаж"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
           <div class="pe__cmds">
             <button type="button" class="pe__reset" id="salesReset" aria-label="Сбросить точки продаж" disabled>&#xe629;</button>
             <button type="button" class="pe__done" id="salesDone" aria-label="Сохранить точки продаж">&#xe75e;</button>

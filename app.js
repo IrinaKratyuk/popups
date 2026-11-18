@@ -15,6 +15,7 @@
   // Рамка демо — demo-frame из ui-kit: шапка, сцена 1600×900 и вспомогательная панель справа масштабируются как одно целое.
   let scale = 1;
   let scenSyncing = false; // панель догоняет открытую страницу, сцену не трогаем
+  let tplOpening = false; // открывается просмотр шаблона: смена сценария его не снимает (см. tplOpen)
   // disabled — сценарий пока не сделан
   const frame = DemoFrame.mount({
     stage,
@@ -75,6 +76,7 @@
     value: { scenario: 'sites' }, // старт — «Реестр сайтов»; конструктор под ним собирается по data-scenario (catalog-setup), см. scenApply внизу
     onScale: (s) => { scale = s; },
     onChange: ({ scenario, variant }) => {
+      if (!tplOpening) tplClose(); // любой другой сценарий снимает шаблон
       stage.dataset.scenario = scenario;
       stage.dataset.variant = variant ?? '';
       regShow(scenario === 'sites');
@@ -118,10 +120,14 @@
   // выход из конструктора (галочка, крестик) — на ту же карточку, вкладка «Страницы» (regToCard);
   // повторное открытие из панели сценариев — со стартового экрана.
   let regToCard = false;
+  let regToTpl = false; // крестик просмотра шаблона: реестр открывается как был — на панели «Шаблоны»
   function regShow(on) {
     const reg = $('#reg');
     const card = regToCard;
     regToCard = false;
+    const back = regToTpl;
+    regToTpl = false;
+    if (on && back && reg.src) { reg.hidden = false; return; }
     const openSite = (screen) => reg.contentWindow.postMessage({ type: 'reg:open-site', screen }, '*');
     if (on && !reg.src) {
       const screen = card ? 'screen-2' : 'screen-3';
@@ -132,12 +138,19 @@
     reg.hidden = !on;
   }
   // «Оформление» в карточке «Мили» внутри реестра → сценарий «В конструкторе»
+  // Шаблон на панели «Шаблоны» реестра → конструктор на весь экран в просмотре шаблона (tplOpen)
   window.addEventListener('message', (e) => {
-    if (e.source !== $('#reg').contentWindow || e.data?.type !== 'reg:open-constructor') return;
-    frame.select('catalog-setup');
+    if (e.source !== $('#reg').contentWindow) return;
+    if (e.data?.type === 'reg:open-constructor') frame.select('catalog-setup');
+    else if (e.data?.type === 'reg:open-template') tplOpen(e.data.tpl, e.data.name);
   });
-  // Галочка и крестик в шапке конструктора — обратно в «Реестр сайтов», на карточку сайта
-  for (const btn of document.querySelectorAll('.ch-save > .btn')) btn.addEventListener('click', () => { regToCard = true; frame.select('sites'); });
+  // Галочка и крестик в шапке конструктора — обратно в «Реестр сайтов», на карточку сайта.
+  // Крестик просмотра шаблона — назад к панели «Шаблоны»
+  for (const btn of document.querySelectorAll('.ch-save > .btn:not(.ch-use)')) btn.addEventListener('click', () => {
+    if (stage.classList.contains('is-tpl-view')) regToTpl = true;
+    else regToCard = true;
+    frame.select('sites');
+  });
 
   $('.df-team__name', frame.panel).after(el('span', 'df-team__name', 'Смирнова Мария')); // второй дизайнер в той же плашке: team в demo-frame знает одно имя на строку
 
@@ -288,13 +301,19 @@
   // widget — виджет компонента в магазине, widgetPage — страница, которую виджет открывает. Страницы создаются под виджет: у каждой страницы компонента свой виджет
   // (widgetPage — карточка блюда, остальные — по widgets). widgetHome — страница для самого виджета: приходит, только если компонент подключили в «Параметрах сайта», а его виджета на сайте нет.
   // Виджет, поставленный из магазина, стоит там, куда его поставили (в сценариях компонентов — на главной), страницы для него не создаётся.
-  // Порядок — порядок чипсов в «Параметрах сайта»
+  // Порядок — порядок чипсов в «Параметрах сайта».
+  // Настройки у всех компонентов одинаковые (блок #salesSettings): «Страницы» — каталог и товар (catalog/product — страницы компонента
+  // по умолчанию; у «Электронного меню» — «Меню» или «Главная» с каталогом и карточка) и точки: points — как они называются у компонента,
+  // point — одна точка (для подсказок), price — есть ли у точки прайс. Список точек в демо общий
   const COMP = {
-    restaurant: { name: 'Электронное меню', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда', widgetHome: 'Меню' },
-    delivery: { name: 'Доставка', desc: 'Корзина, оформление и оплата заказа с доставкой, история заказов покупателя', pages: ['Корзина', 'Заказы', 'Карточка заказа'], widgets: { 'Корзина': 'Корзина', 'Заказы': 'История заказов', 'Карточка заказа': 'Карточка заказа' } },
-    services: { name: 'Услуги', desc: 'Каталог услуг и онлайн-запись к специалисту на свободное время', pages: ['Услуги', 'Карточка услуги', 'Специалисты', 'Карточка специалиста', 'Выбор времени записи'], widgets: { 'Услуги': 'Каталог услуг', 'Карточка услуги': 'Карточка услуги', 'Специалисты': 'Мастера', 'Карточка специалиста': 'Карточка специалиста', 'Выбор времени записи': 'Выбор специалиста и времени' } },
-    hotel: { name: 'Отель', desc: 'Номера и цены, бронирование на даты с оплатой онлайн', pages: ['Номера', 'Карточка номера'], widgets: { 'Номера': 'Каталог номеров', 'Карточка номера': 'Сведения о номере' } },
+    restaurant: { name: 'Электронное меню', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда', widgetHome: 'Меню', points: 'Точки продаж', point: 'точку продаж', price: true },
+    delivery: { name: 'Доставка', desc: 'Корзина, оформление и оплата заказа с доставкой, история заказов покупателя', pages: ['Корзина', 'Заказы', 'Карточка заказа'], widgets: { 'Корзина': 'Корзина', 'Заказы': 'История заказов', 'Карточка заказа': 'Карточка заказа' }, catalog: 'Корзина', product: 'Карточка заказа', points: 'Точки продаж', point: 'точку продаж', price: true },
+    services: { name: 'Услуги', desc: 'Каталог услуг и онлайн-запись к специалисту на свободное время', pages: ['Услуги', 'Карточка услуги', 'Специалисты', 'Карточка специалиста', 'Выбор времени записи'], widgets: { 'Услуги': 'Каталог услуг', 'Карточка услуги': 'Карточка услуги', 'Специалисты': 'Мастера', 'Карточка специалиста': 'Карточка специалиста', 'Выбор времени записи': 'Выбор специалиста и времени' }, catalog: 'Услуги', product: 'Карточка услуги', points: 'Филиалы', point: 'филиал', price: false },
+    hotel: { name: 'Отель', desc: 'Номера и цены, бронирование на даты с оплатой онлайн', pages: ['Номера', 'Карточка номера'], widgets: { 'Номера': 'Каталог номеров', 'Карточка номера': 'Сведения о номере' }, catalog: 'Номера', product: 'Карточка номера', points: 'Объекты размещения', point: 'объект размещения', price: false },
   };
+  // Компонент, чьи настройки в блоке: подключённый (он один), а без компонента — «Электронное меню», если на сайте его каталог
+  const compActive = () => [...compOn][0] ?? (catalogAdded ? 'restaurant' : null);
+  const compCfg = () => COMP[compActive() ?? 'restaurant'];
   const compOn = new Set();    // подключавшиеся, в порядке подключения: их страницы и настройки на сайте
   const compRoots = new Set(); // подключённые виджетом, а не как зависимость
   let catalogHome = false;     // каталог стоит на главной (сценарии компонентов), а не на странице «Меню» прочих сценариев
@@ -313,18 +332,8 @@
       chip.lastChild.textContent = c.name;
       return chip;
     });
-    // Подключённые — группами в порядке чипсов (порядок COMP). У «Ресторана» своя разметка: блок #salesSettings встаёт на своё место, скрывает его salesRender
-    const groups = Object.keys(COMP).filter((id) => id === 'restaurant' || compOn.has(id)).map((id) => {
-      if (id === 'restaurant') return $('#salesSettings');
-      const group = el('section', 'sales-settings comp-group');
-      group.setAttribute('aria-label', COMP[id].name);
-      group.innerHTML = `<div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/${id}.svg" width="24" height="24" alt=""><span></span></div></div>`
-        + `<button class="sales-settings__remove" type="button" data-comp-toggle="${id}"><span class="ico">&#xE66C;</span></button>`;
-      $('.sales-settings__head span', group).textContent = COMP[id].name;
-      group.lastChild.setAttribute('aria-label', `Отключить компонент «${COMP[id].name}»`);
-      return group;
-    });
-    $('#compGroups').replaceChildren(...groups);
+    // Подключённый компонент один — его настройки в общем блоке #salesSettings (заполняет и скрывает salesRender)
+    $('#compGroups').replaceChildren($('#salesSettings'));
     $('#compChips').replaceChildren(...chips);
     $('#compChipsBlock').hidden = !chips.length;
   }
@@ -336,8 +345,9 @@
     root.replaceChildren();
     if (!rows.length) {
       const empty = el('p', 'sales-empty');
-      // «точки продаж» — кнопка-ссылка, работает как «+»
-      empty.innerHTML = 'Добавьте ваши <button class="sales-empty__link" type="button" data-sales-add>точки продаж</button>, чтобы получать актуальную информацию о них';
+      // «точки продаж» (у компонента — его точки) — кнопка-ссылка, работает как «+»
+      empty.innerHTML = 'Добавьте ваши <button class="sales-empty__link" type="button" data-sales-add></button>, чтобы получать актуальную информацию о них';
+      $('[data-sales-add]', empty).textContent = compCfg().points.toLocaleLowerCase('ru');
       root.append(empty);
       return;
     }
@@ -386,9 +396,23 @@
   function salesRender() {
     compChipsRender();
     shopMenuPinSync();
-    // Прежний вид «Параметров сайта»: точки продаж с прайсами — когда есть каталог или подключено «Электронное меню»
-    $('#salesSettings').hidden = !catalogAdded && !compOn.has('restaurant');
-    $('#salesSettingsRemove').hidden = !compOn.has('restaurant'); // каталог без компонента отключать нечего
+    // Прежний вид «Параметров сайта»: настройки компонента — страницы и точки (с прайсами, если они у него есть) — когда компонент подключён
+    // или на сайте каталог «Электронного меню»
+    const active = compActive(), cfg = compCfg();
+    const block = $('#salesSettings');
+    block.hidden = !active;
+    block.setAttribute('aria-label', cfg.name);
+    block.classList.toggle('sales-settings--no-price', !cfg.price);
+    $('.sales-settings__icon', block).src = `assets/img/comp/${active ?? 'restaurant'}.svg`;
+    $('#salesSettingsTitle').textContent = cfg.name;
+    $('#salesSettingsPoints').textContent = cfg.points;
+    const add = $('.sales-settings__sub--points [data-sales-add]', block);
+    add.dataset.tip = 'Добавить ' + cfg.point;
+    add.setAttribute('aria-label', 'Добавить ' + cfg.point);
+    const remove = $('#salesSettingsRemove');
+    remove.hidden = !compOn.size; // каталог без компонента отключать нечего
+    remove.dataset.compToggle = active ?? 'restaurant';
+    remove.setAttribute('aria-label', `Отключить компонент «${cfg.name}»`);
     salesRenderRows($('#salesSettingsRows'), salesSaved, true);
     $('#salesData').hidden = !catalogAdded && !compOn.has('restaurant');
     $('#siteCatalog').classList.toggle('is-demo', (catalogHome || catalogMenu) && !salesSaved.length); // без точек продаж — демоданные
@@ -453,9 +477,9 @@
     const head = $('.sales-picker__head', salesPicker);
     if (pointId) head.prepend(search);
     else $('.sales-picker__main', salesPicker).insertBefore(search, $('#salesPickerList'));
-    $('#salesPickerTitle').textContent = pointId ? 'Прайсы' : 'Точки продаж';
+    $('#salesPickerTitle').textContent = pointId ? 'Прайсы' : compCfg().points;
     $('#salesSearch').value = '';
-    $('#salesSearch').setAttribute('aria-label', pointId ? 'Поиск прайсов' : 'Поиск точек продаж');
+    $('#salesSearch').setAttribute('aria-label', pointId ? 'Поиск прайсов' : 'Поиск: ' + compCfg().points.toLocaleLowerCase('ru'));
     salesPicker.hidden = false;
     salesPickerRender();
     $('#salesSearch').focus();
@@ -583,7 +607,7 @@
   // Сохранённые точки продаж = «Электронное меню» настроено: оно подключается со своими страницами
   function salesSave(rows) {
     salesSaved = salesCopy(rows);
-    if (salesSaved.length && !compOn.size) { compConnect('restaurant', true); lsRender(); }
+    if (salesSaved.length && !compOn.size) { compConnect('restaurant', true); pagePickDefaults('restaurant'); lsRender(); pagePickRender(); }
   }
   $('#salesDone').addEventListener('click', () => { salesSave(salesDraft); salesClose(); salesRender(); });
   $('#salesReset').addEventListener('click', () => { salesDraft = []; salesRender(); });
@@ -962,6 +986,8 @@
     catalogAdded = true;
     shopMenuPinSync();
     compConnect('restaurant', true);
+    pagePickDefaults('restaurant');
+    pagePickRender();
     siteCatalogShow(true);
     siteCatalog.classList.add('is-active');
     lsRender();
@@ -1047,9 +1073,9 @@
   function compRemove(ids, widget, names = []) {
     for (const c of ids) { compOn.delete(c); compRoots.delete(c); }
     if (widget) siteRemoveCatalog();
-    if (ids.includes('restaurant')) { // настройки компонента — точки продаж и выбранные страницы каталога и товара — уходят с ним
+    { // настройки компонента — точки и выбранные страницы каталога и товара — уходят с ним (у всех компонентов одинаково)
       salesSaved = [];
-      pagePicks.catalog = pagePicks.product = null; // при новом подключении — снова «Выберите страницу», даже если выбрана была «Главная»
+      pagePicks.catalog = pagePicks.product = null; // при новом подключении — снова страницы по умолчанию (pagePickDefaults)
       pagePickClose();
     }
     // с меню уходит и карточка товара сайта (product) — она открывается из меню
@@ -1067,7 +1093,9 @@
       if (compOn.has(id)) { compRemoveAsk(id); return; }
       compConnect(id, true);
       compAddWidgetHome(id);
+      pagePickDefaults(id);
       lsRender();
+      pagePickRender();
       salesRender();
       return;
     }
@@ -1139,8 +1167,10 @@
     siteMain.hidden = isBlank;
     // Главная — баннер и «О нас», на «Меню» — только секция с каталогом. В сценариях компонентов каталог стоит на главной между ними
     siteMain.classList.toggle('is-home', !!page.home);
+    siteMain.classList.toggle('is-about', !!page.about); // «О нас»: свой контент (.site-story), без каталога
+    tplNavSync(page);
     if (catalogHome) siteCatalogShow(catalogAdded);
-    const hasCatalog = !page.blank && !siteCatalog.hidden && (catalogHome ? !!page.home : !page.home);
+    const hasCatalog = !page.blank && !page.about && !siteCatalog.hidden && (catalogHome ? !!page.home : !page.home);
     if (!hasCatalog) salesClose(); // каталога на открытой странице нет
     // Страница с каталогом «В окне» — каталог переезжает в секцию окна вместо пустой ячейки, на странице — обратно в свою секцию
     const catalogInWindow = isWindow && hasCatalog;
@@ -2778,6 +2808,7 @@
   });
   lsList.addEventListener('dblclick', (e) => {
     const row = e.target.closest('.ls-item');
+    if (stage.classList.contains('is-tpl-view')) return; // в просмотре шаблона страницы не переименовываются
     if (row && !e.target.closest('[data-cmd], [data-save]') && !row.classList.contains('is-edit')) lsStartRename(Number(row.dataset.id));
   });
   lsList.addEventListener('keydown', (e) => {
@@ -2998,6 +3029,16 @@
       btn.textContent = lsPage(pagePicks[kind])?.name ?? 'Выберите';
     }
   }
+  // Страницы по умолчанию привязаны в компоненте: при подключении «Электронного меню» каталог — страница с каталогом
+  // («Меню», а если каталог стоит на главной — «Главная»), товар — карточка («Карточка блюда»). Уже выбранное не трогаем
+  // У остальных компонентов — их страницы из COMP (catalog, product), например «Услуги» и «Карточка услуги»
+  function pagePickDefaults(id) {
+    const own = (name) => lsPages.find((p) => p.comp === id && p.name === name);
+    const catalogPage = id === 'restaurant' ? lsPages.find((p) => p.menu) ?? (catalogAdded ? lsPages.find((p) => p.home) : null) : own(COMP[id].catalog);
+    const productPage = id === 'restaurant' ? lsPages.find((p) => p.comp === id && p.product) ?? lsPages.find((p) => p.product) : own(COMP[id].product);
+    if (pagePicks.catalog == null && catalogPage) pagePicks.catalog = catalogPage.id;
+    if (pagePicks.product == null && productPage) pagePicks.product = productPage.id;
+  }
   function pagePickSet(kind, id) {
     pagePicks[kind] = id;
     pagePickRender();
@@ -3071,11 +3112,12 @@
       pagePickClose();
       sitePlaceCatalog();
       if (scenario === 'catalog-setup') {
-        // «В конструкторе» — сайт уже собран (как «Типовое заполнение» в dynamic-pages): «Главная», «Профиль» с виджетом покупателя,
+        // «В конструкторе» — сайт уже собран (как «Типовое заполнение» в dynamic-pages): «Главная», «О нас», «Профиль» с виджетом покупателя
+        // (эти три есть на любом сайте, как в реестре),
         // «Меню» с каталогом, «Карточка товара» с карточкой. Это свои страницы сайта, не страницы компонента.
         // «Электронное меню» подключено без своих страниц, у него две точки продаж; сайт открывается на «Главной»
         const page = (name, extra) => ({ id: lsNextId++, name, off: false, mode: 'page', fixed: true, ...extra });
-        lsPages.push(page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), page('Меню', { menu: true }), page('Карточка товара', { blank: true, product: true, key: true }));
+        lsPages.push(page('О нас', { about: true }), page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), page('Меню', { menu: true }), page('Карточка товара', { blank: true, product: true, key: true }));
         lsActive = lsPages.find((p) => p.home).id; // редактор открывается на «Главной»
         compOn.add('restaurant');
         compRoots.add('restaurant');
@@ -3149,6 +3191,85 @@
     frame.select(scenario, mode);
     scenSyncing = false;
   }
+
+  // ---------- Просмотр шаблона сайта ----------
+  // Шаблон «Электронного меню» с панели «Шаблоны» реестра открывается на весь экран: шапка, панель страниц и сайт.
+  // Сайт — «Мили» из сценария «В конструкторе», каталог у всех шаблонов один; разные только шапка сайта и баннер
+  // (.stage[data-tpl] в styles.css). Просмотр — тот же конструктор без правки: правой панели, команд правки и ховера виджетов нет.
+  // «Использовать» снимает только просмотр: шаблон остаётся, экран становится обычным конструктором.
+  const chTitle = $('.ch-title');
+  let chTitleText = ''; // название сайта в шапке до просмотра: крестик его возвращает
+  const TPL_NAV = ['Меню', 'Заказы', 'О нас', 'Профиль'];
+  const TPL_TG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.4 4.3 2.9 11.4c-1.1.4-1.1 1.6 0 1.9l4.6 1.5 1.8 5.5c.2.7 1.1.9 1.6.4l2.6-2.4 4.6 3.4c.6.4 1.4.1 1.6-.6l3.1-14.8c.2-1-.7-1.7-1.4-1.4Zm-11.8 10 8.7-6.6-7 7.7-.3 3.1-1.4-4.2Z"/></svg>';
+  for (const header of document.querySelectorAll('.site-header')) {
+    header.append(
+      el('nav', 'tpl-nav', TPL_NAV.map((name) => `<span>${name}</span>`).join('')),
+      el('div', 'tpl-head',
+        '<span class="tpl-head__phone"><span class="tpl-head__ico" aria-hidden="true">&#xe636;</span>+7 (4852) 11-22-33</span>' +
+        '<span class="tpl-head__soc tpl-head__soc--vk" aria-label="ВКонтакте">VK</span>' +
+        `<span class="tpl-head__soc" aria-label="Телеграм">${TPL_TG}</span>` +
+        '<span class="tpl-head__bal">120 ₽</span><span class="tpl-head__ava">АС</span>'));
+  }
+  // Баннеры — Figma QJ9NRz32bhm1BUkVGsuti0 1453:3499 (Banner / restaurant / 1601, 1605, 1606); фото у каждого шаблона своё, ставит CSS
+  $('.wg__content', siteMain.querySelector('.site-banner')).append(el('div', 'tpl-banner',
+    '<span class="tpl-banner__img"></span>' +
+    '<div class="tpl-banner__text"><span class="tpl-banner__tags">Боулы · Салаты · Закуски</span>' +
+    '<span class="tpl-banner__title">Ресторан Мили</span><span class="tpl-banner__lead">Авторская кухня – прямиком к вашему столу</span></div>'));
+  // Каталог шаблона — как на превью шаблонов: сайт без данных, поэтому демоданные (те же фото, что у демо-каталогов реестра).
+  // Плитки разделов, раздел с подразделом, карточки с ценой в плашке. Встаёт в виджет каталога вместо его содержимого
+  const TPL_DEMO = 'assets/img/site/demo/';
+  const TPL_CATALOG = [
+    ['Кофе и напитки', [['Кофе', [['Матча-латте', '280', 1], ['Эспрессо', '150', 3]]], ['Холодные', [['Лимонад', '180', 5]]]]],
+    ['Десерты', [['Сладкое', [['Панна-котта', '240', 4], ['Капкейк с клубникой', '190', 6]]]]],
+    ['Кухня', [['Паста', [['Паста с овощами', '420', 2]]]]],
+  ];
+  const tplCard = ([name, price, img]) =>
+    `<div class="tpl-card"><img src="${TPL_DEMO}dish-${img}.jpg" alt=""><div class="tpl-card__name">${name}</div>` +
+    `<div class="tpl-card__foot"><span class="tpl-card__buy">${price} ₽<span class="tpl-card__plus" aria-hidden="true">+</span></span></div></div>`;
+  $('.wg__content', siteCatalog).append(el('div', 'tpl-catalog',
+    '<div class="tpl-catalog__find">Найти</div>' +
+    `<div class="tpl-catalog__cats">${TPL_CATALOG.map(([name, groups]) =>
+      `<div class="tpl-catalog__cat"><img src="${TPL_DEMO}dish-${groups[0][1][0][2]}.jpg" alt=""><span>${name}</span></div>`).join('')}</div>` +
+    TPL_CATALOG.map(([name, groups]) => `<div class="tpl-catalog__h">${name}</div>` +
+      groups.map(([sub, items]) => `<div class="tpl-catalog__sub">${sub}</div><div class="tpl-catalog__cards">${items.map(tplCard).join('')}</div>`).join('')).join('')));
+
+  function tplOpen(n, name) {
+    tplOpening = true;
+    frame.select('catalog-setup'); // сайт собран, как «В конструкторе»; реестр прячется
+    tplOpening = false;
+    stage.classList.add('is-tpl', 'is-tpl-view');
+    stage.dataset.tpl = n;
+    chTitleText = chTitle.textContent;
+    chTitle.textContent = name || 'Шаблон';
+    // страницы шаблона — пункты его меню; каталог на главной («Меню»), «Карточка товара» — из сценария
+    const page = (pageName, extra) => ({ id: lsNextId++, name: pageName, off: false, mode: 'page', fixed: true, ...extra });
+    const home = lsPages.find((p) => p.home);
+    home.name = 'Меню';
+    lsPages = [home, page('Заказы', { blank: true, compWidget: 'История заказов' }), page('О нас', { about: true }),
+      page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), lsPages.find((p) => p.product)].filter(Boolean);
+    catalogHomeSet(true);
+    pagePicks.catalog = home.id;
+    pagePickRender();
+    // шаблон — сайт без данных: точек продаж нет, каталог с демоданными (.is-demo, как в превью шаблонов)
+    salesSaved = [];
+    salesRender();
+    lsActive = home.id;
+    siteShown = null;
+    lsRender();
+    siteContent.scrollTop = 0;
+  }
+  function tplClose() {
+    if (!stage.classList.contains('is-tpl')) return;
+    stage.classList.remove('is-tpl', 'is-tpl-view');
+    delete stage.dataset.tpl;
+    chTitle.textContent = chTitleText;
+  }
+  // В меню шапки сайта подчёркнута открытая страница
+  function tplNavSync(page) {
+    if (!stage.classList.contains('is-tpl')) return;
+    for (const item of document.querySelectorAll('.tpl-nav span')) item.classList.toggle('is-on', item.textContent === page.name);
+  }
+  $('#chUse').addEventListener('click', () => stage.classList.remove('is-tpl-view'));
 
   lsSetCollapsed(lsReadCollapsed());
   scenApply(stage.dataset.scenario);
