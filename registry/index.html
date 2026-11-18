@@ -6034,8 +6034,8 @@ button.tpl-cat{ cursor: pointer; }
       (c.go ? ' type="button" data-tpl-go="' + c.go + '"' : '') + '>' +
       '<span class="tpl-cat__title">' + esc(c.name) + '</span>' +
       '<span class="tpl-cat__img">' + imgTag(c) + '</span>' +
-      // демо-пин «здесь кликают» — на папке «Электронное меню»
-      (c.go === 'menu' ? '<span class="pin" style="--pin-x: 50%; --pin-y: 50%" aria-hidden="true"><img src="' + IMG + 'pin.svg" width="15" height="15" alt=""></span>' : '') +
+      // демо-пин «здесь кликают» — на заголовке папки «Электронное меню»
+      (c.go === 'menu' ? '<span class="pin" style="--pin-x: 50%; --pin-y: 18px" aria-hidden="true"><img src="' + IMG + 'pin.svg" width="15" height="15" alt=""></span>' : '') +
       '</' + tag + '>';
   }
 
