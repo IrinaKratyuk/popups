@@ -899,6 +899,13 @@ html, body{
   cursor: pointer;
 }
 .tile__opt .icon{ color: var(--c-icon-secondary); }
+/* Меню «Ещё» плитки сайта (три точки) — .mw-menu с иконками; крестик меню — над кнопкой «Ещё», плитка держит панель кнопок */
+.tile--menu .tile__options{ display: flex; }
+.mw-menu.tile-menu{ position: fixed; z-index: 1000; width: max-content; min-width: 210px; }
+.tile-menu .mw-menu__item{ align-items: center; gap: 8px; }
+.tile-menu .mw-menu__item .icon{ width: 24px; height: 24px; color: var(--c-icon-secondary); }
+.tile-menu .mw-menu__item .icon--danger{ color: #e02e2a; }
+.tile-menu .mw-menu__item:disabled{ cursor: default; background: none; } /* пункты для вида: без ховера */
 
 .tile__head{
   width: 100%;
@@ -2779,6 +2786,9 @@ html, body{
 /* Собранный превью — по высоте своего содержимого, без обрезки. */
 .pagecard__shot--site .tile__shot--mock{ aspect-ratio: auto; }
 .pagecard__shot--site .mk{ width: 434px; height: auto; overflow: visible; zoom: var(--shot-zoom, 1); }
+/* Сайт из шаблона: мини-копия шаблона (ширина 1280) целиком на ширину карточки, высота — по содержимому;
+   zoom, а не transform, чтобы карточка росла вместе с ней. --shot-zoom = ширина / 434 */
+.pagecard__shot--site .tile__shot--tpl .tpl-mini{ position: static; height: auto; transform: none; zoom: calc(434 / 1280 * var(--shot-zoom, 1)); }
 
 /* Пустой список: у сайта нет посетителей или откликов за период. */
 .list-empty{
@@ -5217,6 +5227,18 @@ button.tpl-cat{ cursor: pointer; }
   </div>
 </div>
 
+<!-- «Удалить» в меню «Ещё» плитки сайта: подтверждение (синий маркер). «Да» удаляет плитку, «Нет» и Esc закрывают окно -->
+<div class="dlg-layer" id="tile-delete" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="tile-delete-msg">
+    <div class="dlg__head"><span class="dlg__marker"></span></div>
+    <div class="dlg__content"><p class="dlg__message" id="tile-delete-msg">Удалить сайт?</p></div>
+    <div class="dlg__footer">
+      <button class="dlg__btn dlg__btn--primary" type="button" data-tile-delete="yes">Да</button>
+      <button class="dlg__btn" type="button" data-tile-delete="no">Нет</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   'use strict';
@@ -6120,7 +6142,8 @@ button.tpl-cat{ cursor: pointer; }
     EXTRA[link] = { avg: EXTRA[mili].avg, items: EXTRA[mili].items, pages: EXTRA[mili].pages };
     SITE_SALES[link] = d.points || []; // точки — как в конструкторе; не настроены — «Добавьте ваши точки продаж…»
     SITE_TPL[link] = { tpl: d.tpl, kind: d.kind, title: d.title };
-    if (window.REG_PAGES[mili]) window.REG_PAGES[link] = window.REG_PAGES[mili];
+    // превью страниц на «Страницах» — мини-копия шаблона с плитки (pagecards), не страницы «Мили»
+    delete window.REG_PAGES[link];
     var html = window.REG_TILE({ comp: comp, title: d.title, link: link, share: '', num: '0', visits: '0',
       shot: window.REG_TPL_MINI ? window.REG_TPL_MINI(d.tpl, d.kind) : '' });
     $$('.tile[data-site="' + link + '"]').forEach(function(t){ t.remove(); }); // повторная публикация с тем же адресом
@@ -6413,6 +6436,73 @@ button.tpl-cat{ cursor: pointer; }
     if (e.target.closest('[data-connect-done], [data-connect-close]')) close();
   });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') close(); });
+  window.addEventListener('hashchange', close);
+})();
+</script>
+<script>
+/* Меню «Ещё» (три точки) на плитке сайта. Кликается только «Удалить»: окно «Удалить сайт?», «Да» убирает плитку
+   из реестра (и из копии «Меню»). Остальные пункты — для вида, не нажимаются. Меню закрывают крестик, клик мимо, Esc и прокрутка */
+(function(){
+  'use strict';
+  var menu = document.createElement('div');
+  menu.className = 'mw-menu tile-menu';
+  menu.setAttribute('role', 'menu');
+  menu.setAttribute('aria-label', 'Действия с сайтом');
+  menu.hidden = true;
+  function item(act, glyph, text, cls){
+    return '<button class="mw-menu__item" type="button" role="menuitem" data-tile-act="' + act + '"' + (act === 'delete' ? '' : ' disabled') + '>' +
+      '<i class="icon ' + (cls || 'icon--m') + '" aria-hidden="true">' + glyph + '</i><span class="mw-menu__text">' + text + '</span></button>';
+  }
+  menu.innerHTML = '<div class="mw-menu__list">' +
+    item('go', '&#xE9BC;', 'Перейти', 'icon--18') +
+    item('up', '&#xE672;', 'Перенести вверх') +
+    item('down', '&#xE673;', 'Перенести вниз') +
+    item('edit', '&#xE660;', 'Редактировать') +
+    item('move', '&#xE63F;', 'Переместить') +
+    item('delete', '&#xE65C;', 'Удалить', 'icon--m icon--danger') +
+    '</div><button class="mw-menu__close" type="button" data-tile-menu-close aria-label="Закрыть меню"><img src="../assets/img/close-menu.svg" width="12" height="12" alt=""></button>';
+  document.body.appendChild(menu);
+  var tile = null;
+
+  function close(){
+    menu.hidden = true;
+    if (tile) tile.classList.remove('tile--menu');
+    tile = null;
+  }
+  function open(btn){
+    close();
+    tile = btn.closest('.tile');
+    tile.classList.add('tile--menu');
+    menu.hidden = false;
+    // крестик меню (правый край, 22 от верха) — по центру кнопки «Ещё»
+    var r = btn.getBoundingClientRect();
+    menu.style.left = (r.left + r.width / 2 - menu.offsetWidth) + 'px';
+    menu.style.top = (r.top + r.height / 2 - 22) + 'px';
+  }
+  // до общего обработчика data-goto: клик по трём точкам не открывает карточку
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.tile__opt[aria-label="Ещё"]');
+    if (btn){ e.stopPropagation(); e.preventDefault(); if (tile === btn.closest('.tile')) close(); else open(btn); return; }
+    if (menu.hidden) return;
+    if (e.target.closest('[data-tile-act="delete"]')){ target = tile; close(); dlg.hidden = false; return; }
+    if (e.target.closest('[data-tile-menu-close]') || !menu.contains(e.target)) close();
+  }, true);
+  // окно «Удалить сайт?»: «Да» — плитка сайта убирается из обоих реестров, «Нет» и Esc — закрыть
+  var dlg = document.getElementById('tile-delete'), target = null;
+  dlg.addEventListener('click', function(e){
+    var b = e.target.closest('[data-tile-delete]');
+    if (!b) return;
+    dlg.hidden = true;
+    if (b.dataset.tileDelete === 'yes' && target)
+      document.querySelectorAll('.tile[data-site="' + target.dataset.site + '"]').forEach(function(x){ x.remove(); });
+    target = null;
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Escape') return;
+    if (!menu.hidden) close();
+    if (!dlg.hidden){ dlg.hidden = true; target = null; }
+  });
+  document.addEventListener('scroll', function(){ if (!menu.hidden) close(); }, true);
   window.addEventListener('hashchange', close);
 })();
 </script>
