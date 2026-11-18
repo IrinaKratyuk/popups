@@ -99,27 +99,19 @@
     check(el);
   });
 
-  /* Адрес из названия сайта: часть до « — », «:», «,», «(» или «|», латиницей, слова через дефис, до 30 символов.
-     «Биллинговые системы» → billingovye-sistemy. Название — текст элемента [data-site-name] (в реестре — заголовок карточки сайта,
-     в конструкторе — название в шапке). Подставляется в состоянии по умолчанию, без проверки: когда редактор появился
-     и когда переключили на «Домен от Saby». Пока адрес не правили руками, он идёт за названием сайта.
-     Если такой адрес занят, предлагаем свободный: saby → saby-site. */
-  var LAT = { а:'a', б:'b', в:'v', г:'g', д:'d', е:'e', ё:'e', ж:'zh', з:'z', и:'i', й:'y', к:'k', л:'l', м:'m', н:'n', о:'o', п:'p',
-    р:'r', с:'s', т:'t', у:'u', ф:'f', х:'kh', ц:'ts', ч:'ch', ш:'sh', щ:'shch', ъ:'', ы:'y', ь:'', э:'e', ю:'yu', я:'ya' };
-  function slug(name){
-    var base = name.split(/\s[—–-]\s|[:,(|]/)[0].toLowerCase();
-    var s = base.replace(/[а-яё]/g, function(ch){ return LAT[ch]; }).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    while (s.length > 30 && s.indexOf('-') > -1) s = s.slice(0, s.lastIndexOf('-'));
-    return s.slice(0, 30);
+  /* Адрес нового сайта (с нуля или из шаблона) — случайный, не из названия сайта или шаблона:
+     три слога «согласная + гласная», как vobara. Один на страницу: пока адрес не правили руками, он не меняется
+     и возвращается при переключении на «Домен от Saby». Подставляется в состоянии по умолчанию, без проверки.
+     Занятые имена пропускаем. */
+  var rand = '';
+  function randName(){
+    var c = 'bvgdzklmnprstf', v = 'aeiou', s = '';
+    for (var i = 0; i < 3; i++) s += c[Math.floor(Math.random() * c.length)] + v[Math.floor(Math.random() * v.length)];
+    return s;
   }
   function suggestion(){
-    var src = document.querySelector('[data-site-name]');
-    var name = src && src.textContent.trim();
-    if (!name) return '';
-    // свободный адрес: занят — пробуем -site, потом -2, -3…
-    var base = slug(name), v = base, n = 1;
-    while (TAKEN.indexOf(v) > -1) v = base + (n === 1 ? '-site' : '-' + n), n++;
-    return v;
+    while (!rand || TAKEN.indexOf(rand) > -1) rand = randName();
+    return rand;
   }
   /* У сайта уже есть адрес (data-site-address — в реестре его ставит карточка сайта по подписи плитки):
      редактор сразу в состоянии Connected с этим адресом. *.saby.ru — домен от Saby, остальное — свой домен. */

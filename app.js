@@ -116,23 +116,34 @@
   scenGroups[0].remove(); // у первой группы («Компоненты») заголовка нет: сценарии идут сразу
 
   // «Реестр сайтов» — прототип mariesmi.github.io/sites во фрейме поверх конструктора: стили и переходы у него свои.
-  // Грузится при первом открытии. После загрузки страницы сценарий начинается с карточки сайта «Мили», вкладка «Параметры»;
+  // Грузится при первом открытии. После загрузки страницы сценарий начинается со стартового экрана реестра;
   // выход из конструктора (галочка, крестик) — на ту же карточку, вкладка «Страницы» (regToCard);
   // повторное открытие из панели сценариев — со стартового экрана.
   let regToCard = false;
   let regToTpl = false; // крестик просмотра шаблона: реестр открывается как был — на панели «Шаблоны»
+  let regPublish = null; // «Опубликовать» в окне шаблона: { link, title, tpl, kind } — карточка нового сайта на «Параметрах»
   function regShow(on) {
     const reg = $('#reg');
     const card = regToCard;
     regToCard = false;
     const back = regToTpl;
     regToTpl = false;
+    const site = regPublish;
+    regPublish = null;
+    if (on && site) {
+      const send = () => reg.contentWindow.postMessage({ type: 'reg:publish-site', ...site }, '*');
+      if (reg.src) send();
+      else { reg.src = reg.dataset.src + '#/screen-1'; reg.addEventListener('load', send, { once: true }); }
+      reg.hidden = false;
+      return;
+    }
     if (on && back && reg.src) { reg.hidden = false; return; }
     const openSite = (screen) => reg.contentWindow.postMessage({ type: 'reg:open-site', screen }, '*');
     if (on && !reg.src) {
-      const screen = card ? 'screen-2' : 'screen-3';
-      reg.src = reg.dataset.src + '#/' + screen; // сразу на нужной вкладке, без мелькания стартового экрана
-      reg.addEventListener('load', () => openSite(screen), { once: true });
+      // сразу на нужном экране, без мелькания стартового. Панель «Шаблоны» — только по крестику просмотра шаблона;
+      // из панели сценариев реестр открывается без неё
+      reg.src = reg.dataset.src + (card ? '#/screen-2' : back ? '?tpl#/screen-1' : '#/screen-1');
+      if (card) reg.addEventListener('load', () => openSite('screen-2'), { once: true });
     } else if (on && card) openSite('screen-2');
     else if (on) reg.contentWindow.location.hash = '#/screen-1';
     reg.hidden = !on;
@@ -142,11 +153,11 @@
   window.addEventListener('message', (e) => {
     if (e.source !== $('#reg').contentWindow) return;
     if (e.data?.type === 'reg:open-constructor') frame.select('catalog-setup');
-    else if (e.data?.type === 'reg:open-template') tplOpen(e.data.tpl, e.data.name);
+    else if (e.data?.type === 'reg:open-template') tplOpen(e.data.tpl, e.data.name, e.data.kind);
   });
   // Галочка и крестик в шапке конструктора — обратно в «Реестр сайтов», на карточку сайта.
   // Крестик просмотра шаблона — назад к панели «Шаблоны»
-  for (const btn of document.querySelectorAll('.ch-save > .btn:not(.ch-use)')) btn.addEventListener('click', () => {
+  for (const btn of document.querySelectorAll('.ch-save > .btn:not(.ch-use):not(.ch-publish)')) btn.addEventListener('click', () => {
     if (stage.classList.contains('is-tpl-view')) regToTpl = true;
     else regToCard = true;
     frame.select('sites');
@@ -220,6 +231,8 @@
     else { // меню выбора страницы закрывается вместе с окном; через DOM — rsRender зовётся и до объявления pagePick*
       $('#pagePickMenu').hidden = true;
       for (const b of document.querySelectorAll('[data-page-pick]')) b.setAttribute('aria-expanded', 'false');
+      $('#compMenu').hidden = true; // и меню «Тип сайта»
+      $('#salesSettingsTitle').setAttribute('aria-expanded', 'false');
     }
     for (const b of document.querySelectorAll('.rp-btn[data-rp]')) {
       const on = rsParamsOpen ? b.dataset.rp === 'settings' : b.dataset.rp === rsPanel;
@@ -403,7 +416,6 @@
     block.hidden = !active;
     block.setAttribute('aria-label', cfg.name);
     block.classList.toggle('sales-settings--no-price', !cfg.price);
-    $('.sales-settings__icon', block).src = `assets/img/comp/${active ?? 'restaurant'}.svg`;
     $('#salesSettingsTitle').textContent = cfg.name;
     $('#salesSettingsPoints').textContent = cfg.points;
     const add = $('.sales-settings__sub--points [data-sales-add]', block);
@@ -1427,7 +1439,7 @@
       if (!(bgKey === 'section' ? sectionHit : windowHit)) bgClose(); // тулбар с командой скрылся
     }
     if (siteCatalog.hidden || ['window-link', 'ext-added', 'ext-link'].includes(stage.dataset.scenario)) return; // в этих сценариях выделена кнопка, клик мимо выделение не снимает
-    if (!e.target.closest('#salesPopup, #salesPicker, #catSet, #rsParams, .rp-btn')) siteCatalog.classList.toggle('is-active', !!e.target.closest('#siteCatalog'));
+    if (!e.target.closest('#salesPopup, #salesPicker, #catSet, #rsParams, #pub, .rp-btn')) siteCatalog.classList.toggle('is-active', !!e.target.closest('#siteCatalog'));
   });
 
   // Секция с кнопкой: пока кнопка выделена, у секции пунктирная рамка родителя
@@ -2632,11 +2644,14 @@
   }
 
   function lsSetCollapsed(collapsed) {
-    stage.classList.add('is-ls-switching'); // смена режима — без выезда, как в ui-kit left-sidebar
+    // Состояние — классы ui-kit left-sidebar: .lsb--hover, .is-open, .is-switching (смена режима без выезда).
+    // .is-ls-collapsed у сцены сдвигает контент и плавающие виджеты к колонке линий.
+    lsRoot.classList.add('is-switching');
+    lsRoot.classList.toggle('lsb--hover', collapsed);
     stage.classList.toggle('is-ls-collapsed', collapsed);
-    stage.classList.remove('is-ls-open');
-    void stage.offsetWidth;
-    stage.classList.remove('is-ls-switching');
+    lsRoot.classList.remove('is-open');
+    void lsRoot.offsetWidth;
+    lsRoot.classList.remove('is-switching');
     $('#lsToggleIco').innerHTML = collapsed ? '&#xEBFB;' : '&#xEBFA;';
     lsToggle.setAttribute('aria-label', collapsed ? 'Закрепить панель' : 'Свернуть панель');
     try { localStorage.setItem(LS_KEY, collapsed ? 'collapsed' : 'pinned'); } catch {}
@@ -2647,17 +2662,17 @@
     return [...lsPages.filter((p) => !p.comp), ...Object.keys(COMP).flatMap((id) => lsPages.filter((p) => p.comp === id))];
   }
   function lsRenderLines() {
-    lsLines.replaceChildren(...lsOrdered().map((p) => el('span', 'ls-line' + (p.id === lsActive ? ' is-active' : ''))));
+    lsLines.replaceChildren(...lsOrdered().map((p) => el('span', 'lsb__line' + (p.id === lsActive ? ' is-active' : ''))));
   }
 
   function lsRow(p) {
-    const row = el('div', 'ls-item' + (p.id === lsActive ? ' is-active' : '') + (p.off ? ' is-off' : ''),
-      '<span class="ls-item__marker"></span><span class="ls-item__name"></span>' +
-      '<span class="ls-item__cmds">' +
-      '<button class="btn btn--link btn--style-label btn--size-m btn--icon ls-cmd" type="button" data-cmd="more" aria-label="Ещё"><span class="btn__icon">&#xE9D9;</span></button>' +
+    const row = el('div', 'lsb__page' + (p.id === lsActive ? ' is-active' : '') + (p.off ? ' is-off' : ''),
+      '<span class="lsb__marker"></span><span class="lsb__page-name"></span>' +
+      '<span class="lsb__cmds">' +
+      '<button class="btn btn--link btn--style-label btn--size-m btn--icon" type="button" data-cmd="more" aria-label="Ещё"><span class="btn__icon">&#xE9D9;</span></button>' +
       '</span>');
     row.dataset.id = p.id;
-    row.querySelector('.ls-item__name').textContent = p.name;
+    row.querySelector('.lsb__page-name').textContent = p.name;
     return row;
   }
   function lsRender() {
@@ -2691,7 +2706,7 @@
   function lsOpenMenu(id, btn) {
     popupsClose();
     lsMenuPage = id;
-    btn.closest('.ls-item').classList.add('is-menu');
+    btn.closest('.lsb__page').classList.add('is-menu');
     // Страница компонента принадлежит ему: её нельзя сделать главной, скрыть, дублировать и удалить — удаляет только сам компонент
     const comp = !!lsPage(id).comp;
     for (const act of ['home', 'duplicate', 'hide', 'delete']) $(`[data-act="${act}"]`, lsMenu).hidden = comp;
@@ -2706,15 +2721,15 @@
     lsSelect(id);
     const page = lsPage(id);
     const row = lsList.querySelector(`[data-id="${id}"]`);
-    const input = el('input', 'ls-input');
+    const input = el('input', 'lsb__input');
     input.value = page.name;
     input.setAttribute('aria-label', 'Название страницы');
-    const save = el('span', 'ls-save',
-      '<button class="btn btn--filled btn--style-pale btn--size-m btn--icon ls-cmd ls-save__ok" type="button" data-save="ok" aria-label="Сохранить"><span class="btn__icon">&#xE75E;</span></button>' +
-      '<button class="btn btn--ghost btn--style-label btn--size-m btn--icon ls-cmd ls-cmd--24" type="button" data-save="cancel" aria-label="Отменить"><span class="btn__icon">&#xE66C;</span></button>');
+    const save = el('span', 'lsb__save',
+      '<button class="btn btn--filled btn--style-pale btn--size-m btn--icon lsb__save-ok" type="button" data-save="ok" aria-label="Сохранить"><span class="btn__icon">&#xE75E;</span></button>' +
+      '<button class="btn btn--ghost btn--style-label btn--size-m btn--icon lsb__save-cancel" type="button" data-save="cancel" aria-label="Отменить"><span class="btn__icon">&#xE66C;</span></button>');
     row.classList.add('is-edit');
-    row.querySelector('.ls-item__name').replaceWith(input);
-    row.querySelector('.ls-item__cmds').before(save);
+    row.querySelector('.lsb__page-name').replaceWith(input);
+    row.querySelector('.lsb__cmds').before(save);
     lsEditing = { page, row, input };
     input.focus();
     input.select();
@@ -2780,22 +2795,22 @@
   // Панель поверх контента закрывается, когда мышь ушла, а меню и переименование закрыты.
   function lsCollapseIfLeft() {
     clearTimeout(lsCloseTimer);
-    if (!stage.classList.contains('is-ls-open') || lsRoot.matches(':hover')) return;
+    if (!lsRoot.classList.contains('is-open') || lsRoot.matches(':hover')) return;
     lsCloseTimer = setTimeout(() => {
-      if (lsMenuPage == null && !lsEditing && lsNew.hidden && !lsRoot.matches(':hover')) stage.classList.remove('is-ls-open');
+      if (lsMenuPage == null && !lsEditing && lsNew.hidden && !lsRoot.matches(':hover')) lsRoot.classList.remove('is-open');
     }, 200);
   }
 
   lsLines.addEventListener('mouseenter', () => {
     clearTimeout(lsCloseTimer);
-    stage.classList.add('is-ls-open');
+    lsRoot.classList.add('is-open');
   });
   lsRoot.addEventListener('mouseenter', () => clearTimeout(lsCloseTimer));
   lsRoot.addEventListener('mouseleave', lsCollapseIfLeft);
-  lsToggle.addEventListener('click', () => lsSetCollapsed(!stage.classList.contains('is-ls-collapsed')));
+  lsToggle.addEventListener('click', () => lsSetCollapsed(!lsRoot.classList.contains('lsb--hover')));
 
   lsList.addEventListener('click', (e) => {
-    const row = e.target.closest('.ls-item');
+    const row = e.target.closest('.lsb__page');
     if (!row) return;
     const id = Number(row.dataset.id);
     const save = e.target.closest('[data-save]');
@@ -2810,7 +2825,7 @@
     }
   });
   lsList.addEventListener('dblclick', (e) => {
-    const row = e.target.closest('.ls-item');
+    const row = e.target.closest('.lsb__page');
     if (stage.classList.contains('is-tpl-view')) return; // в просмотре шаблона страницы не переименовываются
     if (row && !e.target.closest('[data-cmd], [data-save]') && !row.classList.contains('is-edit')) lsStartRename(Number(row.dataset.id));
   });
@@ -3070,7 +3085,7 @@
     }));
     // первый пункт — на уровне ссылки, маркер левее текста, как у «Доступа»
     const r = stageRect(btn);
-    const box = stageRect(rsParams);
+    const box = stageRect(pagePickMenu.parentElement); // окно «Параметры сайта» или «Параметры» публикации
     pagePickMenu.style.left = Math.round(r.left - box.left - 30) + 'px';
     pagePickMenu.style.top = Math.round(r.top + r.height / 2 - box.top - 22) + 'px';
     pagePickMenu.hidden = false;
@@ -3082,6 +3097,75 @@
     if (item || e.target.closest('#pagePickClose')) pagePickClose();
   });
   document.addEventListener('mousedown', (e) => { if (!e.target.closest('#pagePickMenu, [data-page-pick]')) pagePickClose(); });
+
+  // «Тип сайта» (Figma j0TcGAxRru4vkoaXdGwmWO 560:28184): клик по названию компонента в «Параметрах сайта» — радиоменю компонентов из COMP,
+  // отмечен показанный в блоке. Меню встаёт поверх названия: заголовок «Тип сайта» — на его месте, по тексту пунктов.
+  // Выбор другого компонента меняет тип сайта: после подтверждения (compSwitchAsk) прежний отключается со своими страницами и настройками, новый подключается.
+  const compMenu = $('#compMenu'), compMenuBtn = $('#salesSettingsTitle');
+  function compMenuClose() {
+    compMenu.hidden = true;
+    compMenuBtn.setAttribute('aria-expanded', 'false');
+  }
+  function compSwitch(id) {
+    const cur = compActive();
+    if (cur === id && compOn.has(id)) return;
+    if (cur && cur !== id) {
+      const pages = [COMP[cur].widgetHome, ...COMP[cur].pages].filter(Boolean);
+      compRemove([cur], catalogAdded && cur === 'restaurant', pages);
+    }
+    compConnect(id, true);
+    compAddWidgetHome(id);
+    pagePickDefaults(id);
+    lsRender();
+    pagePickRender();
+    salesRender();
+  }
+  compMenuBtn.addEventListener('click', () => {
+    if (!compMenu.hidden) { compMenuClose(); return; }
+    pagePickClose();
+    const cur = compActive();
+    $('.comp-menu__items', compMenu).replaceChildren(...Object.entries(COMP).map(([id, c]) => {
+      const on = id === cur;
+      const item = el('button', 'mw-menu__item ls-mode__item' + (on ? ' is-selected' : ''), '<span class="ls-mode__toggle"></span><span class="mw-menu__text"></span>');
+      item.type = 'button';
+      item.setAttribute('role', 'menuitemradio');
+      item.setAttribute('aria-checked', on);
+      item.dataset.compPick = id;
+      $('.mw-menu__text', item).textContent = c.name;
+      return item;
+    }));
+    // текст названия — под текстом первого пункта (над пунктами шапка «Тип сайта»): сдвиг меряем по самому меню
+    const r = stageRect(compMenuBtn);
+    const box = stageRect(compMenu.parentElement); // окно «Параметры сайта» или «Параметры» публикации
+    compMenu.style.left = compMenu.style.top = '0px';
+    compMenu.hidden = false;
+    const m = stageRect(compMenu), t = stageRect($('.mw-menu__text', compMenu));
+    compMenu.style.left = Math.round(r.left - box.left - (t.left - m.left)) + 'px';
+    compMenu.style.top = Math.round(r.top + r.height / 2 - box.top - (t.top + t.height / 2 - m.top)) + 'px';
+    compMenuBtn.setAttribute('aria-expanded', 'true');
+  });
+  // Смена на другой компонент — с подтверждением, как у крестика (compRemoveAsk): что отключится и какие страницы удалятся
+  function compSwitchAsk(id) {
+    const cur = compActive();
+    if (!cur || cur === id) { compSwitch(id); return; }
+    const pages = [COMP[cur].widgetHome, ...COMP[cur].pages].filter(Boolean).map((n) => `«${n}»`);
+    const list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages.at(-1) : pages[0];
+    const lines = [`Компонент «${COMP[cur].name}» отключится.`];
+    if (pages.length) lines.push(pages.length > 1 ? `Удалятся страницы ${list}.` : `Удалится страница ${list}.`);
+    salesClose();
+    confirmAsk({
+      message: `Сменить тип сайта на «${COMP[id].name}»?`,
+      details: lines.join(' '),
+      answers: [['yes', 'Да', true], ['cancel', 'Отмена']],
+    }, (answer) => { if (answer === 'yes') compSwitch(id); });
+  }
+  compMenu.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-comp-pick]');
+    if (item || e.target.closest('#compMenuClose')) compMenuClose();
+    if (item) compSwitchAsk(item.dataset.compPick);
+  });
+  document.addEventListener('mousedown', (e) => { if (!e.target.closest('#compMenu, #salesSettingsTitle')) compMenuClose(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') compMenuClose(); });
 
   // Сценарии панели — состояния страницы. «Новая страница»: открытая новая страница (или последняя, или созданная заново) получает режим сценария.
   // Остальные возвращают исходные страницы и каталог, подсказка на плюсе — только в «Создании окна с товаром».
@@ -3236,12 +3320,13 @@
     TPL_CATALOG.map(([name, groups]) => `<div class="tpl-catalog__h">${name}</div>` +
       groups.map(([sub, items]) => `<div class="tpl-catalog__sub">${sub}</div><div class="tpl-catalog__cards">${items.map(tplCard).join('')}</div>`).join('')).join('')));
 
-  function tplOpen(n, name) {
+  function tplOpen(n, name, kind) {
     tplOpening = true;
     frame.select('catalog-setup'); // сайт собран, как «В конструкторе»; реестр прячется
     tplOpening = false;
     stage.classList.add('is-tpl', 'is-tpl-view');
     stage.dataset.tpl = n;
+    stage.dataset.tplKind = kind || 'menu'; // набор шаблонов: у отеля свои баннеры (styles.css)
     chTitleText = chTitle.textContent;
     chTitle.textContent = name || 'Шаблон';
     // страницы шаблона — те же, что «В конструкторе» и на карточке сайта в реестре (состав и порядок одни):
@@ -3259,7 +3344,9 @@
     if (!stage.classList.contains('is-tpl')) return;
     stage.classList.remove('is-tpl', 'is-tpl-view');
     delete stage.dataset.tpl;
+    delete stage.dataset.tplKind;
     chTitle.textContent = chTitleText;
+    pubClose(); // окно «Параметры» шаблона — до следующего «Использовать», параметры сайта возвращаются на место
   }
   // В меню шапки сайта подчёркнута открытая страница
   function tplNavSync(page) {
@@ -3268,12 +3355,55 @@
   }
   $('#chUse').addEventListener('click', () => stage.classList.remove('is-tpl-view'));
 
+  // Окно «Параметры» по «Опубликовать» (Figma 7113:102645). Параметры в нём — те же «Параметры сайта»:
+  // на время открытия тело #rsParams и меню выбора страницы переезжают сюда (одна разметка — одна механика), при закрытии возвращаются.
+  // Пустой адрес сайта при первом открытии получает случайный набор букв (слоги «согласная + гласная», как vobara)
+  const pub = $('#pub'), pubBody = $('#pubBody'), rsParamsBody = $('.rs-params__body', rsParams);
+  const pubRand = () => {
+    const c = 'bvgdzklmnprstf', v = 'aeiou';
+    let s = '';
+    for (let i = 0; i < 3; i++) s += c[Math.floor(Math.random() * c.length)] + v[Math.floor(Math.random() * v.length)];
+    return s;
+  };
+  function pubOpen() {
+    rsCloseParams();
+    pubBody.append(rsParamsBody);
+    pub.append(pagePickMenu, compMenu);
+    pagePickRender();
+    const addr = $('.rs-site .dom__text', rsParamsBody);
+    if (addr && !addr.value) { addr.value = pubRand(); addr.dispatchEvent(new Event('input', { bubbles: true })); }
+    pub.hidden = false;
+  }
+  function pubClose() {
+    if (pub.hidden) return;
+    pagePickClose();
+    compMenuClose();
+    pub.hidden = true;
+    rsParams.append(rsParamsBody, pagePickMenu, compMenu);
+  }
+  $('#chPublish').addEventListener('click', () => (pub.hidden ? pubOpen() : pubClose()));
+  $('#pubClose').addEventListener('click', pubClose);
+  // «Опубликовать» в окне: конструктор закрывается, в реестре — карточка созданного сайта (вкладка «Параметры»)
+  // и окно «Домен будет создан…» (registry/index.html, reg:publish-site). Адрес — из поля окна, проверки нет
+  $('.pub__publish', pub).addEventListener('click', () => {
+    const dom = $('.rs-site [data-domain]', rsParamsBody);
+    const name = $('.dom__text', dom).value.trim() || pubRand();
+    const link = dom.classList.contains('dom--saby') ? name + $('.dom__zone', dom).textContent : name;
+    // точки продаж — те, что настроены в «Параметрах сайта» конструктора (в шаблоне их нет)
+    const points = salesSaved.map((row) => ({ name: SALES.find((p) => p.id === row.id).name, price: row.price }));
+    regPublish = { link, title: chTitle.textContent, tpl: Number(stage.dataset.tpl) || 1, kind: stage.dataset.tplKind || 'menu', points };
+    frame.select('sites');
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') pubClose(); });
+  // «Настройки» в правой панели открывают параметры на их обычном месте
+  for (const b of document.querySelectorAll('.rp-btn[data-rp="settings"]')) b.addEventListener('mousedown', pubClose);
+
   lsSetCollapsed(lsReadCollapsed());
   scenApply(stage.dataset.scenario);
-  // старт — «Реестр сайтов» поверх собранного конструктора
-  // (сборка могла переключить панель на «В конструкторе» через scenSync — возвращаем)
-  if (frame.value.scenario !== 'sites') frame.select('sites');
-  if (stage.dataset.scenario !== 'sites') { stage.dataset.scenario = 'sites'; regShow(true); }
+  // старт — «Универсальный шаблон» «Электронного меню» (как по клику на панели «Шаблоны» реестра) после «Использовать».
+  // Крестик просмотра ведёт в реестр на панель «Шаблоны»: реестр ещё не грузился, regShow открывает его с ?tpl
+  tplOpen(1, 'Универсальный шаблон', 'menu');
+  stage.classList.remove('is-tpl-view'); // старт — шаблон уже взят в работу («Использовать»): в шапке «Опубликовать»
   // каталог выше секции с кнопкой дорисовывается вместе с картинками
   window.addEventListener('load', () => {
     if (!['window-link', 'ext-add', 'ext-added', 'ext-link'].includes(stage.dataset.scenario)) return;

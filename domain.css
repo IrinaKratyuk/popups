@@ -7,12 +7,9 @@
 .rs-site__label:has(+ .dom) { align-self: start; line-height: 24px; }
 
 .dom { display: flex; flex-direction: column; gap: 4px; width: 440px; max-width: 100%; padding-bottom: 4px; white-space: normal; }
-.dom__form { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; width: 100%; }
-.dom__input { position: relative; display: flex; align-items: flex-end; flex: 1 0 0; min-width: 150px; height: 24px; border-bottom: 1px solid var(--border-unaccented_border-color, #d2d6da); cursor: text; }
-/* Узкое место (окно «Параметры сайта» конструктора): кнопки уходят на вторую строку, а поле не растягивается шире,
-   чем в карточке сайта реестра при полной ширине 440 — 440 − 10 − 2 × 124 − 8 = 174 */
-.dom { container-type: inline-size; }
-@container (max-width: 439px) { .dom__input { max-width: 174px; } }
+.dom__form { display: flex; align-items: flex-start; gap: 10px; width: 100%; }
+.dom__input { position: relative; display: flex; align-items: flex-end; flex: 1 0 0; min-width: 0; height: 24px; border-bottom: 1px solid var(--border-unaccented_border-color, #d2d6da); cursor: text; }
+/* Поле и кнопки всегда в одну строку, кнопки справа от поля. В узком месте (окно «Параметры сайта» конструктора) сужается поле, кнопки — нет */
 .dom__text { flex: 1; min-width: 0; height: 23px; padding: 4px 0 2px; border: 0; outline: 0; background: transparent; font: inherit; font-size: 14px; line-height: normal; letter-spacing: -.1974px; color: var(--text-text-color, #000); text-overflow: ellipsis; }
 .dom--saby .dom__text { padding-right: 53px; }
 .dom__text::placeholder { color: rgba(137,145,169,.6); opacity: 1; } /* components/input/placeholder-color_inputtext */

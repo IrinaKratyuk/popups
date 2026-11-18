@@ -1644,11 +1644,12 @@ html, body{
 
 /* Блок «Сайт» — как .rs-site в styles.css конструктора (Figma 2854:63032).
    Карточка — .params: фон, скругление и тень как у «Источников». */
-.rs-site{ padding: var(--o-s) var(--o-m); }
+/* Плашка прижата к вкладкам, отступ — внутри неё: сверху 16 (8 + 8), снизу 8 (только здесь; в конструкторе свои поля) */
+.rs-site{ padding: calc(var(--o-s) * 2) var(--o-m) var(--o-s); }
 /* Заголовки плашек «Сайт» и компонентов («Электронное меню» и др.) — 16 полужирный, токены ui-kit tokens.css */
 .rs-site__title{ display: flex; align-items: center; gap: 8px; height: 24px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
-.rs-site__props{ display: grid; grid-template-columns: max-content minmax(0, 1fr); column-gap: 8px; align-items: center; justify-items: start; grid-auto-rows: minmax(24px, auto); font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
-.rs-site__favicon{ display: block; margin: 2px 0; border: 1px solid #eaeaea; border-radius: 28px; }
+.rs-site__props{ display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px; align-items: center; justify-items: start; grid-auto-rows: minmax(24px, auto); /* строка свойства 24, между свойствами 8 */ font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
+.rs-site__favicon{ display: block; margin: -2px 0; border: 1px solid #eaeaea; border-radius: 28px; } /* 28 в строке 24: выступает на 2 сверху и снизу, высоту строки не меняет */
 .rs-site__props, .rs-site__chips{ align-self: stretch; }
 .rs-site__chips{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .rs-site__chips .chips__caption{ padding-bottom: 2px; }
@@ -1659,18 +1660,22 @@ html, body{
 /* Редактор «Адрес сайта» — общий ../domain.css (как в «Параметрах сайта» конструктора) */
 
 /* Точки продаж — как .rs-params .sales-settings в styles.css конструктора. */
-.sales-settings{ position: relative; margin-top: var(--o-s); padding: 8px 0; }
-.sales-settings__head{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 12px; height: 24px; margin-bottom: 4px; padding: 0 66px 0 12px; font-size: 14px; }
-.sales-settings__head > div{ display: flex; align-items: center; gap: 8px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
-.sales-settings__icon{ flex: none; width: 24px; height: 24px; margin-right: -2px; }
+/* Шапка компонента — над белой плашкой, на фоне страницы; плашка (фон, скругление, тень .params) — ::before от 4px под шапкой до низа блока */
+.params.sales-settings{ position: relative; isolation: isolate; margin-top: var(--o-s); padding: 8px 0; background: transparent; box-shadow: none; }
+.params.sales-settings::before{ content: ""; position: absolute; z-index: -1; inset: 36px 0 0; border-radius: var(--r-s); background: var(--c-bg); box-shadow: var(--shadow-c); }
+.sales-settings__head{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 12px; height: 24px; margin-bottom: 12px; padding: 0 66px 0 12px; font-size: 14px; }
+.sales-settings__head > div{ display: flex; align-items: center; gap: 4px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
+/* Название компонента — кнопка-ссылка: вид заголовка, на ховере — цвет ссылки. Клик откроет меню выбора компонента (меню — следующим шагом) */
+.sales-settings__comp{ padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: inherit; cursor: pointer; }
+.sales-settings__comp:hover{ color: var(--text-hover_text-color); text-decoration: underline; } /* как .btn--link.btn--style-default из ui-kit: темнее и подчёркнуто */
 /* «Страница каталога» и «Страница товара», заголовок «Точки продаж» с «+» — как .comp-props и .sales-settings__sub в ../styles.css */
 .comp-props{ padding: 0 12px; grid-auto-rows: 24px; row-gap: 8px; }
 .comp-props__pick{ padding: 0; border: 0; background: none; font: inherit; font-size: 14px; letter-spacing: inherit; color: #2562aa; cursor: pointer; }
 .comp-props__pick:hover{ text-decoration: underline; }
 .sales-settings__sub{ display: flex; align-items: center; gap: 8px; height: 24px; margin: 8px 0 4px; padding: 0 12px; font-size: var(--font-font-size-font-size_l); font-weight: var(--font-font-weight-bold); letter-spacing: -.2115px; color: var(--components-heading-default_text-color_heading); } /* «Страницы», «Точки продаж» — 15 */
 /* От шапки до «Страниц» — 4, как в конструкторе (там 4 снизу у шапки и 4 сверху у подгруппы схлопываются).
-   Здесь блок — flex, поля не схлопываются, поэтому у первой подгруппы своего поля нет; между ними лежит крестик .sales-settings__remove */
-.sales-settings__head + .sales-settings__sub, .sales-settings__remove + .sales-settings__sub{ margin-top: 0; }
+   Здесь блок — flex, поля не схлопываются, поэтому у первой подгруппы своего поля нет */
+.sales-settings__head + .sales-settings__sub{ margin-top: 0; }
 /* «Точки продаж» с подписью «Прайс»: те же колонки, что у строк точек (1fr 1fr, gap 10, справа 66), «Прайс» — над колонкой прайса,
    серым обычным начертанием, по базовой линии с заголовком. Без точек подписи нет */
 .sales-settings__sub--points{ align-self: stretch; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: baseline; gap: 10px; padding-right: 66px; }
@@ -1689,6 +1694,15 @@ html, body{
 .mw-menu__close{ position: absolute; right: -14px; top: 8px; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(205,205,205,.8); cursor: pointer; transition: background-color .12s; }
 .mw-menu__close:hover{ background: rgba(170,170,170,.85); }
 .mw-menu__close img{ display: block; }
+/* Меню «Тип сайта» — как .comp-menu в ../styles.css */
+.ls-mode__head{ height: 28px; display: flex; align-items: center; padding-left: 22px; font-size: 14px; letter-spacing: 1.25px; text-transform: uppercase; color: #8991a9; }
+.mw-menu.comp-menu{ width: 210px; }
+.comp-menu .mw-menu__list{ padding: 8px; }
+.comp-menu__top{ display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.comp-menu__head{ flex: 1; min-width: 0; }
+.comp-menu__close{ flex: none; width: 28px; height: 28px; padding: 0; border: 0; background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.comp-menu__close img{ flex: none; display: block; }
+.comp-menu__items{ display: flex; flex-direction: column; gap: 6px; }
 .ls-mode__toggle{ flex: none; width: 14px; height: 32px; display: flex; align-items: center; justify-content: center; padding-right: 2px; }
 .ls-mode__toggle::before{ content: ""; width: 7px; height: 7px; border-radius: 50%; visibility: hidden; }
 .ls-mode__item:hover .ls-mode__toggle::before{ visibility: visible; border: 1px solid var(--border-border-color, #ccc); background: var(--background-background-color, #fff); }
@@ -1786,7 +1800,7 @@ html, body{
 .comp-group .sales-settings__head{ margin-bottom: 0; }
 #regCompGroups{ align-self: stretch; width: 100%; } /* обёртка карточек компонентов — на всю ширину, как «Сайт» */
 #regCompGroups:empty{ display: none; }
-.sales-settings__remove{ position: absolute; top: 8px; right: 8px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.sales-settings__remove{ flex: none; font-weight: 400; letter-spacing: normal; display: flex; align-items: center; justify-content: center; width: 16px; height: 24px; padding: 2px 0 0; border: 0; background: transparent; cursor: pointer; }
 .sales-settings__remove .icon{ font-size: 16px; color: #ccc; }        /* icon/unaccented_icon-color */
 .sales-settings__remove:hover .icon{ color: #999; }                  /* icon/unaccented_hover_icon-color */
 .rs-comps{ width: 100%; padding: 12px 8px; }
@@ -2977,6 +2991,19 @@ button.tpl-cat{ cursor: pointer; }
   cursor: pointer;
 }
 .tpl-doc:hover{ box-shadow: var(--shadow-b); }
+.tpl-doc--still{ cursor: default; } /* только ховер, клика нет */
+/* Пустая папка — без подложки, по центру сверху надпись и иллюстрация */
+.tpl-empty{
+  flex: 1 0 100%;
+  align-self: stretch;
+  min-height: calc(100% - var(--o-l));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding-top: 52px;
+}
+.tpl-empty__text{ font-size: 20px; color: #a9adbd; }
 .tpl-doc img{
   position: absolute;
   inset: 0;
@@ -2999,6 +3026,34 @@ button.tpl-cat{ cursor: pointer; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Плитка сайта, опубликованного из шаблона: превью — та же мини-копия шаблона, ужатая до ширины плитки (434 − рамка) */
+.tile__shot--tpl{ position: relative; }
+.tile__shot--tpl .tpl-mini{ transform: scale(calc(432 / 1280)); }
+
+/* Окно «Домен будет создан…» — подтверждение конструктора (../styles.css .confirm, Figma nuC4KFMiS36uDWDUp9wKGl 4064:21938) */
+.dlg-layer{ position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.dlg-layer[hidden]{ display: none; }
+.dlg{
+  width: 350px; display: flex; flex-direction: column; align-items: center; overflow: hidden; border-radius: 8px; pointer-events: auto;
+  box-shadow: 0 0 46px rgba(0, 0, 0, .12), 0 0 15px rgba(0, 0, 0, .12);
+  background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 350 164' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%25' width='100%25' fill='url(%23grad)' opacity='0.08'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(30.15 40.234 44.907 -27.324 87.5 -24.78)'><stop stop-color='rgba(12,148,255,0)' offset='0'/><stop stop-color='rgba(12,148,255,1)' offset='1'/></radialGradient></defs></svg>") 0 0 / 100% 100%, #fff;
+  font-family: var(--font-ui);
+}
+.dlg__head{ width: 100%; display: flex; justify-content: center; padding: 20px 0; }
+.dlg__marker{ width: 40px; height: 3px; border-radius: 100px; background: #0c94ff; } /* components/popuptemplate/secondary_marker_color */
+.dlg__content{ width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 24px 24px; text-align: center; }
+.dlg__message{ margin: 0; padding-top: 1px; font-size: 18px; letter-spacing: -.2538px; color: #000; }
+.dlg__details{ margin: 0; white-space: pre-line; font-size: 15px; letter-spacing: -.2115px; color: #656c87; } /* text/label_contrast_text-color */
+.dlg__footer{ display: flex; justify-content: center; gap: 12px; padding-bottom: 24px; }
+.dlg__btn{
+  width: 80px; height: 24px; display: flex; align-items: center; justify-content: center; padding: 0 12px 1px;
+  background: #fff; border: 1px solid #529edc; border-radius: 100px; /* border/secondary_border-color */
+  font: inherit; font-size: 14px; letter-spacing: -.1974px; color: #000; cursor: pointer; transition: border-color .12s;
+}
+.dlg__btn--primary{ border-color: #f88f62; }           /* border/primary_border-color */
+.dlg__btn:hover{ border-color: #0065b8; }               /* border/secondary_hover_border-color */
+.dlg__btn--primary:hover{ border-color: #f55714; }      /* border/primary_hover_border-color */
 
 /* Превью шаблона «Электронного меню» — уменьшенная копия того, что открывает конструктор
    (styles.css «Просмотр шаблона сайта»): «Главная» сайта 1280px, ужат до ширины плашки. */
@@ -3058,7 +3113,7 @@ button.tpl-cat{ cursor: pointer; }
 /* 2 «Широкий сайт»: баннер на всю ширину, текст слева */
 .tpl-mini--2 .tpl-mini__banner{ padding: 0; }
 .tpl-mini--2 .tpl-mini__ban{ justify-content: flex-start; padding: 0 var(--g); }
-.tpl-mini--2 .tpl-mini__ban-img{ background-image: url("../assets/img/templates/banners/wide.jpg"); }
+.tpl-mini--2 .tpl-mini__ban-img{ background-image: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)), url("../assets/img/templates/banners/wide.jpg"); } /* затемнение — чтобы читался текст */
 .tpl-mini--2 .tpl-mini__ban-text{ align-items: flex-start; text-align: left; }
 /* 3 «Всё в одном месте»: без меню, зелёный градиент, над названием — разделы */
 .tpl-mini--3 .tpl-mini__nav{ visibility: hidden; }
@@ -3070,6 +3125,11 @@ button.tpl-cat{ cursor: pointer; }
 .tpl-mini--4 .tpl-mini__ban-img{ right: auto; width: 48.125%; border-radius: 24px; background-image: url("../assets/img/templates/banners/split.jpg"); }
 .tpl-mini--4 .tpl-mini__ban-text{ align-items: flex-start; margin-left: calc(48.125% + 60px); text-align: left; }
 .tpl-mini:is(.tpl-mini--1, .tpl-mini--3) :is(.tpl-mini__phone, .tpl-mini__soc){ display: none; }
+/* Отель — те же раскладки, баннеры из Figma QJ9NRz32bhm1BUkVGsuti0 1454:3500; совпадают с конструктором (styles.css .stage[data-tpl-kind="hotel"]) */
+.tpl-mini--hotel.tpl-mini--1 .tpl-mini__ban-img{ background-image: linear-gradient(rgba(0,0,0,.2), rgba(0,0,0,.2)), url("../assets/img/templates/banners/hotel-universal.jpg"); background-position: center; }
+.tpl-mini--hotel.tpl-mini--2 .tpl-mini__ban-img{ background-image: linear-gradient(rgba(0,0,0,.6), rgba(0,0,0,.6)), url("../assets/img/templates/banners/hotel-wide.jpg"); background-position: center 70%; }
+.tpl-mini--hotel.tpl-mini--3 .tpl-mini__ban{ background: linear-gradient(113deg, #3a5cbd, #0f172a); }
+.tpl-mini--hotel.tpl-mini--4 .tpl-mini__ban-img{ background-image: url("../assets/img/templates/banners/hotel-split.jpg"); }
 
 /* Свой тулбар панели: крестик сверху, информеры снизу */
 .tpl__bar{
@@ -3634,7 +3694,6 @@ button.tpl-cat{ cursor: pointer; }
               <!-- Блок «Сайт» — 1:1 из окна «Параметры сайта» конструктора (Figma 2854:63032):
                    свойства, за ними чипсы ui-kit. Разметка та же, что в ../index.html (.rs-site). -->
               <section class="params rs-site" aria-label="Сайт">
-                <div class="rs-site__title"><img src="../assets/img/comp/site.svg" width="24" height="24" alt="">Сайт</div>
                 <div class="rs-site__props">
                   <span class="rs-site__label">Адрес сайта</span>
                   <!-- Редактор домена (Figma DRIJUUCPNarHomYAJ5eMqn, 14:1683). Состояние Default; дальше — скрипт «Редактор домена» -->
@@ -3666,10 +3725,9 @@ button.tpl-cat{ cursor: pointer; }
                    в ../app.js; первая — основная (корона). На ховере строки — команды. -->
               <section class="params sales-settings" id="regSales" aria-label="Точки продаж сайта">
                 <div class="sales-settings__head">
-                  <div><img class="sales-settings__icon" src="../assets/img/comp/restaurant.svg" width="24" height="24" alt=""><span id="regSalesTitle">Электронное меню</span></div>
+                  <div><button class="sales-settings__comp" type="button" id="regSalesTitle" aria-haspopup="menu" aria-expanded="false">Электронное меню</button><button class="sales-settings__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE66C;</i></button></div>
                   <span></span>
                 </div>
-                <button class="sales-settings__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE66C;</i></button>
                 <!-- Страница каталога и страница товара — как в «Параметрах сайта» конструктора (../index.html, .comp-props):
                      ссылка со страницей, клик открывает меню #regPagePickMenu. Выбраны «Меню» и «Карточка товара», как в сценарии «В конструкторе» -->
                 <div class="sales-settings__sub"><span>Страницы</span></div>
@@ -3700,6 +3758,14 @@ button.tpl-cat{ cursor: pointer; }
                 <div class="mw-menu ls-mode page-pick-menu" id="regPagePickMenu" role="menu" aria-label="Выбор страницы" hidden>
                   <div class="mw-menu__list"></div>
                   <button class="mw-menu__close" type="button" data-page-pick-close aria-label="Закрыть меню страниц"><img src="../assets/img/close-menu.svg" width="12" height="12" alt=""></button>
+                </div>
+                <!-- «Тип сайта» по клику на название компонента — как #compMenu в конструкторе (Figma j0TcGAxRru4vkoaXdGwmWO 560:28184).
+                     Пункты строит скрипт ниже; пункт другого компонента несёт data-comp-add — его подключает скрипт компонентов -->
+                <div class="mw-menu ls-mode comp-menu" id="regCompMenu" role="menu" aria-label="Тип сайта" hidden>
+                  <div class="mw-menu__list">
+                    <div class="comp-menu__top"><div class="ls-mode__head comp-menu__head">Тип сайта</div><button class="comp-menu__close" type="button" data-comp-menu-close aria-label="Закрыть"><img src="../assets/img/close-link.svg" width="32" height="32" alt=""></button></div>
+                    <div class="comp-menu__items"></div>
+                  </div>
                 </div>
               </section>
               <!-- Остальные подключённые компоненты: иконка, название, крестик (строит скрипт ниже) -->
@@ -3875,7 +3941,6 @@ button.tpl-cat{ cursor: pointer; }
                   sales.setAttribute('aria-label', c.name);
                   sales.classList.toggle('sales-settings--no-price', !c.price);
                   if (c.pages) sales.dataset.compPages = c.pages.join('|'); else delete sales.dataset.compPages;
-                  sales.querySelector('.sales-settings__icon').src = '../assets/img/comp/' + on + '.svg';
                   document.getElementById('regSalesTitle').textContent = c.name;
                   document.getElementById('regSalesPoints').textContent = c.points;
                   var sep = document.getElementById('regMasterSalesTitle');
@@ -4076,6 +4141,56 @@ button.tpl-cat{ cursor: pointer; }
                   pick.setAttribute('aria-expanded', 'true');
                 });
                 document.addEventListener('mousedown', function(e){ if (!e.target.closest('#regPagePickMenu, [data-page-pick]')) close(); });
+                document.addEventListener('keydown', function(e){ if (e.key === 'Escape') close(); });
+              })();
+              </script>
+              <script>
+              /* «Тип сайта» — как compMenu в ../app.js: клик по названию компонента открывает радиоменю компонентов поверх названия,
+                 отмечен подключённый (data-comp-off крестика). Пункт другого компонента несёт data-comp-add — его подключает скрипт
+                 компонентов выше (прежний уходит со своими точками). Разметку перевставляет apply(), поэтому слушаем document. */
+              (function(){
+                if (window.regCompMenuBound) return;
+                window.regCompMenuBound = true;
+                var NAMES = { restaurant: 'Электронное меню', delivery: 'Доставка', services: 'Услуги', hotel: 'Отель' };
+                function close(){
+                  var menu = document.getElementById('regCompMenu');
+                  if (menu) menu.hidden = true;
+                  var t = document.getElementById('regSalesTitle');
+                  if (t) t.setAttribute('aria-expanded', 'false');
+                }
+                document.addEventListener('click', function(e){
+                  var menu = document.getElementById('regCompMenu');
+                  if (!menu) return;
+                  if (e.target.closest('#regCompMenu [data-comp-add], #regCompMenu .is-selected, [data-comp-menu-close]')){ close(); return; }
+                  var btn = e.target.closest('#regSalesTitle');
+                  if (!btn) return;
+                  if (!menu.hidden){ close(); return; }
+                  var cur = document.querySelector('#regSales .sales-settings__remove').dataset.compOff;
+                  var list = menu.querySelector('.comp-menu__items');
+                  list.innerHTML = '';
+                  Object.keys(NAMES).forEach(function(id){
+                    var on = id === cur;
+                    var b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'mw-menu__item ls-mode__item' + (on ? ' is-selected' : '');
+                    b.setAttribute('role', 'menuitemradio');
+                    b.setAttribute('aria-checked', on);
+                    if (!on) b.dataset.compAdd = id;
+                    b.innerHTML = '<span class="ls-mode__toggle"></span><span class="mw-menu__text"></span>';
+                    b.lastChild.textContent = NAMES[id];
+                    list.appendChild(b);
+                  });
+                  // текст названия — под текстом первого пункта (над пунктами шапка «Тип сайта»): сдвиг меряем по самому меню, как в конструкторе
+                  menu.style.left = menu.style.top = '0px';
+                  menu.hidden = false;
+                  var box = menu.offsetParent.getBoundingClientRect(), r = btn.getBoundingClientRect();
+                  var k = box.width / menu.offsetParent.offsetWidth || 1;
+                  var m = menu.getBoundingClientRect(), t = menu.querySelector('.mw-menu__text').getBoundingClientRect();
+                  menu.style.left = Math.round((r.left - box.left - (t.left - m.left)) / k) + 'px';
+                  menu.style.top = Math.round((r.top + r.height / 2 - box.top - (t.top + t.height / 2 - m.top)) / k) + 'px';
+                  btn.setAttribute('aria-expanded', 'true');
+                });
+                document.addEventListener('mousedown', function(e){ if (!e.target.closest('#regCompMenu, #regSalesTitle')) close(); });
                 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') close(); });
               })();
               </script>
@@ -5065,6 +5180,7 @@ button.tpl-cat{ cursor: pointer; }
           if (window.regSalesCrown) window.regSalesCrown();
           if (!points.length && window.regSalesEmpty) window.regSalesEmpty();
         }
+        window.regSalesApply = apply; // точки сайта, опубликованного из шаблона (reg:publish-site)
         document.addEventListener('click', function(e){
           if (e.target.closest('#regSales .sales-add, #regSales .sales-empty__link')) open();
           // прайс в каталоге точки — панель «Прайсы» выбранной в мастере точки
@@ -5106,6 +5222,19 @@ button.tpl-cat{ cursor: pointer; }
     </div>
   </div>
 
+</div>
+
+<!-- Окно после публикации сайта из шаблона (сообщение reg:publish-site) — вид подтверждения конструктора (../index.html #confirm) -->
+<div class="dlg-layer" id="domain-info" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="domain-info-msg" aria-describedby="domain-info-details">
+    <div class="dlg__head"><span class="dlg__marker"></span></div>
+    <div class="dlg__content">
+      <p class="dlg__message" id="domain-info-msg">Домен будет создан в течение 10&nbsp;минут</p>
+      <p class="dlg__details" id="domain-info-details">Полное обновление информации
+о домене может занять до 48 часов</p>
+    </div>
+    <div class="dlg__footer"><button class="dlg__btn dlg__btn--primary" type="button" data-domain-info-ok>ОК</button></div>
+  </div>
 </div>
 
 <script>
@@ -5259,8 +5388,8 @@ button.tpl-cat{ cursor: pointer; }
           '<div class="tile__visits"><span class="tile__num">' + d.visits + '</span><i class="icon icon--label" aria-hidden="true">&#xEB6B;</i></div>' +
         '</div>' +
       '</div>' +
-      '<div class="tile__shot tile__shot--mock" role="img" aria-label="Превью сайта ' + esc(d.link) + '">' +
-        '<div class="mk mk--' + d.layout + '" style="--mk-accent:' + d.accent + (d.bgc ? ';--mk-bg:' + d.bgc : '') + '">' + LAYOUTS[d.layout](d) + '</div>' +
+      '<div class="tile__shot tile__shot--mock' + (d.shot ? ' tile__shot--tpl' : '') + '" role="img" aria-label="Превью сайта ' + esc(d.link) + '">' +
+        (d.shot || '<div class="mk mk--' + d.layout + '" style="--mk-accent:' + d.accent + (d.bgc ? ';--mk-bg:' + d.bgc : '') + '">' + LAYOUTS[d.layout](d) + '</div>') +
       '</div>' +
       '<div class="tile__options">' +
         '<button class="tile__opt" type="button" aria-label="Открыть сайт"><i class="icon" aria-hidden="true">&#xE9BC;</i></button>' +
@@ -5342,6 +5471,9 @@ button.tpl-cat{ cursor: pointer; }
   window.REG_PAGES = {};
   window.REG_PAGES[MILI.link] = { layout: MILI.layout, accent: MILI.accent, pages: {} };
   Object.keys(MILI_PAGES).forEach(function(k){ window.REG_PAGES[MILI.link].pages[k] = MILI_PAGES[k](); });
+
+  window.REG_TILE = tileHtml; // плитка сайта, опубликованного из шаблона (карточка сайта, reg:publish-site)
+  window.REG_MILI_LINK = MILI.link;
 
   var start = document.getElementById('screen-1');
   start.querySelector('.registry').insertAdjacentHTML('afterbegin', tileHtml(MILI));
@@ -5851,7 +5983,8 @@ button.tpl-cat{ cursor: pointer; }
   });
 
   /* все плитки обоих реестров открывают карточку; доля на плитке — отклики к визитам */
-  $$('.tile').forEach(function(tile){
+  $$('.tile').forEach(tileInit);
+  function tileInit(tile){
     var link = $('.tile__link', tile).textContent.trim();
     var title = $('.tile__title', tile).textContent.trim();
     tile.dataset.goto = 'screen-2';
@@ -5862,9 +5995,10 @@ button.tpl-cat{ cursor: pointer; }
     var m = MODELS[link], sh = $('.tile__share', tile);
     if (m && sh) sh.textContent = share(m.R, m.V);
     if (m && sh && !m.R) sh.remove();
-  });
+  }
 
   var current = BILLING, origin = 'screen-1';
+  var SITE_SALES = {}; // адрес сайта из шаблона → его точки продаж [{ name, price }]
   try {
     var saved = JSON.parse(sessionStorage.getItem('reg-site') || 'null');
     if (saved && (saved.site === BILLING || MODELS[saved.site])) { current = saved.site; origin = saved.origin || origin; }
@@ -5905,6 +6039,8 @@ button.tpl-cat{ cursor: pointer; }
       if ($('.chart', s)) chart(s, m);
     });
     if (!m) return;
+    // у сайта из шаблона — точки, настроенные в конструкторе (в разметке — точки «Мили»)
+    if (SITE_SALES[current] && window.regSalesApply) window.regSalesApply(SITE_SALES[current]);
 
     $('#screen-2 .pagecards').innerHTML = pagecards(m);
     fitPageShots();
@@ -5960,6 +6096,42 @@ button.tpl-cat{ cursor: pointer; }
     location.hash = '#/' + (/^screen-\d+$/.test(e.data.screen) ? e.data.screen : 'screen-2');
   });
 
+  /* «Опубликовать» в окне шаблона (конструктор, ../app.js): сайт появляется в реестре первой плиткой
+     (сайт «Электронного меню» — и в реестре «Меню»), открывается его карточка на вкладке «Параметры»
+     и окно «Домен будет создан…». Сайт новый — визитов и откликов нет; страницы — шаблона, они же у «Мили»
+     (Главная, О нас, Профиль, Меню, Карточка товара). Превью на плитке — мини-копия шаблона, как на панели «Шаблоны». */
+  window.addEventListener('message', function(e){
+    if (e.source !== window.parent || !e.data || e.data.type !== 'reg:publish-site') return;
+    var d = e.data, link = d.link, mili = window.REG_MILI_LINK;
+    var from = (location.hash || '').replace(/^#\/?/, '');
+    origin = from === 'screen-delivery' ? from : 'screen-1'; // реестр, из которого открыли панель «Шаблоны»
+    var comp = d.kind === 'hotel' ? 'hotel' : 'restaurant';
+    EXTRA[link] = { avg: EXTRA[mili].avg, items: EXTRA[mili].items, pages: EXTRA[mili].pages };
+    SITE_SALES[link] = d.points || []; // точки — как в конструкторе; не настроены — «Добавьте ваши точки продаж…»
+    if (window.REG_PAGES[mili]) window.REG_PAGES[link] = window.REG_PAGES[mili];
+    var html = window.REG_TILE({ comp: comp, title: d.title, link: link, share: '', num: '0', visits: '0',
+      shot: window.REG_TPL_MINI ? window.REG_TPL_MINI(d.tpl, d.kind) : '' });
+    $$('.tile[data-site="' + link + '"]').forEach(function(t){ t.remove(); }); // повторная публикация с тем же адресом
+    ['screen-1', 'screen-delivery'].forEach(function(id){
+      if (id === 'screen-delivery' && comp !== 'restaurant') return;
+      var reg = $('#' + id + ' .registry');
+      if (!reg) return;
+      reg.insertAdjacentHTML('afterbegin', html);
+      var tile = reg.firstElementChild;
+      if (id === 'screen-1') MODELS[link] = build(tile, Object.keys(MODELS).length);
+      tileInit(tile);
+    });
+    current = link;
+    try { sessionStorage.setItem('reg-site', JSON.stringify({ site: current, origin: origin })); } catch (err) {}
+    apply();
+    location.hash = '#/screen-3';
+    domainInfo.hidden = false;
+  });
+  /* Окно «Домен будет создан…» — как подтверждение конструктора (../styles.css .confirm): закрывают «ОК» и Esc */
+  var domainInfo = document.getElementById('domain-info');
+  domainInfo.addEventListener('click', function(e){ if (e.target.closest('[data-domain-info-ok]')) domainInfo.hidden = true; });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') domainInfo.hidden = true; });
+
   apply();
 })();
 </script>
@@ -5972,6 +6144,8 @@ button.tpl-cat{ cursor: pointer; }
   'use strict';
   var IMG = '../assets/img/templates/';
 
+  /* Превью ресторана — от верха карточки до подписи, без белой полосы сверху; лишнее по бокам обрезается */
+  var RST = 'top:0; height:464px; object-fit:cover; object-position:center top';
   var TPL_TREE = {
     root: { title: 'Шаблоны', cats: [
       { name: 'Доставка', color: '#d9dbc7', img: 'cat-delivery.png', go: 'delivery' },
@@ -5980,21 +6154,43 @@ button.tpl-cat{ cursor: pointer; }
       { name: 'Электронное меню', color: '#e8f4fb', img: 'cat-menu.png', go: 'menu' }
     ]},
     delivery: { title: 'Доставка', parent: 'root', cats: [
-      { name: 'Ресторан', color: '#ede9e5', img: 'del-restaurant.png' },
-      { name: 'Кафе',     color: '#f2f2e8', img: 'del-cafe.png' },
-      { name: 'Кофейня',  color: '#e7d9cb', img: 'del-coffee.png' },
-      { name: 'Столовая', color: '#e5f2ff', img: 'del-canteen.png' },
-      { name: 'Пекарни и кондитерские', color: '#ffeee5', img: 'del-bakery.png' }
+      { name: 'Ресторан', color: '#ede9e5', img: 'del-restaurant.png', go: 'restaurant' },
+      { name: 'Кафе',     color: '#f2f2e8', img: 'del-cafe.png', go: 'cafe' },
+      { name: 'Кофейня',  color: '#e7d9cb', img: 'del-coffee.png', go: 'coffee' },
+      { name: 'Столовая', color: '#e5f2ff', img: 'del-canteen.png', go: 'canteen' },
+      { name: 'Пекарни и кондитерские', color: '#ffeee5', img: 'del-bakery.png', go: 'bakery' }
     ]},
-    /* Превью отеля — сайт на белом по центру карточки, без подписи (пропорция картинки 434×435). */
-    hotel: { title: 'Отель', parent: 'root', docs: [
-      { img: 'hotel-1.png', crop: 'top:42px; height:435px' },
-      { img: 'hotel-2.png', crop: 'top:42px; height:435px' },
-      { img: 'hotel-3.png', crop: 'top:42px; height:435px' },
-      { img: 'hotel-4.png', crop: 'top:42px; height:435px' }
+    /* Шаблоны ресторана — картинки сайтов, подпись снизу. Только ховер: клика нет (still).
+       «Калина» и «Клевер» вырезаны со скриншота, четыре «Мили» — живые мини-копии шаблонов «Электронного меню» (tpl: n). */
+    restaurant: { title: 'Ресторан', parent: 'delivery', docs: [
+      { name: 'Ресторан русской кухни',     img: 'del-rest-kalina.png', crop: RST, still: true },
+      { name: 'Ресторан с банкетным залом', img: 'del-rest-klever.png', crop: RST, still: true },
+      { name: 'Всё в одном месте',          tpl: 3, still: true },
+      { name: 'Мой шаблон',                 tpl: 4, still: true },
+      { name: 'Универсальный шаблон',       tpl: 1, still: true },
+      { name: 'Широкий сайт',               tpl: 2, still: true }
+    ]},
+    /* Шаблоны кафе — как у ресторана: картинки со скриншота, без полосы сверху, только ховер */
+    cafe: { title: 'Кафе', parent: 'delivery', docs: [
+      { name: 'Семейное кафе',       img: 'del-cafe-family.png',   crop: RST, still: true },
+      { name: 'Кафе с доставкой',    img: 'del-cafe-delivery.png', crop: RST, still: true },
+      { name: 'Кафе азиатской еды',  img: 'del-cafe-asian.png',    crop: RST, still: true }
+    ]},
+    /* Папки без шаблонов — заглушка «Эта папка пуста» (docs пустой) */
+    coffee:  { title: 'Кофейня', parent: 'delivery', docs: [] },
+    canteen: { title: 'Столовая', parent: 'delivery', docs: [] },
+    bakery:  { title: 'Пекарни и кондитерские', parent: 'delivery', docs: [] },
+    fitness: { title: 'Фитнес-клуб', parent: 'services', docs: [] },
+    /* Шаблоны отеля — как у «Электронного меню»: те же четыре раскладки, свои баннеры
+       (Figma QJ9NRz32bhm1BUkVGsuti0 1454:3500). Превью — мини-копия, клик открывает шаблон в конструкторе. */
+    hotel: { title: 'Отель', parent: 'root', kind: 'hotel', docs: [
+      { name: 'Универсальный шаблон' },
+      { name: 'Широкий сайт' },
+      { name: 'Всё в одном месте' },
+      { name: 'Мой шаблон' }
     ]},
     /* Превью — не картинка, а уменьшенная копия шаблона (miniHtml): совпадает с тем, что открывает конструктор. */
-    menu: { title: 'Электронное меню', parent: 'root', docs: [
+    menu: { title: 'Электронное меню', parent: 'root', kind: 'menu', docs: [
       { name: 'Универсальный шаблон' },
       { name: 'Широкий сайт' },
       { name: 'Всё в одном месте' },
@@ -6002,15 +6198,15 @@ button.tpl-cat{ cursor: pointer; }
     ]},
     services: { title: 'Услуги', parent: 'root', cats: [
       { name: 'Салон красоты', color: '#f0e7e4', img: 'cat-beauty.png', go: 'beauty' },
-      { name: 'Фитнес-клуб',   color: '#e8dded', img: 'cat-fitness.png',
+      { name: 'Фитнес-клуб',   color: '#e8dded', img: 'cat-fitness.png', go: 'fitness',
         crop: 'left:-25.56%; top:-7.66%; width:142.89%; height:115.59%' }
     ]},
-    /* Превью салона — как у отеля: сайт на белом по центру карточки, без подписи (435×435). */
+    /* Превью салона — сайт на белом по центру карточки, без подписи (435×435), без полосы сверху. */
     beauty: { title: 'Салон красоты', parent: 'services', docs: [
-      { img: 'beauty-1.png', crop: 'top:42px; height:435px' },
-      { img: 'beauty-2.png', crop: 'top:42px; height:435px' },
-      { img: 'beauty-3.png', crop: 'top:42px; height:435px' },
-      { img: 'beauty-4.png', crop: 'top:42px; height:435px' }
+      { img: 'beauty-1.png', crop: RST },
+      { img: 'beauty-2.png', crop: RST },
+      { img: 'beauty-3.png', crop: RST },
+      { img: 'beauty-4.png', crop: RST }
     ]}
   };
 
@@ -6040,8 +6236,8 @@ button.tpl-cat{ cursor: pointer; }
   }
 
   /* Мини-копия шаблона n — те же шапка, баннер и каталог, что в конструкторе (app.js tplOpen / TPL_CATALOG). */
-  function miniHtml(n){
-    return '<div class="tpl-mini tpl-mini--' + n + '" aria-hidden="true">' +
+  function miniHtml(n, kind){
+    return '<div class="tpl-mini tpl-mini--' + n + (kind === 'hotel' ? ' tpl-mini--hotel' : '') + '" aria-hidden="true">' +
       '<div class="tpl-mini__head"><img class="tpl-mini__logo" src="../assets/img/site/logo.svg" alt="">' +
         '<div class="tpl-mini__nav"><span>Главная</span><span>О нас</span><span>Профиль</span><span>Меню</span></div>' +
         '<div class="tpl-mini__tools"><span class="tpl-mini__phone">+7 (4852) 11-22-33</span><span class="tpl-mini__soc">VK</span>' +
@@ -6060,11 +6256,13 @@ button.tpl-cat{ cursor: pointer; }
       '</div>';
   }
 
-  /* n — номер шаблона «Электронного меню»: по клику конструктор открывает его в просмотре (сообщение reg:open-template) */
-  function docHtml(d, n){
-    return '<div class="tpl-doc" role="button" tabindex="0"' + (d.name ? ' aria-label="' + esc(d.name) + '"' : '') +
-      (n ? ' data-tpl-doc="' + n + '"' : '') + '>' +
-      (n ? miniHtml(n) : imgTag(d)) +
+  window.REG_TPL_MINI = miniHtml; // превью на плитке сайта, опубликованного из шаблона
+
+  /* n — номер шаблона, kind — набор («menu», «hotel»): по клику конструктор открывает его в просмотре (сообщение reg:open-template) */
+  function docHtml(d, n, kind){
+    return '<div class="tpl-doc' + (d.still ? ' tpl-doc--still"' : '" role="button" tabindex="0"') + (d.name ? ' aria-label="' + esc(d.name) + '"' : '') +
+      (n && !d.still ? ' data-tpl-doc="' + n + '" data-tpl-kind="' + kind + '"' : '') + '>' +
+      (n || d.tpl ? miniHtml(n || d.tpl, kind || 'menu') : imgTag(d)) +
       (d.name ? '<div class="tpl-doc__caption"><span class="tpl-doc__title">' + esc(d.name) + '</span></div>' : '') +
       '</div>';
   }
@@ -6081,7 +6279,9 @@ button.tpl-cat{ cursor: pointer; }
       titleEl.textContent = id === top ? 'Шаблоны' : lvl.title;
     }
     list.innerHTML = lvl.cats ? lvl.cats.map(catHtml).join('') :
-      lvl.docs.map(function(d, i){ return docHtml(d, id === 'menu' ? i + 1 : 0); }).join('');
+      !lvl.docs.length ? '<div class="tpl-empty"><span class="tpl-empty__text">Эта папка пуста</span>' +
+        '<img src="' + IMG + 'empty-folder.png" width="298" height="238" alt=""></div>' :
+      lvl.docs.map(function(d, i){ return docHtml(d, lvl.kind ? i + 1 : 0, lvl.kind); }).join('');
     list.scrollTop = 0;
   }
 
@@ -6090,8 +6290,10 @@ button.tpl-cat{ cursor: pointer; }
     top = from.closest('#screen-delivery') ? 'menu' : 'root';
     show(top);
     panel.hidden = false;
+    openedAt = location.hash;
   }
   function close(){ panel.hidden = true; }
+  var openedAt = ''; // экран, на котором открыли панель: закрывает только переход на другой экран
 
   /* Меню «Добавить сайт» у «+»: «Подключить», «Создать новый» (→ панель «Шаблоны»).
      У копии экрана («Меню») своё меню — ищем от нажатой кнопки. */
@@ -6117,11 +6319,11 @@ button.tpl-cat{ cursor: pointer; }
     if (go) { show(go.dataset.tplGo); return; }
     var back = e.target.closest('[data-tpl-back]');
     if (back) { show(back.dataset.tplBack); return; }
-    /* Шаблон «Электронного меню» — конструктор (родитель фрейма) открывает его на весь экран в просмотре.
+    /* Шаблон «Электронного меню» или отеля — конструктор (родитель фрейма) открывает его на весь экран в просмотре.
        Панель остаётся открытой: крестик просмотра возвращает прямо к ней. */
     var doc = e.target.closest('[data-tpl-doc]');
     if (doc) {
-      if (window.parent !== window) window.parent.postMessage({ type: 'reg:open-template', tpl: Number(doc.dataset.tplDoc), name: doc.getAttribute('aria-label') }, '*');
+      if (window.parent !== window) window.parent.postMessage({ type: 'reg:open-template', tpl: Number(doc.dataset.tplDoc), kind: doc.dataset.tplKind, name: doc.getAttribute('aria-label') }, '*');
       return;
     }
     if (e.target.closest('[data-tpl-close]') || !panel.contains(e.target)) close();
@@ -6129,7 +6331,10 @@ button.tpl-cat{ cursor: pointer; }
   document.addEventListener('keydown', function(e){
     if (e.key === 'Escape' && !panel.hidden) close();
   });
-  window.addEventListener('hashchange', close);
+  window.addEventListener('hashchange', function(){ if (location.hash !== openedAt) close(); });
+  /* Демо начинается с панели «Шаблоны» поверх реестра: конструктор при старте грузит фрейм с ?tpl.
+     Тот же экран, выставленный повторно (стартовая разводка, конструктор), панель не закрывает */
+  if (/[?&]tpl(&|$)/.test(location.search)) open(document.body);
 })();
 </script>
 <script>

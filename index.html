@@ -15,6 +15,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/checkbox/checkbox.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/chips/chips.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.css">
+  <!-- left-sidebar появился в ките позже 1.13.0; его CSS берёт только токены, которые есть и в 1.13.0 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/left-sidebar/left-sidebar.css">
   <!-- шрифт сайта в макете -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap">
   <link rel="stylesheet" href="styles.css">
@@ -41,36 +43,44 @@
         </div>
         <div class="ch-right">
           <div class="ch-cmds">
-            <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Отменить"><span class="btn__icon">&#xE6CF;</span></button>
-            <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Повторить"><span class="btn__icon">&#xE6CA;</span></button>
+            <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Отменить" disabled><span class="btn__icon">&#xE6CF;</span></button>
+            <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Повторить" disabled><span class="btn__icon">&#xE6CA;</span></button>
             <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Сбросить"><span class="btn__icon">&#xE629;</span></button>
             <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Предпросмотр"><span class="btn__icon">&#xEAB9;</span></button>
             <button class="btn btn--ghost btn--style-label btn--icon ch-cmd" type="button" aria-label="Компоновка"><span class="btn__icon">&#xEBBA;</span></button>
             <div class="ch-zoom">
               <span class="ch-zoom__sep"></span>
-              <button class="btn btn--ghost btn--style-label btn--size-m btn--icon ch-zoom__btn" type="button" aria-label="Уменьшить"><span class="btn__icon">&#xE6EA;</span></button>
+              <button class="btn btn--link btn--style-label btn--size-m btn--icon ch-zoom__btn" type="button" aria-label="Уменьшить"><span class="btn__icon">&#xE6EA;</span></button>
               <button class="btn btn--link btn--style-label btn--size-m ch-zoom__val" type="button">100%</button>
-              <button class="btn btn--ghost btn--style-label btn--size-m btn--icon ch-zoom__btn" type="button" aria-label="Увеличить"><span class="btn__icon">&#xE6E9;</span></button>
+              <button class="btn btn--link btn--style-label btn--size-m btn--icon ch-zoom__btn" type="button" aria-label="Увеличить"><span class="btn__icon">&#xE6E9;</span></button>
+              <span class="ch-zoom__sep"></span>
             </div>
           </div>
           <div class="ch-save">
             <!-- «Использовать» — только в просмотре шаблона (.stage.is-tpl-view): переводит этот же экран в редактирование. Кнопка — .btn из ui-kit -->
             <button class="btn btn--filled btn--style-primary btn--size-m ch-use" type="button" id="chUse"><span class="btn__caption">Использовать</span></button>
+            <!-- «Опубликовать» — в шаблоне после «Использовать» (.stage.is-tpl без .is-tpl-view). Кнопка — .btn из ui-kit, иконка после текста -->
+            <button class="btn btn--same-outlined btn--style-primary btn--size-m ch-publish" type="button" id="chPublish" aria-haspopup="dialog" aria-controls="pub"><span class="btn__caption">Опубликовать</span><span class="btn__icon">&#xE631;</span></button>
             <button class="btn btn--filled btn--style-success btn--icon ch-done" type="button" aria-label="Сохранить"><span class="btn__icon">&#xE75E;</span></button>
             <button class="btn btn--filled btn--style-pale btn--icon" type="button" aria-label="Закрыть"><img src="assets/img/close-union.svg" width="12" height="12" alt=""></button>
           </div>
         </div>
       </header>
 
-      <!-- Левый сайдбар (Figma rHabzni5OI5D4fxBLQdj2m 5:28393): вписан в страницу или свёрнут в линии, по наведению на линии — панель поверх контента -->
-      <aside class="ls" id="ls" aria-label="Страницы">
-        <div class="ls-lines" id="lsLines" aria-hidden="true"></div>
-        <div class="ls-panel">
-          <div class="ls-head">
-            <div class="ls-head__title">Страницы<button class="btn btn--filled btn--style-pale btn--size-m rs-plus" type="button" id="lsAdd" aria-label="Добавить страницу"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button></div>
-            <button class="btn btn--filled btn--style-pale btn--icon ls-toggle" type="button" id="lsToggle"><span class="btn__icon" id="lsToggleIco"></span></button>
-          </div>
-          <div class="ls-list" id="lsList"></div>
+      <!-- Левый сайдбар — left-sidebar из ui-kit (Figma rHabzni5OI5D4fxBLQdj2m 5:28393): вписан в страницу или свёрнут в линии, по наведению на линии — панель поверх контента -->
+      <aside class="lsb" id="ls" aria-label="Страницы">
+        <div class="lsb__lines" id="lsLines" aria-hidden="true"></div>
+        <div class="lsb__panel">
+          <header class="lsb__head">
+            <div class="lsb__title">
+              <h3 class="lsb__name">Страницы</h3>
+              <button class="btn btn--filled btn--style-pale btn--size-m rs-plus" type="button" id="lsAdd" aria-label="Добавить страницу"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
+            </div>
+            <div class="lsb__toggle">
+              <button class="btn btn--filled btn--style-pale btn--icon" type="button" id="lsToggle"><span class="btn__icon" id="lsToggleIco"></span></button>
+            </div>
+          </header>
+          <div class="lsb__list" id="lsList"></div>
         </div>
       </aside>
 
@@ -374,7 +384,6 @@
         <div class="rs-params__body">
           <!-- Блок «Сайт»: Figma 2854:63032. Сначала свойства, за ними SEO-чипсы. Редакторы — в одной колонке, в 8px от самой длинной метки -->
           <section class="rs-site" aria-label="Сайт">
-            <div class="rs-site__title"><img class="sales-settings__icon" src="assets/img/comp/site.svg" width="24" height="24" alt="">Сайт</div>
             <div class="rs-site__props">
               <span class="rs-site__label">Адрес сайта</span>
               <!-- Редактор домена (Figma DRIJUUCPNarHomYAJ5eMqn, 14:1683) — та же разметка, что на вкладке «Данные» реестра; стили domain.css, поведение domain.js -->
@@ -401,7 +410,7 @@
             </div>
           </section>
           <section class="sales-settings" id="salesSettings" aria-label="Точки продаж сайта" hidden>
-            <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt=""><span id="salesSettingsTitle">Электронное меню</span></div><span></span><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div>
+            <div class="sales-settings__head"><div><button class="sales-settings__comp" type="button" id="salesSettingsTitle" aria-haspopup="menu" aria-expanded="false">Электронное меню</button><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div><span></span></div>
             <!-- Страница каталога и страница товара — как в «Параметрах сайта» dynamic-pages: ссылка «Выберите страницу», выбор — меню #pagePickMenu. Та же разметка — на вкладке «Данные» реестра -->
             <div class="sales-settings__sub"><span>Страницы</span></div>
             <div class="rs-site__props comp-props">
@@ -425,6 +434,32 @@
         <div class="mw-menu ls-mode page-pick-menu" id="pagePickMenu" role="menu" aria-label="Выбор страницы" hidden>
           <div class="mw-menu__list"></div>
           <button class="mw-menu__close" type="button" id="pagePickClose" aria-label="Закрыть меню страниц"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
+        </div>
+        <!-- «Тип сайта» по клику на название компонента (Figma j0TcGAxRru4vkoaXdGwmWO 560:28184): заголовок с крестиком, радиопункты компонентов.
+             Пункты строит compMenu* в app.js из COMP; выбор меняет компонент сайта. Та же разметка — на вкладке «Параметры» реестра (#regCompMenu) -->
+        <div class="mw-menu ls-mode comp-menu" id="compMenu" role="menu" aria-label="Тип сайта" hidden>
+          <div class="mw-menu__list">
+            <div class="comp-menu__top"><div class="ls-mode__head comp-menu__head">Тип сайта</div><button class="comp-menu__close" type="button" id="compMenuClose" aria-label="Закрыть"><img src="assets/img/close-link.svg" width="32" height="32" alt=""></button></div>
+            <div class="comp-menu__items"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Окно «Параметры» по кнопке «Опубликовать» шаблона (Figma DBmmGUNJ5Pwg8BsFOI5Kuv 7113:102645, dialog 650 по центру).
+           Параметры — те же «Параметры сайта» (#rsParams): pubOpen переносит сюда их тело и меню выбора страницы, pubClose возвращает.
+           Пустой адрес сайта при первом открытии получает случайный набор букв -->
+      <section class="pub" id="pub" role="dialog" aria-label="Параметры" hidden>
+        <header class="pub__head">
+          <span class="pub__title">Параметры</span>
+          <button class="btn btn--same-outlined btn--style-primary btn--size-m pub__publish" type="button"><span class="btn__caption">Опубликовать</span><span class="btn__icon">&#xE631;</span></button>
+          <button class="pub__close" type="button" id="pubClose" aria-label="Закрыть"><img src="assets/img/close-tool.svg" width="24" height="24" alt=""></button>
+        </header>
+        <div class="pub__body" id="pubBody">
+          <!-- Предупреждение «привяжите домен» пока скрыто по просьбе -->
+          <div class="pub__card" hidden>
+            <div class="pub__warn"><span class="ico pub__warn-ico" aria-hidden="true">&#xE675;</span><span>Чтобы опубликовать сайт - привяжите домен. Сайт доступен для <span class="pub__link">предпросмотра</span>.</span></div>
+          </div>
+          <!-- сюда pubOpen переносит .rs-params__body и #pagePickMenu -->
         </div>
       </section>
 
