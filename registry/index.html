@@ -5519,6 +5519,7 @@ button.tpl-cat{ cursor: pointer; }
       b.type = 'button';
       b.className = 'rail__btn';
       b.setAttribute('aria-label', name);
+      b.title = name; // тултип — название кнопки, как у остальных подсказок реестра (title)
       if (glyph.charAt(0) === '<') {
         b.classList.add('rail__btn--svg');
         b.innerHTML = glyph;

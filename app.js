@@ -3394,10 +3394,10 @@
 
   lsSetCollapsed(lsReadCollapsed());
   scenApply(stage.dataset.scenario);
-  // старт — «Универсальный шаблон» «Электронного меню» (как по клику на панели «Шаблоны» реестра) после «Использовать».
-  // Крестик просмотра ведёт в реестр на панель «Шаблоны»: реестр ещё не грузился, regShow открывает его с ?tpl
-  tplOpen(1, 'Универсальный шаблон', 'menu');
-  stage.classList.remove('is-tpl-view'); // старт — шаблон уже взят в работу («Использовать»): в шапке «Опубликовать»
+  // старт — «Реестр сайтов» поверх собранного конструктора
+  // (сборка могла переключить панель на «В конструкторе» через scenSync — возвращаем)
+  if (frame.value.scenario !== 'sites') frame.select('sites');
+  if (stage.dataset.scenario !== 'sites') { stage.dataset.scenario = 'sites'; regShow(true); }
   // каталог выше секции с кнопкой дорисовывается вместе с картинками
   window.addEventListener('load', () => {
     if (!['window-link', 'ext-add', 'ext-added', 'ext-link'].includes(stage.dataset.scenario)) return;
