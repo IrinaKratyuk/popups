@@ -2632,8 +2632,11 @@
   }
 
   function lsSetCollapsed(collapsed) {
+    stage.classList.add('is-ls-switching'); // смена режима — без выезда, как в ui-kit left-sidebar
     stage.classList.toggle('is-ls-collapsed', collapsed);
     stage.classList.remove('is-ls-open');
+    void stage.offsetWidth;
+    stage.classList.remove('is-ls-switching');
     $('#lsToggleIco').innerHTML = collapsed ? '&#xEBFB;' : '&#xEBFA;';
     lsToggle.setAttribute('aria-label', collapsed ? 'Закрепить панель' : 'Свернуть панель');
     try { localStorage.setItem(LS_KEY, collapsed ? 'collapsed' : 'pinned'); } catch {}
