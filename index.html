@@ -59,7 +59,7 @@
           <div class="ch-save">
             <!-- «Использовать» — только в просмотре шаблона (.stage.is-tpl-view): переводит этот же экран в редактирование. Кнопка — .btn из ui-kit -->
             <button class="btn btn--filled btn--style-primary btn--size-m ch-use" type="button" id="chUse"><span class="btn__caption">Использовать</span></button>
-            <!-- «Опубликовать» — в шаблоне после «Использовать» (.stage.is-tpl без .is-tpl-view). Кнопка — .btn из ui-kit, иконка после текста -->
+            <!-- «Опубликовать» — в шаблоне после «Использовать» (.stage.is-tpl без .is-tpl-view) и у «Мили» «В конструкторе».Кнопка — .btn из ui-kit, иконка после текста -->
             <button class="btn btn--same-outlined btn--style-primary btn--size-m ch-publish" type="button" id="chPublish" aria-haspopup="dialog" aria-controls="pub"><span class="btn__caption">Опубликовать</span><span class="btn__icon">&#xE631;</span></button>
             <button class="btn btn--filled btn--style-success btn--icon ch-done" type="button" aria-label="Сохранить"><span class="btn__icon">&#xE75E;</span></button>
             <button class="btn btn--filled btn--style-pale btn--icon" type="button" aria-label="Закрыть"><img src="assets/img/close-union.svg" width="12" height="12" alt=""></button>
@@ -384,6 +384,7 @@
         <div class="rs-params__body">
           <!-- Блок «Сайт»: Figma 2854:63032. Сначала свойства, за ними SEO-чипсы. Редакторы — в одной колонке, в 8px от самой длинной метки -->
           <section class="rs-site" aria-label="Сайт">
+            <div class="rs-site__title"><img class="sales-settings__icon" src="assets/img/comp/site.svg" width="24" height="24" alt="">Сайт</div>
             <div class="rs-site__props">
               <span class="rs-site__label">Адрес сайта</span>
               <!-- Редактор домена (Figma DRIJUUCPNarHomYAJ5eMqn, 14:1683) — та же разметка, что на вкладке «Данные» реестра; стили domain.css, поведение domain.js -->
@@ -410,12 +411,11 @@
             </div>
           </section>
           <section class="sales-settings" id="salesSettings" aria-label="Точки продаж сайта" hidden>
-            <div class="sales-settings__head"><div><button class="sales-settings__comp" type="button" id="salesSettingsTitle" aria-haspopup="menu" aria-expanded="false">Электронное меню</button><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div><span></span></div>
+            <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt=""><span class="sales-settings__comp" id="salesSettingsTitle">Электронное меню</span><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div><span></span></div>
             <!-- Страница каталога и страница товара — как в «Параметрах сайта» dynamic-pages: ссылка «Выберите страницу», выбор — меню #pagePickMenu. Та же разметка — на вкладке «Данные» реестра -->
-            <div class="sales-settings__sub"><span>Страницы</span></div>
             <div class="rs-site__props comp-props">
-              <span class="rs-site__label">Каталог</span><button class="sales-empty__link comp-props__pick" data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
-              <span class="rs-site__label">Товар</span><button class="sales-empty__link comp-props__pick" data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
+              <span class="rs-site__label">Страница каталога</span><button class="sales-empty__link comp-props__pick" data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
+              <span class="rs-site__label">Страница товара</span><button class="sales-empty__link comp-props__pick" data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
             </div>
             <!-- Две подгруппы: «Страницы» (каталог и товар) и «Точки продаж» с «+». Так же — в «Параметрах» реестра -->
             <div class="sales-settings__sub sales-settings__sub--points"><div><span id="salesSettingsPoints">Точки продаж</span><button class="btn btn--filled btn--style-pale btn--size-m rs-plus has-tip" type="button" data-sales-add aria-label="Добавить точку продаж" data-tip="Добавить точку продаж"><span class="btn__icon">&#xEADD;</span></button></div><span class="sales-settings__price">Прайс</span></div>

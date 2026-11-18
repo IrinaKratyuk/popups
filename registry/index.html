@@ -788,6 +788,7 @@ html, body{
   cursor: pointer;
   padding: 0 0 2px;
 }
+.rail__btn[hidden]{ display: none; }
 .rail__btn:hover{ background: var(--c-bg-contrast-pale); }
 .rail__btn--svg{ color: var(--c-icon-secondary); }
 .rail__btn--filled{ background: var(--c-bg-contrast-pale); }
@@ -1239,6 +1240,11 @@ html, body{
 }
 .btn--outlined .icon{ color: var(--c-brand); }
 .btn--outlined:hover{ border-color: var(--c-brand); }
+/* «Опубликовать» — у сайта, снятого с публикации: рядом с «Оформлением», рамка и иконка primary (как .ch-publish конструктора) */
+.topbar--site .topbar__mid{ gap: 12px; }
+.btn--outlined.btn--publish{ border-color: #f88f62; }        /* border/primary_border-color */
+.btn--outlined.btn--publish .icon{ color: #f55714; }
+.btn--outlined.btn--publish:hover{ border-color: #f55714; }  /* border/primary_hover_border-color */
 
 /* --- две колонки --------------------------------------------------------- */
 .content{
@@ -1644,8 +1650,8 @@ html, body{
 
 /* Блок «Сайт» — как .rs-site в styles.css конструктора (Figma 2854:63032).
    Карточка — .params: фон, скругление и тень как у «Источников». */
-/* Плашка прижата к вкладкам, отступ — внутри неё: сверху 16 (8 + 8), снизу 8 (только здесь; в конструкторе свои поля) */
-.rs-site{ padding: calc(var(--o-s) * 2) var(--o-m) var(--o-s); }
+/* Плашка прижата к вкладкам; поля — как в конструкторе: 8 сверху и снизу, 12 по бокам (заголовок «Сайт» вернулся — доп. отступ сверху не нужен) */
+.rs-site{ padding: var(--o-s) var(--o-m); }
 /* Заголовки плашек «Сайт» и компонентов («Электронное меню» и др.) — 16 полужирный, токены ui-kit tokens.css */
 .rs-site__title{ display: flex; align-items: center; gap: 8px; height: 24px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
 .rs-site__props{ display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px; align-items: center; justify-items: start; grid-auto-rows: minmax(24px, auto); /* строка свойства 24, между свойствами 8 */ font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
@@ -1660,14 +1666,11 @@ html, body{
 /* Редактор «Адрес сайта» — общий ../domain.css (как в «Параметрах сайта» конструктора) */
 
 /* Точки продаж — как .rs-params .sales-settings в styles.css конструктора. */
-/* Шапка компонента — над белой плашкой, на фоне страницы; плашка (фон, скругление, тень .params) — ::before от 4px под шапкой до низа блока */
-.params.sales-settings{ position: relative; isolation: isolate; margin-top: var(--o-s); padding: 8px 0; background: transparent; box-shadow: none; }
-.params.sales-settings::before{ content: ""; position: absolute; z-index: -1; inset: 36px 0 0; border-radius: var(--r-s); background: var(--c-bg); box-shadow: var(--shadow-c); }
-.sales-settings__head{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 12px; height: 24px; margin-bottom: 12px; padding: 0 66px 0 12px; font-size: 14px; }
-.sales-settings__head > div{ display: flex; align-items: center; gap: 4px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
+/* Прежний вид: шапка компонента внутри белой плашки (фон, скругление и тень — от .params), до «Страниц» — 4 */
+.params.sales-settings{ position: relative; margin-top: var(--o-s); padding: 8px 0; }
+.sales-settings__head{ display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 12px; height: 24px; margin-bottom: 4px; padding: 0 66px 0 12px; font-size: 14px; }
+.sales-settings__head > div{ display: flex; align-items: center; gap: 8px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
 /* Название компонента — кнопка-ссылка: вид заголовка, на ховере — цвет ссылки. Клик откроет меню выбора компонента (меню — следующим шагом) */
-.sales-settings__comp{ padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: inherit; cursor: pointer; }
-.sales-settings__comp:hover{ color: var(--text-hover_text-color); text-decoration: underline; } /* как .btn--link.btn--style-default из ui-kit: темнее и подчёркнуто */
 /* «Страница каталога» и «Страница товара», заголовок «Точки продаж» с «+» — как .comp-props и .sales-settings__sub в ../styles.css */
 .comp-props{ padding: 0 12px; grid-auto-rows: 24px; row-gap: 8px; }
 .comp-props__pick{ padding: 0; border: 0; background: none; font: inherit; font-size: 14px; letter-spacing: inherit; color: #2562aa; cursor: pointer; }
@@ -1676,6 +1679,10 @@ html, body{
 /* От шапки до «Страниц» — 4, как в конструкторе (там 4 снизу у шапки и 4 сверху у подгруппы схлопываются).
    Здесь блок — flex, поля не схлопываются, поэтому у первой подгруппы своего поля нет */
 .sales-settings__head + .sales-settings__sub{ margin-top: 0; }
+.comp-props + .sales-settings__sub{ margin-top: 12px; } /* от «Товара» до «Точек продаж» — 12 */
+/* иконки «Сайта» и компонента перед заголовками плашек — как в ../styles.css */
+.sales-settings__icon{ flex: none; width: 24px; height: 24px; }
+.sales-settings__head .sales-settings__icon{ margin-right: -2px; }
 /* «Точки продаж» с подписью «Прайс»: те же колонки, что у строк точек (1fr 1fr, gap 10, справа 66), «Прайс» — над колонкой прайса,
    серым обычным начертанием, по базовой линии с заголовком. Без точек подписи нет */
 .sales-settings__sub--points{ align-self: stretch; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: baseline; gap: 10px; padding-right: 66px; }
@@ -1800,7 +1807,7 @@ html, body{
 .comp-group .sales-settings__head{ margin-bottom: 0; }
 #regCompGroups{ align-self: stretch; width: 100%; } /* обёртка карточек компонентов — на всю ширину, как «Сайт» */
 #regCompGroups:empty{ display: none; }
-.sales-settings__remove{ flex: none; font-weight: 400; letter-spacing: normal; display: flex; align-items: center; justify-content: center; width: 16px; height: 24px; padding: 2px 0 0; border: 0; background: transparent; cursor: pointer; }
+.sales-settings__remove{ position: absolute; top: 8px; right: 8px; font-weight: 400; letter-spacing: normal; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .sales-settings__remove .icon{ font-size: 16px; color: #ccc; }        /* icon/unaccented_icon-color */
 .sales-settings__remove:hover .icon{ color: #999; }                  /* icon/unaccented_hover_icon-color */
 .rs-comps{ width: 100%; padding: 12px 8px; }
@@ -3043,7 +3050,7 @@ button.tpl-cat{ cursor: pointer; }
 .dlg__head{ width: 100%; display: flex; justify-content: center; padding: 20px 0; }
 .dlg__marker{ width: 40px; height: 3px; border-radius: 100px; background: #0c94ff; } /* components/popuptemplate/secondary_marker_color */
 .dlg__content{ width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 24px 24px; text-align: center; }
-.dlg__message{ margin: 0; padding-top: 1px; font-size: 18px; letter-spacing: -.2538px; color: #000; }
+.dlg__message{ margin: 0; padding-top: 1px; white-space: pre-line; font-size: 18px; letter-spacing: -.2538px; color: #000; }
 .dlg__details{ margin: 0; white-space: pre-line; font-size: 15px; letter-spacing: -.2115px; color: #656c87; } /* text/label_contrast_text-color */
 .dlg__footer{ display: flex; justify-content: center; gap: 12px; padding-bottom: 24px; }
 .dlg__btn{
@@ -3054,6 +3061,11 @@ button.tpl-cat{ cursor: pointer; }
 .dlg__btn--primary{ border-color: #f88f62; }           /* border/primary_border-color */
 .dlg__btn:hover{ border-color: #0065b8; }               /* border/secondary_hover_border-color */
 .dlg__btn--primary:hover{ border-color: #f55714; }      /* border/primary_hover_border-color */
+/* Красный вариант — «Снять сайт с публикации»: маркер и подсветка фона красные */
+.dlg--danger{
+  background: url("data:image/svg+xml;utf8,<svg viewBox='0 0 350 164' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%25' width='100%25' fill='url(%23grad)' opacity='0.08'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(30.15 40.234 44.907 -27.324 87.5 -24.78)'><stop stop-color='rgba(239,68,68,0)' offset='0'/><stop stop-color='rgba(239,68,68,1)' offset='1'/></radialGradient></defs></svg>") 0 0 / 100% 100%, #fff;
+}
+.dlg--danger .dlg__marker{ background: #e02e2a; } /* components/popuptemplate/danger_marker_color */
 
 /* Превью шаблона «Электронного меню» — уменьшенная копия того, что открывает конструктор
    (styles.css «Просмотр шаблона сайта»): «Главная» сайта 1280px, ужат до ширины плашки. */
@@ -3531,7 +3543,7 @@ button.tpl-cat{ cursor: pointer; }
            2 · Страницы — Figma: 3861:65768
            --------------------------------------------------------------- -->
       <section class="screen" id="screen-2" data-name="Страницы" data-chrome data-sitebar
-              data-rail="Настроить, Аналитика, Ссылка, Просмотр">
+              data-rail="Настроить, Аналитика, Ссылка, Просмотр, Снять с публикации">
         <main class="workspace">
           <div class="content">
 
@@ -3694,6 +3706,7 @@ button.tpl-cat{ cursor: pointer; }
               <!-- Блок «Сайт» — 1:1 из окна «Параметры сайта» конструктора (Figma 2854:63032):
                    свойства, за ними чипсы ui-kit. Разметка та же, что в ../index.html (.rs-site). -->
               <section class="params rs-site" aria-label="Сайт">
+                <div class="rs-site__title"><img class="sales-settings__icon" src="../assets/img/comp/site.svg" width="24" height="24" alt="">Сайт</div>
                 <div class="rs-site__props">
                   <span class="rs-site__label">Адрес сайта</span>
                   <!-- Редактор домена (Figma DRIJUUCPNarHomYAJ5eMqn, 14:1683). Состояние Default; дальше — скрипт «Редактор домена» -->
@@ -3725,15 +3738,14 @@ button.tpl-cat{ cursor: pointer; }
                    в ../app.js; первая — основная (корона). На ховере строки — команды. -->
               <section class="params sales-settings" id="regSales" aria-label="Точки продаж сайта">
                 <div class="sales-settings__head">
-                  <div><button class="sales-settings__comp" type="button" id="regSalesTitle" aria-haspopup="menu" aria-expanded="false">Электронное меню</button><button class="sales-settings__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE66C;</i></button></div>
+                  <div><img class="sales-settings__icon" src="../assets/img/comp/restaurant.svg" width="24" height="24" alt=""><span class="sales-settings__comp" id="regSalesTitle">Электронное меню</span><button class="sales-settings__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE66C;</i></button></div>
                   <span></span>
                 </div>
                 <!-- Страница каталога и страница товара — как в «Параметрах сайта» конструктора (../index.html, .comp-props):
                      ссылка со страницей, клик открывает меню #regPagePickMenu. Выбраны «Меню» и «Карточка товара», как в сценарии «В конструкторе» -->
-                <div class="sales-settings__sub"><span>Страницы</span></div>
                 <div class="rs-site__props comp-props">
-                  <span class="rs-site__label">Каталог</span><button class="comp-props__pick" data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Меню</button>
-                  <span class="rs-site__label">Товар</span><button class="comp-props__pick" data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Карточка товара</button>
+                  <span class="rs-site__label">Страница каталога</span><button class="comp-props__pick" data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Меню</button>
+                  <span class="rs-site__label">Страница товара</span><button class="comp-props__pick" data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Карточка товара</button>
                 </div>
                 <!-- Две подгруппы: «Страницы» (каталог и товар) и «Точки продаж» с «+», как в «Параметрах сайта» конструктора -->
                 <div class="sales-settings__sub sales-settings__sub--points"><div><span id="regSalesPoints">Точки продаж</span><button class="sales-add" type="button" aria-label="Добавить точку продаж" title="Добавить точку продаж"><i class="icon" aria-hidden="true">&#xEADD;</i></button></div><span class="sales-settings__price">Прайс</span></div>
@@ -3941,6 +3953,7 @@ button.tpl-cat{ cursor: pointer; }
                   sales.setAttribute('aria-label', c.name);
                   sales.classList.toggle('sales-settings--no-price', !c.price);
                   if (c.pages) sales.dataset.compPages = c.pages.join('|'); else delete sales.dataset.compPages;
+                  sales.querySelector('.sales-settings__icon').src = '../assets/img/comp/' + on + '.svg';
                   document.getElementById('regSalesTitle').textContent = c.name;
                   document.getElementById('regSalesPoints').textContent = c.points;
                   var sep = document.getElementById('regMasterSalesTitle');
@@ -4144,56 +4157,6 @@ button.tpl-cat{ cursor: pointer; }
                 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') close(); });
               })();
               </script>
-              <script>
-              /* «Тип сайта» — как compMenu в ../app.js: клик по названию компонента открывает радиоменю компонентов поверх названия,
-                 отмечен подключённый (data-comp-off крестика). Пункт другого компонента несёт data-comp-add — его подключает скрипт
-                 компонентов выше (прежний уходит со своими точками). Разметку перевставляет apply(), поэтому слушаем document. */
-              (function(){
-                if (window.regCompMenuBound) return;
-                window.regCompMenuBound = true;
-                var NAMES = { restaurant: 'Электронное меню', delivery: 'Доставка', services: 'Услуги', hotel: 'Отель' };
-                function close(){
-                  var menu = document.getElementById('regCompMenu');
-                  if (menu) menu.hidden = true;
-                  var t = document.getElementById('regSalesTitle');
-                  if (t) t.setAttribute('aria-expanded', 'false');
-                }
-                document.addEventListener('click', function(e){
-                  var menu = document.getElementById('regCompMenu');
-                  if (!menu) return;
-                  if (e.target.closest('#regCompMenu [data-comp-add], #regCompMenu .is-selected, [data-comp-menu-close]')){ close(); return; }
-                  var btn = e.target.closest('#regSalesTitle');
-                  if (!btn) return;
-                  if (!menu.hidden){ close(); return; }
-                  var cur = document.querySelector('#regSales .sales-settings__remove').dataset.compOff;
-                  var list = menu.querySelector('.comp-menu__items');
-                  list.innerHTML = '';
-                  Object.keys(NAMES).forEach(function(id){
-                    var on = id === cur;
-                    var b = document.createElement('button');
-                    b.type = 'button';
-                    b.className = 'mw-menu__item ls-mode__item' + (on ? ' is-selected' : '');
-                    b.setAttribute('role', 'menuitemradio');
-                    b.setAttribute('aria-checked', on);
-                    if (!on) b.dataset.compAdd = id;
-                    b.innerHTML = '<span class="ls-mode__toggle"></span><span class="mw-menu__text"></span>';
-                    b.lastChild.textContent = NAMES[id];
-                    list.appendChild(b);
-                  });
-                  // текст названия — под текстом первого пункта (над пунктами шапка «Тип сайта»): сдвиг меряем по самому меню, как в конструкторе
-                  menu.style.left = menu.style.top = '0px';
-                  menu.hidden = false;
-                  var box = menu.offsetParent.getBoundingClientRect(), r = btn.getBoundingClientRect();
-                  var k = box.width / menu.offsetParent.offsetWidth || 1;
-                  var m = menu.getBoundingClientRect(), t = menu.querySelector('.mw-menu__text').getBoundingClientRect();
-                  menu.style.left = Math.round((r.left - box.left - (t.left - m.left)) / k) + 'px';
-                  menu.style.top = Math.round((r.top + r.height / 2 - box.top - (t.top + t.height / 2 - m.top)) / k) + 'px';
-                  btn.setAttribute('aria-expanded', 'true');
-                });
-                document.addEventListener('mousedown', function(e){ if (!e.target.closest('#regCompMenu, #regSalesTitle')) close(); });
-                document.addEventListener('keydown', function(e){ if (e.key === 'Escape') close(); });
-              })();
-              </script>
             </div>
 
           </div>
@@ -4204,7 +4167,7 @@ button.tpl-cat{ cursor: pointer; }
            4 · Статистика — Figma: 3861:65876
            --------------------------------------------------------------- -->
       <section class="screen" id="screen-4" data-name="Статистика" data-chrome data-sitebar
-              data-rail="Настроить, Аналитика, Ссылка, Просмотр">
+              data-rail="Настроить, Аналитика, Ссылка, Просмотр, Снять с публикации">
         <main class="workspace">
           <div class="grid">
 
@@ -4292,7 +4255,7 @@ button.tpl-cat{ cursor: pointer; }
            5 · Источники — Figma: 3861:65914
            --------------------------------------------------------------- -->
       <section class="screen" id="screen-5" data-name="Источники" data-chrome data-sitebar
-              data-rail="Настроить, Аналитика, Ссылка, Просмотр">
+              data-rail="Настроить, Аналитика, Ссылка, Просмотр, Снять с публикации">
         <main class="workspace">
           <div class="content">
 
@@ -4500,7 +4463,7 @@ button.tpl-cat{ cursor: pointer; }
            6 · Посетители — Figma: 3861:65999
            --------------------------------------------------------------- -->
       <section class="screen" id="screen-6" data-name="Посетители" data-chrome data-sitebar
-              data-rail="Настроить, Аналитика, График, Отправить, Ссылка">
+              data-rail="Настроить, Аналитика, График, Отправить, Ссылка, Снять с публикации">
         <main class="workspace">
           <div class="content">
 
@@ -4789,7 +4752,7 @@ button.tpl-cat{ cursor: pointer; }
            7 · Отклики — Figma: 3861:66086
            --------------------------------------------------------------- -->
       <section class="screen" id="screen-7" data-name="Отклики" data-chrome data-sitebar
-              data-rail="Настроить, Аналитика, График, Ссылка">
+              data-rail="Настроить, Аналитика, График, Ссылка, Снять с публикации">
         <main class="workspace">
           <div class="content">
 
@@ -5234,6 +5197,23 @@ button.tpl-cat{ cursor: pointer; }
 о домене может занять до 48 часов</p>
     </div>
     <div class="dlg__footer"><button class="dlg__btn dlg__btn--primary" type="button" data-domain-info-ok>ОК</button></div>
+  </div>
+</div>
+
+<!-- «Снять с публикации» в правой панели карточки сайта: подтверждение. «Да», «Нет» и Esc закрывают окно -->
+<div class="dlg-layer" id="unpublish" hidden>
+  <div class="dlg dlg--danger" role="dialog" aria-modal="true" aria-labelledby="unpublish-msg" aria-describedby="unpublish-details">
+    <div class="dlg__head"><span class="dlg__marker"></span></div>
+    <div class="dlg__content">
+      <p class="dlg__message" id="unpublish-msg">Вы действительно хотите
+снять сайт с публикации?</p>
+      <p class="dlg__details" id="unpublish-details">После этого пользователи не смогут
+увидеть ваш сайт</p>
+    </div>
+    <div class="dlg__footer">
+      <button class="dlg__btn dlg__btn--primary" type="button" data-unpublish-answer="yes">Да</button>
+      <button class="dlg__btn" type="button" data-unpublish-answer="no">Нет</button>
+    </div>
   </div>
 </div>
 
@@ -5998,7 +5978,18 @@ button.tpl-cat{ cursor: pointer; }
   }
 
   var current = BILLING, origin = 'screen-1';
+  var UNPUBLISHED = {}; // сайты, снятые с публикации («Снять с публикации» → «Да»)
+  // неопубликованные в разметке (серое название на плитке, как у Blanc Hill) — тоже сняты с публикации
+  $$('.tile[data-site]').forEach(function(t){ if ($('.tile__title--muted', t)) UNPUBLISHED[t.dataset.site] = true; });
+  /* Неопубликованный сайт на плитках обоих реестров — с серым названием */
+  function markTiles(){
+    $$('.tile[data-site]').forEach(function(t){
+      var ttl = $('.tile__title', t);
+      if (ttl) ttl.classList.toggle('tile__title--muted', !!UNPUBLISHED[t.dataset.site]);
+    });
+  }
   var SITE_SALES = {}; // адрес сайта из шаблона → его точки продаж [{ name, price }]
+  var SITE_TPL = {};   // адрес сайта из шаблона → { tpl, kind, title }: «Оформление» открывает его в конструкторе
   try {
     var saved = JSON.parse(sessionStorage.getItem('reg-site') || 'null');
     if (saved && (saved.site === BILLING || MODELS[saved.site])) { current = saved.site; origin = saved.origin || origin; }
@@ -6020,6 +6011,7 @@ button.tpl-cat{ cursor: pointer; }
   }
 
   function apply(){
+    markTiles();
     var m = current === BILLING ? null : MODELS[current];
     IDS.forEach(function(id){
       var s = document.getElementById(id);
@@ -6031,6 +6023,10 @@ button.tpl-cat{ cursor: pointer; }
       // адрес в редакторе домена — тот же, что подписан на плитке (подключённый домен, см. ../domain.js)
       var dom = $('[data-domain]', s);
       if (dom) dom.dataset.siteAddress = current;
+      // снят с публикации: домен не подключён, в шапке — «Опубликовать»; «Снять с публикации» в правой панели — у всех сайтов
+      var off = !!UNPUBLISHED[current];
+      if (dom && off) dom.dataset.siteOff = '';
+      if (off) $('.topbar__mid', s).insertAdjacentHTML('beforeend', '<button class="btn btn--outlined btn--publish" type="button" data-site-publish>Опубликовать<i class="icon icon--m" aria-hidden="true">&#xE631;</i></button>');
       if (!m) return;
       var ttl = $('.sitehead__title', s); ttl.textContent = m.title; ttl.title = m.title;
       $$('.summary__num', s).forEach(function(n, i){ n.textContent = fmt(i ? m.back : m.fresh); });
@@ -6078,18 +6074,21 @@ button.tpl-cat{ cursor: pointer; }
     if (t) open(t);
   });
   /* «Оформление» у «Мили» — переход в конструктор (сценарий «В конструкторе» снаружи фрейма):
-     в конструкторе собран именно этот сайт. */
+     в конструкторе собран именно этот сайт. У сайта, опубликованного из шаблона, — конструктор с этим шаблоном
+     (../app.js, reg:open-constructor с site): галочка и крестик возвращают на его карточку. */
   var CONSTRUCTOR_SITE = 'mili-yar.saby.ws';
   document.addEventListener('click', function(e){
-    if (!e.target.closest('.topbar--site .topbar__mid .btn') || current !== CONSTRUCTOR_SITE) return;
-    if (window.parent !== window) window.parent.postMessage({ type: 'reg:open-constructor' }, '*');
+    if (!e.target.closest('.topbar--site .topbar__mid .btn:not([data-site-publish])') || window.parent === window) return;
+    var t = SITE_TPL[current];
+    if (t) window.parent.postMessage({ type: 'reg:open-constructor', site: current, tpl: t.tpl, kind: t.kind, title: t.title }, '*');
+    else if (current === CONSTRUCTOR_SITE) window.parent.postMessage({ type: 'reg:open-constructor' }, '*');
   });
   /* Карточка этого сайта по команде снаружи фрейма: после загрузки страницы — вкладка «Параметры» (screen-3),
      выход из конструктора (галочка или крестик) — «Страницы» (screen-2);
      «назад» из карточки — в реестр «Сайты» */
   window.addEventListener('message', function(e){
     if (e.source !== window.parent || !e.data || e.data.type !== 'reg:open-site') return;
-    current = CONSTRUCTOR_SITE;
+    current = SITE_TPL[e.data.site] ? e.data.site : CONSTRUCTOR_SITE;
     origin = 'screen-1';
     try { sessionStorage.setItem('reg-site', JSON.stringify({ site: current, origin: origin })); } catch (err) {}
     apply();
@@ -6108,6 +6107,7 @@ button.tpl-cat{ cursor: pointer; }
     var comp = d.kind === 'hotel' ? 'hotel' : 'restaurant';
     EXTRA[link] = { avg: EXTRA[mili].avg, items: EXTRA[mili].items, pages: EXTRA[mili].pages };
     SITE_SALES[link] = d.points || []; // точки — как в конструкторе; не настроены — «Добавьте ваши точки продаж…»
+    SITE_TPL[link] = { tpl: d.tpl, kind: d.kind, title: d.title };
     if (window.REG_PAGES[mili]) window.REG_PAGES[link] = window.REG_PAGES[mili];
     var html = window.REG_TILE({ comp: comp, title: d.title, link: link, share: '', num: '0', visits: '0',
       shot: window.REG_TPL_MINI ? window.REG_TPL_MINI(d.tpl, d.kind) : '' });
@@ -6131,6 +6131,16 @@ button.tpl-cat{ cursor: pointer; }
   var domainInfo = document.getElementById('domain-info');
   domainInfo.addEventListener('click', function(e){ if (e.target.closest('[data-domain-info-ok]')) domainInfo.hidden = true; });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') domainInfo.hidden = true; });
+  /* «Снять с публикации» (кнопка правой панели) — окно подтверждения */
+  var unpublish = document.getElementById('unpublish');
+  document.addEventListener('click', function(e){
+    if (e.target.closest('.rail__btn[aria-label="Снять с публикации"]')) unpublish.hidden = false;
+    else if (e.target.closest('[data-unpublish-answer]')){
+      unpublish.hidden = true;
+      if (e.target.closest('[data-unpublish-answer]').dataset.unpublishAnswer === 'yes'){ UNPUBLISHED[current] = true; apply(); }
+    } else if (e.target.closest('[data-site-publish]')){ UNPUBLISHED[current] = false; apply(); } // снова опубликован
+  });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') unpublish.hidden = true; });
 
   apply();
 })();

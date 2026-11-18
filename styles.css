@@ -35,7 +35,7 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
-body { background: var(--background-unaccented_background-color); font-family: var(--font); overflow: hidden; }
+body { background: #fff; font-family: var(--font); overflow: hidden; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; }
 button:disabled { pointer-events: none; } /* браузер не отдаёт события с отключённых кнопок, и клик мимо по ним не срабатывал бы */
 ul { list-style: none; margin: 0; padding: 0; }
@@ -648,11 +648,12 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-settings__head { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; height: 40px; padding: 0 66px 0 12px; gap: 10px; font-size: 14px; }
 .sales-settings__head > div { display: flex; align-items: center; gap: 4px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
 .sales-settings__head > span { color: #8991a9; }
+.sales-settings__icon { flex: none; width: 24px; height: 24px; } /* иконка «Сайта» и компонента перед заголовком плашки */
+.sales-settings__head .sales-settings__icon { margin-right: -2px; } /* иконка компонента, как у группы в панели страниц */
 /* Название компонента — кнопка-ссылка: вид заголовка, на ховере — цвет ссылки. Клик откроет меню выбора компонента (меню — следующим шагом).
    То же — в «Параметрах» реестра */
 .sales-settings__comp { letter-spacing: inherit; }
 /* название компонента — как кнопка-ссылка ui-kit в стиле default (.btn--link.btn--style-default): при наведении темнее и подчёркнуто */
-.sales-settings__comp:hover { color: var(--text-hover_text-color); text-decoration: underline; }
 .sales-settings .btn--icon, .sales-popup .btn--icon { position: relative; width: 24px; height: 24px; padding: 0; }
 .sales-settings .rs-plus, .sales-popup .rs-plus { position: relative; } /* опора для тултипа и метки */
 .sales-rows { background: #fff; border-radius: 8px; padding: 8px 0; }
@@ -672,9 +673,10 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* Точки продаж в «Параметрах сайта»: Figma 2547:71389 — карточка с полями 8 сверху и снизу, шапка 24, строки 32 */
 /* Шапка компонента («Электронное меню») — над белой плашкой, на фоне окна; плашка — ::before от 4px под шапкой до низа блока.
    Сверху 8: от плашки «Сайт» до шапки 4 (gap тела) + 8. Под шапкой 4 до плашки и 8 поля плашки = 12 */
-:is(.rs-params, .pub) .sales-settings { position: relative; isolation: isolate; padding: 8px 0; }
-:is(.rs-params, .pub) .sales-settings::before { content: ""; position: absolute; z-index: -1; inset: 36px 0 0; background: #fff; border-radius: 8px; }
-:is(.rs-params, .pub) .sales-settings__head { height: 24px; gap: 12px; margin-bottom: 12px; }
+/* Прежний вид: шапка компонента внутри белой плашки, между шапкой и «Страницами» — 4 */
+:is(.rs-params, .pub) .sales-settings { position: relative; padding: 8px 0; background: #fff; border-radius: 8px; }
+:is(.rs-params, .pub) .sales-settings__head { height: 24px; gap: 12px; margin-bottom: 4px; }
+:is(.rs-params, .pub) .sales-settings__head > div { gap: 8px; }
 :is(.rs-params, .pub) .sales-settings .sales-rows { padding: 0; }
 /* поле внутри белых плашек «Параметров сайта» — 8px сверху и снизу, 12px по бокам (у шапки и строк — их собственные 12px) */
 /* Крестик «отключить компонент» (как .swatch-clear в STW): виден всегда. Крестики плашки и строк — в одной вертикали с крестиком панели:
@@ -683,7 +685,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 :is(.rs-params, .pub) .sales-row__actions { padding-right: 8px; }
 /* крестик — сразу за названием компонента: 4px от текста (gap шапки 8 − 4) */
 /* кнопка по ширине глифа (16), чтобы видимый отступ был 4; глиф на 1px ниже — по центру строчных букв названия */
-.sales-settings__remove { flex: none; font-weight: 400; letter-spacing: normal; display: flex; align-items: center; justify-content: center; width: 16px; height: 24px; padding: 2px 0 0; cursor: pointer; }
+/* прежний вид: крестик в правом верхнем углу плашки */
+.sales-settings__remove { position: absolute; top: 8px; right: 8px; font-weight: 400; letter-spacing: normal; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; cursor: pointer; }
 .sales-settings__remove[hidden] { display: none; }
 .sales-settings__remove .ico { color: var(--icon-unaccented_icon-color); }             /* ui-kit: #ccc */
 .sales-settings__remove:hover .ico { color: var(--icon-unaccented_hover_icon-color); } /* ui-kit: #999 */
@@ -701,6 +704,7 @@ ul { list-style: none; margin: 0; padding: 0; }
    8 от предыдущей подгруппы, от шапки компонента — 4 (её 4 и свои 4 схлопываются), 4 до содержимого */
 .sales-settings__sub { display: flex; align-items: center; gap: 8px; height: 24px; margin: 8px 0 4px; padding: 0 12px; font-size: var(--font-font-size-font-size_l); font-weight: var(--font-font-weight-bold); letter-spacing: -.2115px; color: var(--components-heading-default_text-color_heading); }
 .sales-settings__head + .sales-settings__sub { margin-top: 4px; }
+.comp-props + .sales-settings__sub { margin-top: 12px; } /* от «Товара» до «Точек продаж» — 12 */
 /* «Точки продаж» с подписью «Прайс»: те же колонки, что у строк точек (1fr 1fr, gap 10, справа 66), «Прайс» — над колонкой прайса,
    серым обычным начертанием, по базовой линии с заголовком. Без точек подписи нет */
 .sales-settings__sub--points { align-self: stretch; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: baseline; gap: 10px; padding-right: 66px; }
@@ -1102,7 +1106,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ch-use { --btn-h: 26px; display: none; }
 .stage.is-tpl-view .ch-use { display: inline-flex; }
 .ch-publish { --btn-h: 26px; display: none; }
-.stage.is-tpl:not(.is-tpl-view) .ch-publish { display: inline-flex; } /* шаблон взят в работу («Использовать») */
+/* шаблон взят в работу («Использовать») и сайт «В конструкторе» */
+.stage:is(.is-tpl, [data-scenario="catalog-setup"]):not(.is-tpl-view) .ch-publish { display: inline-flex; }
 .stage.is-tpl .rs-w__name--pin > .pin { display: none; } /* в шаблоне каталог уже на сайте — подсказки клика на «Меню ресторана» нет */
 .stage.is-tpl-view :is(.ch-done, .ch-view, .ch-cmd:not([aria-label="Предпросмотр"])) { display: none; }
 .stage.is-tpl-view :is(.rs-panel, .rs-params, .right-panel, #lsAdd, .lsb__cmds, .site-plus, .content .wg__toolbar) { display: none; }

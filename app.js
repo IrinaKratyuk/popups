@@ -122,6 +122,8 @@
   let regToCard = false;
   let regToTpl = false; // крестик просмотра шаблона: реестр открывается как был — на панели «Шаблоны»
   let regPublish = null; // «Опубликовать» в окне шаблона: { link, title, tpl, kind } — карточка нового сайта на «Параметрах»
+  let tplSite = null; // адрес сайта из шаблона, открытого «Оформлением» его карточки: выход — на эту карточку
+  const tplSites = {}; // адрес опубликованного сайта → точки продаж конструктора на момент публикации (salesSaved)
   function regShow(on) {
     const reg = $('#reg');
     const card = regToCard;
@@ -138,7 +140,8 @@
       return;
     }
     if (on && back && reg.src) { reg.hidden = false; return; }
-    const openSite = (screen) => reg.contentWindow.postMessage({ type: 'reg:open-site', screen }, '*');
+    const site2 = typeof card === 'string' ? card : null; // карточка сайта из шаблона, иначе — «Мили»
+    const openSite = (screen) => reg.contentWindow.postMessage({ type: 'reg:open-site', screen, site: site2 }, '*');
     if (on && !reg.src) {
       // сразу на нужном экране, без мелькания стартового. Панель «Шаблоны» — только по крестику просмотра шаблона;
       // из панели сценариев реестр открывается без неё
@@ -152,14 +155,22 @@
   // Шаблон на панели «Шаблоны» реестра → конструктор на весь экран в просмотре шаблона (tplOpen)
   window.addEventListener('message', (e) => {
     if (e.source !== $('#reg').contentWindow) return;
-    if (e.data?.type === 'reg:open-constructor') frame.select('catalog-setup');
+    if (e.data?.type === 'reg:open-constructor' && e.data.site) {
+      // сайт, опубликованный из шаблона: шаблон в работе («Использовать» уже нажато), точки — как при публикации
+      tplOpen(e.data.tpl, e.data.title, e.data.kind);
+      stage.classList.remove('is-tpl-view');
+      salesSaved = (tplSites[e.data.site] || []).map((row) => ({ ...row }));
+      salesRender();
+      tplSite = e.data.site;
+    } else if (e.data?.type === 'reg:open-constructor') frame.select('catalog-setup');
     else if (e.data?.type === 'reg:open-template') tplOpen(e.data.tpl, e.data.name, e.data.kind);
   });
   // Галочка и крестик в шапке конструктора — обратно в «Реестр сайтов», на карточку сайта.
   // Крестик просмотра шаблона — назад к панели «Шаблоны»
   for (const btn of document.querySelectorAll('.ch-save > .btn:not(.ch-use):not(.ch-publish)')) btn.addEventListener('click', () => {
     if (stage.classList.contains('is-tpl-view')) regToTpl = true;
-    else regToCard = true;
+    else regToCard = tplSite || true;
+    tplSite = null;
     frame.select('sites');
   });
 
@@ -416,6 +427,7 @@
     block.hidden = !active;
     block.setAttribute('aria-label', cfg.name);
     block.classList.toggle('sales-settings--no-price', !cfg.price);
+    $('.sales-settings__icon', block).src = `assets/img/comp/${active ?? 'restaurant'}.svg`;
     $('#salesSettingsTitle').textContent = cfg.name;
     $('#salesSettingsPoints').textContent = cfg.points;
     const add = $('.sales-settings__sub--points [data-sales-add]', block);
@@ -3120,30 +3132,7 @@
     pagePickRender();
     salesRender();
   }
-  compMenuBtn.addEventListener('click', () => {
-    if (!compMenu.hidden) { compMenuClose(); return; }
-    pagePickClose();
-    const cur = compActive();
-    $('.comp-menu__items', compMenu).replaceChildren(...Object.entries(COMP).map(([id, c]) => {
-      const on = id === cur;
-      const item = el('button', 'mw-menu__item ls-mode__item' + (on ? ' is-selected' : ''), '<span class="ls-mode__toggle"></span><span class="mw-menu__text"></span>');
-      item.type = 'button';
-      item.setAttribute('role', 'menuitemradio');
-      item.setAttribute('aria-checked', on);
-      item.dataset.compPick = id;
-      $('.mw-menu__text', item).textContent = c.name;
-      return item;
-    }));
-    // текст названия — под текстом первого пункта (над пунктами шапка «Тип сайта»): сдвиг меряем по самому меню
-    const r = stageRect(compMenuBtn);
-    const box = stageRect(compMenu.parentElement); // окно «Параметры сайта» или «Параметры» публикации
-    compMenu.style.left = compMenu.style.top = '0px';
-    compMenu.hidden = false;
-    const m = stageRect(compMenu), t = stageRect($('.mw-menu__text', compMenu));
-    compMenu.style.left = Math.round(r.left - box.left - (t.left - m.left)) + 'px';
-    compMenu.style.top = Math.round(r.top + r.height / 2 - box.top - (t.top + t.height / 2 - m.top)) + 'px';
-    compMenuBtn.setAttribute('aria-expanded', 'true');
-  });
+  // Тип сайта по клику на название компонента не меняется (решение пользователя): название — просто заголовок, меню #compMenu по нему не открывается
   // Смена на другой компонент — с подтверждением, как у крестика (compRemoveAsk): что отключится и какие страницы удалятся
   function compSwitchAsk(id) {
     const cur = compActive();
@@ -3342,6 +3331,7 @@
   }
   function tplClose() {
     if (!stage.classList.contains('is-tpl')) return;
+    tplSite = null;
     stage.classList.remove('is-tpl', 'is-tpl-view');
     delete stage.dataset.tpl;
     delete stage.dataset.tplKind;
@@ -3386,12 +3376,16 @@
   // «Опубликовать» в окне: конструктор закрывается, в реестре — карточка созданного сайта (вкладка «Параметры»)
   // и окно «Домен будет создан…» (registry/index.html, reg:publish-site). Адрес — из поля окна, проверки нет
   $('.pub__publish', pub).addEventListener('click', () => {
+    // «Мили» уже в реестре: публикуются правки — назад на её карточку, как по галочке
+    if (!stage.classList.contains('is-tpl')) { pubClose(); regToCard = true; frame.select('sites'); return; }
     const dom = $('.rs-site [data-domain]', rsParamsBody);
     const name = $('.dom__text', dom).value.trim() || pubRand();
     const link = dom.classList.contains('dom--saby') ? name + $('.dom__zone', dom).textContent : name;
     // точки продаж — те, что настроены в «Параметрах сайта» конструктора (в шаблоне их нет)
     const points = salesSaved.map((row) => ({ name: SALES.find((p) => p.id === row.id).name, price: row.price }));
     regPublish = { link, title: chTitle.textContent, tpl: Number(stage.dataset.tpl) || 1, kind: stage.dataset.tplKind || 'menu', points };
+    tplSites[link] = salesSaved.map((row) => ({ ...row }));
+    tplSite = null;
     frame.select('sites');
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') pubClose(); });

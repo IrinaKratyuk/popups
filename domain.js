@@ -114,13 +114,14 @@
     return rand;
   }
   /* У сайта уже есть адрес (data-site-address — в реестре его ставит карточка сайта по подписи плитки):
-     редактор сразу в состоянии Connected с этим адресом. *.saby.ru — домен от Saby, остальное — свой домен. */
+     редактор сразу в состоянии Connected с этим адресом. *.saby.ru — домен от Saby, остальное — свой домен.
+     data-site-off — сайт снят с публикации: адрес тот же, но домен не подключён (Default). */
   function connected(el){
     var addr = el.dataset.siteAddress, s = st(el);
     var saby = /\.saby\.ru$/i.test(addr);
     s.type = saby ? 'saby' : 'custom';
     s.value = saby ? addr.replace(/\.saby\.ru$/i, '') : addr;
-    s.state = 'Connected';
+    s.state = 'siteOff' in el.dataset ? 'Default' : 'Connected';
     s.auto = false;
     render(el);
   }
