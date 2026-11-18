@@ -123,8 +123,18 @@
     s.value = saby ? addr.replace(/\.saby\.ru$/i, '') : addr;
     s.state = 'siteOff' in el.dataset ? 'Default' : 'Connected';
     s.auto = false;
+    /* data-site-state — домен, как его оставили в «Параметрах сайта» конструктора (JSON { type, value, state }):
+       карточка реестра после выхода из конструктора показывает то же. Незавершённые проверки — назад в Filled */
+    if (el.dataset.siteState) try {
+      var d = JSON.parse(el.dataset.siteState);
+      s.type = d.type === 'custom' ? 'custom' : 'saby';
+      s.value = d.value || '';
+      s.state = ['Pending', 'Connecting'].indexOf(d.state) > -1 ? (s.value ? 'Filled' : 'Default') : d.state || 'Default';
+    } catch (err) {}
     render(el);
   }
+  // состояние редактора для передачи в реестр (../app.js: выход из конструктора на карточку сайта)
+  window.domainState = function(el){ var s = st(el); return { type: s.type, value: s.value, state: s.state }; };
   function suggest(){
     document.querySelectorAll('[data-domain][data-site-address]').forEach(function(el){
       if (!states.has(el)) connected(el);

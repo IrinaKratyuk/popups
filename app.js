@@ -120,7 +120,7 @@
   // выход из конструктора (галочка, крестик) — на ту же карточку, вкладка «Страницы» (regToCard);
   // повторное открытие из панели сценариев — со стартового экрана.
   let regToCard = false;
-  let regToTpl = false; // крестик просмотра шаблона: реестр открывается как был — на панели «Шаблоны»
+  let regState = null; // «Параметры сайта» конструктора при выходе на карточку (regParams): реестр показывает то же
   let regPublish = null; // «Опубликовать» в окне шаблона: { link, title, tpl, kind } — карточка нового сайта на «Параметрах»
   let tplSite = null; // адрес сайта из шаблона, открытого «Оформлением» его карточки: выход — на эту карточку
   const tplSites = {}; // адрес опубликованного сайта → точки продаж конструктора на момент публикации (salesSaved)
@@ -128,8 +128,6 @@
     const reg = $('#reg');
     const card = regToCard;
     regToCard = false;
-    const back = regToTpl;
-    regToTpl = false;
     const site = regPublish;
     regPublish = null;
     if (on && site) {
@@ -139,16 +137,17 @@
       reg.hidden = false;
       return;
     }
-    if (on && back && reg.src) { reg.hidden = false; return; }
     const site2 = typeof card === 'string' ? card : null; // карточка сайта из шаблона, иначе — «Мили»
-    const openSite = (screen) => reg.contentWindow.postMessage({ type: 'reg:open-site', screen, site: site2 }, '*');
+    const params = regState;
+    regState = null;
+    const openSite = (screen) => reg.contentWindow.postMessage({ type: 'reg:open-site', screen, site: site2, params }, '*');
     if (on && !reg.src) {
-      // сразу на нужном экране, без мелькания стартового. Панель «Шаблоны» — только по крестику просмотра шаблона;
-      // из панели сценариев реестр открывается без неё
-      reg.src = reg.dataset.src + (card ? '#/screen-2' : back ? '?tpl#/screen-1' : '#/screen-1');
+      // сразу на нужном экране, без мелькания стартового; панель «Шаблоны» закрыта
+      reg.src = reg.dataset.src + (card ? '#/screen-2' : '#/screen-1');
       if (card) reg.addEventListener('load', () => openSite('screen-2'), { once: true });
     } else if (on && card) openSite('screen-2');
-    else if (on) reg.contentWindow.location.hash = '#/screen-1';
+    // стартовый экран без панели «Шаблоны» — сообщением: у файла (file://) фрейм чужой, его location.hash отсюда не задать
+    else if (on) reg.contentWindow.postMessage({ type: 'reg:home' }, '*');
     reg.hidden = !on;
   }
   // «Оформление» в карточке «Мили» внутри реестра → сценарий «В конструкторе»
@@ -165,14 +164,32 @@
     } else if (e.data?.type === 'reg:open-constructor') frame.select('catalog-setup');
     else if (e.data?.type === 'reg:open-template') tplOpen(e.data.tpl, e.data.name, e.data.kind);
   });
-  // Галочка и крестик в шапке конструктора — обратно в «Реестр сайтов», на карточку сайта.
-  // Крестик просмотра шаблона — назад к панели «Шаблоны»
+  // Галочка и крестик в шапке конструктора — обратно в «Реестр сайтов».
+  // Зашли из шаблона (просмотр или взят в работу, сайта ещё нет): крестик — в реестр (стартовый экран, панель «Шаблоны»
+  // закрыта), галочка — создаёт сайт (карточка нового сайта). Зашли из карточки сайта — назад на неё;
+  // параметры сайта переносит только галочка, крестик выходит без сохранения
   for (const btn of document.querySelectorAll('.ch-save > .btn:not(.ch-use):not(.ch-publish)')) btn.addEventListener('click', () => {
-    if (stage.classList.contains('is-tpl-view')) regToTpl = true;
-    else regToCard = tplSite || true;
+    const save = btn.classList.contains('ch-done');
+    if (stage.classList.contains('is-tpl') && !tplSite) {
+      if (save && !stage.classList.contains('is-tpl-view')) { tplToRegistry(false); return; }
+    } else {
+      regToCard = tplSite || true;
+      if (save) regState = regParams(false);
+    }
     tplSite = null;
     frame.select('sites');
   });
+  /* «Параметры сайта» конструктора для карточки в реестре: домен (не подключён — сайт не опубликован), точки продаж
+     с прайсами и страницы каталога и товара. publish — «Опубликовать»: домен подключается */
+  function regParams(publish) {
+    const dom = $('.rs-site [data-domain]'); // один редактор: в «Параметрах» или перенесён в окно «Опубликовать»
+    const domain = dom && window.domainState ? window.domainState(dom) : null;
+    if (domain && publish) domain.state = 'Connected';
+    const points = salesSaved.map((row) => ({ name: SALES.find((p) => p.id === row.id).name, price: row.price }));
+    const pages = {};
+    for (const kind of Object.keys(pagePicks)) pages[kind] = lsPage(pagePicks[kind])?.name ?? null;
+    return { domain, points, pages };
+  }
 
   $('.df-team__name', frame.panel).after(el('span', 'df-team__name', 'Смирнова Мария')); // второй дизайнер в той же плашке: team в demo-frame знает одно имя на строку
 
@@ -3377,17 +3394,33 @@
   // и окно «Домен будет создан…» (registry/index.html, reg:publish-site). Адрес — из поля окна, проверки нет
   $('.pub__publish', pub).addEventListener('click', () => {
     // «Мили» уже в реестре: публикуются правки — назад на её карточку, как по галочке
-    if (!stage.classList.contains('is-tpl')) { pubClose(); regToCard = true; frame.select('sites'); return; }
-    const dom = $('.rs-site [data-domain]', rsParamsBody);
+    // домен на карточке — из окна, сайт опубликован
+    if (!stage.classList.contains('is-tpl')) {
+      pubClose();
+      regToCard = true;
+      regState = regParams(true);
+      frame.select('sites');
+      return;
+    }
+    tplToRegistry(true);
+  });
+  /* Сайт из шаблона — в реестр: плитка и карточка нового сайта (registry/index.html, reg:publish-site).
+     publish — «Опубликовать» в окне: карточка на «Параметрах» и окно «Домен будет создан…»;
+     иначе галочка: карточка на «Страницах», домен и всё остальное — как в «Параметрах сайта» (не подключён — сайт не опубликован).
+     Адрес — из поля домена, проверки нет */
+  function tplToRegistry(publish) {
+    const dom = $('.rs-site [data-domain]');
     const name = $('.dom__text', dom).value.trim() || pubRand();
     const link = dom.classList.contains('dom--saby') ? name + $('.dom__zone', dom).textContent : name;
+    const params = regParams(publish);
+    if (params.domain) params.domain.value = name;
     // точки продаж — те, что настроены в «Параметрах сайта» конструктора (в шаблоне их нет)
-    const points = salesSaved.map((row) => ({ name: SALES.find((p) => p.id === row.id).name, price: row.price }));
-    regPublish = { link, title: chTitle.textContent, tpl: Number(stage.dataset.tpl) || 1, kind: stage.dataset.tplKind || 'menu', points };
+    regPublish = { link, title: chTitle.textContent, tpl: Number(stage.dataset.tpl) || 1, kind: stage.dataset.tplKind || 'menu',
+      points: params.points, params, save: !publish };
     tplSites[link] = salesSaved.map((row) => ({ ...row }));
     tplSite = null;
     frame.select('sites');
-  });
+  }
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') pubClose(); });
   // «Настройки» в правой панели открывают параметры на их обычном месте
   for (const b of document.querySelectorAll('.rp-btn[data-rp="settings"]')) b.addEventListener('mousedown', pubClose);

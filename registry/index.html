@@ -5980,6 +5980,8 @@ button.tpl-cat{ cursor: pointer; }
 
   var current = BILLING, origin = 'screen-1';
   var UNPUBLISHED = {}; // сайты, снятые с публикации («Снять с публикации» → «Да»)
+  var DOMAIN = {};      // адрес сайта → домен, как его оставили в «Параметрах сайта» конструктора ({ type, value, state }, reg:open-site)
+  var PAGES = {};       // адрес сайта → страницы каталога и товара из конструктора ({ catalog, product }, reg:open-site)
   // неопубликованные в разметке (серое название на плитке, как у Blanc Hill) — тоже сняты с публикации
   $$('.tile[data-site]').forEach(function(t){ if ($('.tile__title--muted', t)) UNPUBLISHED[t.dataset.site] = true; });
   /* Неопубликованный сайт на плитках обоих реестров — с серым названием */
@@ -6024,9 +6026,12 @@ button.tpl-cat{ cursor: pointer; }
       // адрес в редакторе домена — тот же, что подписан на плитке (подключённый домен, см. ../domain.js)
       var dom = $('[data-domain]', s);
       if (dom) dom.dataset.siteAddress = current;
-      // снят с публикации: домен не подключён, в шапке — «Опубликовать»; «Снять с публикации» в правой панели — у всех сайтов
+      // снят с публикации: домен не подключён, в шапке — «Опубликовать»; «Снять с публикации» в правой панели — только у опубликованного
       var off = !!UNPUBLISHED[current];
       if (dom && off) dom.dataset.siteOff = '';
+      if (dom && DOMAIN[current]) dom.dataset.siteState = JSON.stringify(DOMAIN[current]);
+      if (PAGES[current]) $$('[data-page-pick]', s).forEach(function(b){ b.textContent = PAGES[current][b.dataset.pagePick] || 'Выберите'; });
+      $$('.rail__btn[aria-label="Снять с публикации"]', s).forEach(function(b){ b.hidden = off; });
       if (off) $('.topbar__mid', s).insertAdjacentHTML('beforeend', '<button class="btn btn--outlined btn--publish" type="button" data-site-publish>Опубликовать<i class="icon icon--m" aria-hidden="true">&#xE631;</i></button>');
       if (!m) return;
       var ttl = $('.sitehead__title', s); ttl.textContent = m.title; ttl.title = m.title;
@@ -6091,6 +6096,12 @@ button.tpl-cat{ cursor: pointer; }
     if (e.source !== window.parent || !e.data || e.data.type !== 'reg:open-site') return;
     current = SITE_TPL[e.data.site] ? e.data.site : CONSTRUCTOR_SITE;
     origin = 'screen-1';
+    // всё — как в «Параметрах сайта» конструктора (../app.js, regParams): домен (не подключён — сайт не опубликован:
+    // серое название, «Опубликовать»), точки продаж с прайсами, страницы каталога и товара
+    var p = e.data.params;
+    if (p && p.domain){ DOMAIN[current] = p.domain; UNPUBLISHED[current] = p.domain.state !== 'Connected'; }
+    if (p && p.points) SITE_SALES[current] = p.points;
+    if (p && p.pages) PAGES[current] = p.pages;
     try { sessionStorage.setItem('reg-site', JSON.stringify({ site: current, origin: origin })); } catch (err) {}
     apply();
     location.hash = '#/' + (/^screen-\d+$/.test(e.data.screen) ? e.data.screen : 'screen-2');
@@ -6123,10 +6134,15 @@ button.tpl-cat{ cursor: pointer; }
       tileInit(tile);
     });
     current = link;
+    // «Параметры сайта» конструктора: домен (галочка без подключения — сайт не опубликован), страницы каталога и товара
+    var p = d.params;
+    if (p && p.domain){ DOMAIN[link] = p.domain; UNPUBLISHED[link] = p.domain.state !== 'Connected'; }
+    if (p && p.pages) PAGES[link] = p.pages;
     try { sessionStorage.setItem('reg-site', JSON.stringify({ site: current, origin: origin })); } catch (err) {}
     apply();
-    location.hash = '#/screen-3';
-    domainInfo.hidden = false;
+    // галочка конструктора — карточка на «Страницах», как у «Мили»; «Опубликовать» — «Параметры» и окно про домен
+    location.hash = d.save ? '#/screen-2' : '#/screen-3';
+    domainInfo.hidden = !!d.save;
   });
   /* Окно «Домен будет создан…» — как подтверждение конструктора (../styles.css .confirm): закрывают «ОК» и Esc */
   var domainInfo = document.getElementById('domain-info');
@@ -6138,9 +6154,11 @@ button.tpl-cat{ cursor: pointer; }
     if (e.target.closest('.rail__btn[aria-label="Снять с публикации"]')) unpublish.hidden = false;
     else if (e.target.closest('[data-unpublish-answer]')){
       unpublish.hidden = true;
-      if (e.target.closest('[data-unpublish-answer]').dataset.unpublishAnswer === 'yes'){ UNPUBLISHED[current] = true; apply(); }
-    } else if (e.target.closest('[data-site-publish]')){ UNPUBLISHED[current] = false; apply(); } // снова опубликован
+      if (e.target.closest('[data-unpublish-answer]').dataset.unpublishAnswer === 'yes'){ UNPUBLISHED[current] = true; domainTo('Default'); apply(); }
+    } else if (e.target.closest('[data-site-publish]')){ UNPUBLISHED[current] = false; domainTo('Connected'); apply(); } // снова опубликован
   });
+  // домен из конструктора — тот же адрес, меняется только подключение
+  function domainTo(state){ if (DOMAIN[current]) DOMAIN[current].state = state; }
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') unpublish.hidden = true; });
 
   apply();
@@ -6343,6 +6361,13 @@ button.tpl-cat{ cursor: pointer; }
     if (e.key === 'Escape' && !panel.hidden) close();
   });
   window.addEventListener('hashchange', function(){ if (location.hash !== openedAt) close(); });
+  // конструктор (../app.js, regShow): возврат в реестр — стартовый экран без панели «Шаблоны»
+  // (крестик шаблона, панель сценариев)
+  window.addEventListener('message', function(e){
+    if (e.source !== window.parent || !e.data || e.data.type !== 'reg:home') return;
+    close();
+    location.hash = '#/screen-1';
+  });
   /* Демо начинается с панели «Шаблоны» поверх реестра: конструктор при старте грузит фрейм с ?tpl.
      Тот же экран, выставленный повторно (стартовая разводка, конструктор), панель не закрывает */
   if (/[?&]tpl(&|$)/.test(location.search)) open(document.body);
