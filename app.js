@@ -290,7 +290,7 @@
   }
   $('#rsParamsClose').addEventListener('click', rsCloseParams);
   stage.addEventListener('mousedown', (e) => {
-    if (rsParamsOpen && !e.target.closest('#rsParams, #salesPicker, #salesPopup, #confirm, .rp-btn')) rsCloseParams();
+    if (rsParamsOpen && !e.target.closest('#rsParams, #salesPicker, #salesPopup, #confirm, #qrDlg, #qrPrint, #qrAlert, .rp-btn')) rsCloseParams();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && salesPicker.hidden) rsCloseParams(); });
 
@@ -324,10 +324,23 @@
     ['email', 'Email', 'Email'],
   ];
   const salesExpanded = new Set();
-  const PRICES = ['Меню A la carte', 'Меню Престо', 'Прайс для кофейни', 'Демо прайс', 'Прайс в ресторане на Московском'];
-  const PRICE_CURRENT = 'Из текущей точки продаж';
-  const PRICE_GROUPS = ['Мили', 'Столовая в Костроме', 'Столовые в Ярославле', 'Мили'];
-  let priceGroup = null;
+  // Прайсы (Figma 2829:85088): [группа, подгруппы, прайсы]. «Мили» раскрыта, в ней столовые и два прайса. То же дерево — в реестре
+  const PRICE_TREE = [
+    ['Мили', [
+      ['Столовая Кострома', [], ['Обеды Кострома', 'Банкетное меню Кострома']],
+      ['Столовая Питер', [], ['Обеды Питер']],
+      ['Столовые Ярославль', [], ['Обеды Ярославль', 'Прайс в ресторане на Московском']],
+      ['Столовая Новосибирск', [], ['Обеды Новосибирск']],
+      ['Гастромаркет ЕКБ', [], ['Гастромаркет ЕКБ']],
+    ], ['Меню A la carte', 'Меню Престо']],
+    ['Квеста Бухобслуживание', [], ['Прайс для кофейни', 'Демо прайс']],
+    ['SabyHotel', [], ['Меню ресторана отеля', 'Room service']],
+    ['Тинькофф', [], ['Обеды в офисе']],
+    ['01- Республика Адыгея', [], ['Меню «Майкоп»']],
+  ];
+  const PRICES = [];
+  (function walk(nodes) { for (const [, subs, names] of nodes) { walk(subs); PRICES.push(...names); } })(PRICE_TREE);
+  const priceExpanded = new Set();
   const salesPopup = $('#salesPopup');
   const salesPicker = $('#salesPicker');
   let catalogAdded = false;
@@ -336,7 +349,8 @@
   let salesSelection = new Set();
   let salesPickerMode = null;
   let salesOnlySelected = false;
-  // Компоненты (простая версия): четыре компонента, они взаимоисключающие — подключён один, чипсы остальных пропадают, пока его не отключат.
+  // Компоненты (простая версия): четыре компонента, они взаимоисключающие — подключён один. Чипсы остальных остаются: чипса другого компонента заменяет подключённый
+  // (после подтверждения compSwitchAsk — как отключить текущий и подключить новый).
   // Связей между компонентами нет: компонент приносит только свои страницы (и настройки — пока только точки продаж у «Электронного меню»).
   // Полная версия с зависимостями и группами страниц — тег components-2.0.
   // widget — виджет компонента в магазине, widgetPage — страница, которую виджет открывает. Страницы создаются под виджет: у каждой страницы компонента свой виджет
@@ -362,8 +376,8 @@
   const compConfigured = () => salesSaved.length > 0;
   // Чипсы «Параметров сайта»: неподключённые компоненты, иконка компонента + название. Подключённый уходит из чипсов
   function compChipsRender() {
-    // Компоненты взаимоисключающие: пока один подключён, чипсов нет
-    const chips = Object.entries(COMP).filter(() => !compOn.size).map(([id, c]) => {
+    // Компоненты взаимоисключающие: чипсы — у всех, кроме подключённого; чипса при подключённом компоненте заменяет его
+    const chips = Object.entries(COMP).filter(([id]) => !compOn.has(id)).map(([id, c]) => {
       const chip = el('button', 'chips chips--optional'); // опциональное свойство ui-kit (PropertyGrid 37372:32955)
       chip.type = 'button';
       chip.dataset.compAdd = id;
@@ -377,11 +391,19 @@
     $('#compGroups').replaceChildren($('#salesSettings'));
     $('#compChips').replaceChildren(...chips);
     $('#compChipsBlock').hidden = !chips.length;
+    $('#compChipsBlock .rs-comps__title').hidden = compOn.size > 0; // компонент подключён — заголовка «Добавить компонент» нет, чипсы заменяют его
   }
   const salesCopy = (rows) => rows.map((row) => ({ ...row, prices: row.prices?.slice() }));
   const salesCurrent = () => salesDraft || salesSaved;
 
   // pricePick — прайс кнопкой, открывает выбор прайсов (прежний вид «Параметров сайта», Figma 2547:71389)
+  // Экспандеры в «Параметрах сайта»: «Сайт» и компонент сворачивают всю плашку (так же — в «Параметрах» реестра)
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.sales-settings__toggle');
+    if (!t) return;
+    const open = t.getAttribute('aria-expanded') === 'false';
+    t.setAttribute('aria-expanded', String(open));
+  });
   function salesRenderRows(root, rows, pricePick = false) {
     root.replaceChildren();
     if (!rows.length) {
@@ -413,10 +435,10 @@
       }
       const actions = el('div', 'sales-row__actions');
       if (index) {
-        const primary = el('button', 'has-tip', '<span class="ico">&#xEABA;</span>');
+        const primary = el('button', '', '<span class="ico">&#xEABA;</span>');
         primary.type = 'button';
         primary.dataset.salesPrimary = row.id;
-        primary.dataset.tip = 'Сделать текущей точкой';
+        primary.title = 'Сделать текущей точкой';
         primary.setAttribute('aria-label', 'Сделать текущей точкой: ' + label.textContent);
         actions.append(primary);
       }
@@ -446,9 +468,14 @@
     block.classList.toggle('sales-settings--no-price', !cfg.price);
     $('.sales-settings__icon', block).src = `assets/img/comp/${active ?? 'restaurant'}.svg`;
     $('#salesSettingsTitle').textContent = cfg.name;
+    // компонент сменился — свёрнутая плашка раскрывается (экспандер заголовка)
+    if (active && block.dataset.comp !== active) $('.params-group-toggle', block).setAttribute('aria-expanded', 'true');
+    block.dataset.comp = active ?? '';
     $('#salesSettingsPoints').textContent = cfg.points;
-    const add = $('.sales-settings__sub--points [data-sales-add]', block);
-    add.dataset.tip = 'Добавить ' + cfg.point;
+    window.QrCode?.sync($('#compQr'), active ?? 'restaurant'); // табличка QR и «Привязать к …» — по типу сайта (qr.js)
+    window.CompCatalog?.sync($('#compCatalog'), active ?? 'restaurant'); // настройки каталога — только у меню и услуг (comp-catalog.js)
+    const add =$('.sales-settings__sub--points [data-sales-add]', block);
+    add.title = 'Добавить ' + cfg.point;
     add.setAttribute('aria-label', 'Добавить ' + cfg.point);
     const remove = $('#salesSettingsRemove');
     remove.hidden = !compOn.size; // каталог без компонента отключать нечего
@@ -511,13 +538,11 @@
     const priceRow = pointId && rows.find((row) => row.id === pointId);
     // Точек ещё нет — список открывается с уже отмеченными двумя ресторанами «Мили»
     const picked = rows.length ? rows.map((row) => row.id) : ROOT_SALES.slice(0, 2).map((point) => point.id);
-    salesSelection = new Set(pointId ? (priceRow.prices || [priceRow.price]) : picked);
-    priceGroup = null;
-    salesPicker.classList.toggle('sales-picker--prices', !!pointId);
-    const search = $('.sales-picker__search', salesPicker);
-    const head = $('.sales-picker__head', salesPicker);
-    if (pointId) head.prepend(search);
-    else $('.sales-picker__main', salesPicker).insertBefore(search, $('#salesPickerList'));
+    salesSelection = new Set(pointId ? (priceRow.prices || priceRow.price.split(', ')).filter((name) => PRICES.includes(name)) : picked);
+    if (pointId) { priceExpanded.clear(); priceExpanded.add('Мили'); }
+    // у прайсов в правой колонке «+» вместо настроек списка — как в реестре
+    $('.sales-list-settings', salesPicker).hidden = !!pointId;
+    $('#salesPickerPlus').hidden = !pointId;
     $('#salesPickerTitle').textContent = pointId ? 'Прайсы' : compCfg().points;
     $('#salesSearch').value = '';
     $('#salesSearch').setAttribute('aria-label', pointId ? 'Поиск прайсов' : 'Поиск: ' + compCfg().points.toLocaleLowerCase('ru'));
@@ -550,32 +575,29 @@
     }
     let count = 0;
     if (isPrice) {
-      const current = { id: PRICE_CURRENT, name: PRICE_CURRENT };
-      if (matches(current)) { root.append(optionRow(current)); count++; }
-      if (!query && !salesOnlySelected) {
-        root.append(el('div', 'price-picker__divider'));
-        if (priceGroup !== null) {
-          const back = el('button', 'price-picker__group', '<span class="ico">&#xE674;</span>');
-          back.type = 'button';
-          back.append(document.createTextNode('Все прайсы'));
-          back.addEventListener('click', () => { priceGroup = null; salesPickerRender(); });
-          root.append(back);
-        } else {
-          PRICE_GROUPS.forEach((name, index) => {
-            const group = el('button', 'price-picker__group');
-            group.type = 'button';
-            group.append(document.createTextNode(name), el('span', 'ico', '&#xEB89;'));
-            group.setAttribute('aria-label', 'Открыть группу ' + name);
-            group.addEventListener('click', () => { priceGroup = index; salesPickerRender(); });
-            root.append(group);
-          });
+      // Дерево прайсов: группа видна, если подходит она сама или что-то внутри; при поиске и «только отмеченных» всё раскрыто
+      const build = ([name, subs, names], parent, groupFits) => {
+        const fitsName = groupFits || name.toLocaleLowerCase('ru').includes(query);
+        const details = el('details', 'sales-picker__node');
+        const summary = el('summary', 'sales-picker__group', '<span class="ico">&#xE96E;</span>');
+        summary.append(document.createTextNode(name));
+        const children = el('div', 'sales-picker__children');
+        details.append(summary, children);
+        let inner = 0;
+        for (const sub of subs) inner += build(sub, children, fitsName);
+        for (const price of names) {
+          if ((fitsName || price.toLocaleLowerCase('ru').includes(query)) && (!salesOnlySelected || salesSelection.has(price))) { children.append(optionRow({ id: price, name: price })); inner++; }
         }
-      }
-      const names = priceGroup === null ? PRICES : priceGroup === 0 || priceGroup === 3 ? PRICES.slice(0, 2) : priceGroup === 1 ? ['Меню Престо', 'Демо прайс'] : ['Прайс для кофейни', 'Прайс в ресторане на Московском'];
-      for (const name of names) {
-        const option = { id: name, name };
-        if (matches(option)) { root.append(optionRow(option)); count++; }
-      }
+        if ((query || salesOnlySelected) && !inner) return 0;
+        details.open = !!query || salesOnlySelected || priceExpanded.has(name);
+        details.addEventListener('toggle', () => {
+          if (details.open) priceExpanded.add(name);
+          else priceExpanded.delete(name);
+        });
+        parent.append(details);
+        return Math.max(inner, 1);
+      };
+      for (const group of PRICE_TREE) count += build(group, root, false);
     } else {
       if (!query && !salesOnlySelected) root.append(el('div', 'sales-picker__company', 'Вся компания'));
       for (const group of SALES_GROUPS) {
@@ -606,7 +628,7 @@
     $('#salesCount').setAttribute('aria-pressed', salesOnlySelected);
     $('#salesFilter').setAttribute('aria-pressed', salesOnlySelected);
     const all = $('#salesSelectAll');
-    const options = salesPickerMode === 'points' ? SALES.map((point) => point.id) : [PRICE_CURRENT, ...PRICES];
+    const options = salesPickerMode === 'points' ? SALES.map((point) => point.id) : PRICES;
     all.setAttribute('aria-label', salesPickerMode === 'points' ? 'Выбрать все точки продаж' : 'Выбрать все прайсы');
     $('#salesCount').setAttribute('aria-label', salesPickerMode === 'points' ? 'Показать только отмеченные точки' : 'Показать только отмеченные прайсы');
     all.hidden = false;
@@ -621,7 +643,7 @@
     salesPickerRender();
   });
   $('#salesSelectAll').addEventListener('change', (e) => {
-    salesSelection = new Set(e.target.checked ? (salesPickerMode === 'points' ? SALES.map((point) => point.id) : [PRICE_CURRENT, ...PRICES]) : []);
+    salesSelection = new Set(e.target.checked ? (salesPickerMode === 'points' ? SALES.map((point) => point.id) : PRICES) : []);
     salesPickerRender();
   });
   $('#salesPickerDone').addEventListener('click', () => {
@@ -632,7 +654,7 @@
     } else {
       const row = rows.find((row) => row.id === salesPickerMode);
       if (row) {
-        row.prices = [...salesSelection];
+        row.prices = PRICES.filter((name) => salesSelection.has(name)); // порядок — как в дереве
         row.price = row.prices.join(', ') || 'Выбрать прайс';
       }
     }
@@ -1132,6 +1154,8 @@
     if (toggle) {
       const id = toggle.dataset.compToggle || toggle.dataset.compAdd;
       if (compOn.has(id)) { compRemoveAsk(id); return; }
+      // подключён другой компонент — замена с подтверждением: он отключается со своими страницами, новый подключается
+      if (toggle.dataset.compAdd && compOn.size) { compSwitchAsk(id); return; }
       compConnect(id, true);
       compAddWidgetHome(id);
       pagePickDefaults(id);
@@ -3379,7 +3403,11 @@
     pagePickRender();
     const addr = $('.rs-site .dom__text', rsParamsBody);
     if (addr && !addr.value) { addr.value = pubRand(); addr.dispatchEvent(new Event('input', { bubbles: true })); }
+    // центр — только при открытии; дальше верх закреплён, свёртка точек и прочее не двигают шапку
+    pub.style.top = pub.style.transform = '';
     pub.hidden = false;
+    pub.style.top = pub.offsetTop - pub.offsetHeight / 2 + 'px';
+    pub.style.transform = 'translateX(-50%)';
   }
   function pubClose() {
     if (pub.hidden) return;

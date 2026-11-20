@@ -634,7 +634,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-comps { padding: 12px 8px 12px; } /* сверху 12 + 4 (gap тела) = 16 от плашки выше, как в Figma qRTnmlLncsGaoD9FD0u3Nh 17264:108765 */
 /* заголовок группы чипсов — «МОЖНО ДОБАВИТЬ» из Figma 21912:180563: 12px капсом, 8 до чипсов; слева 8 + 16 = 24 — на линии текста чипсов плашки «Сайт» */
 .rs-comps__title { padding: 0 0 8px 16px; font-size: 12px; line-height: normal; letter-spacing: .24px; text-transform: uppercase; color: var(--text-label_contrast_text-color); }
-.rs-comps[hidden] { display: none; }
+.rs-comps[hidden], .rs-comps .chips[hidden], .rs-comps__title[hidden] { display: none; }
+.rs-comps:has(> .rs-comps__title[hidden]) { padding-top: 8px; } /* компонент подключён, заголовка нет: 8 + 4 (gap тела) = 12 от плашки компонента до чипсов */
 .rs-comps__chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .rs-comps .chips__icon { padding: 0; }
 .rs-comps .chips__icon img { display: block; width: 24px; height: 24px; }
@@ -642,9 +643,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* Точки продаж — те же кнопки, шрифты и подсказки ui-kit, что в остальных окнах. */
 .rs-params__body { display: flex; flex-direction: column; gap: 4px; }
 .sales-settings[hidden], .sales-popup[hidden], .sales-picker[hidden] { display: none; }
-/* Тултип по ховеру: тёмная плашка над кнопкой */
-.has-tip[data-tip]::after { content: attr(data-tip); position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); padding: 4px 8px; border-radius: 4px; background: #333; color: #fff; font-family: inherit; font-size: 12px; font-weight: 400; line-height: 16px;letter-spacing: -.1692px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .12s; z-index: 10; }
-.has-tip[data-tip]:hover::after { opacity: 1; }
+/* Подсказки у кнопок — штатные title, как у правой панели реестра (своих тёмных плашек нет) */
 .sales-settings__head { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; height: 40px; padding: 0 66px 0 12px; gap: 10px; font-size: 14px; }
 .sales-settings__head > div { display: flex; align-items: center; gap: 4px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
 .sales-settings__head > span { color: #8991a9; }
@@ -663,7 +662,13 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-site__title { display: flex; align-items: center; gap: 8px; height: 24px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
 /* свойства: метки в первой колонке, редакторы — в 8px от самой длинной метки */
 .rs-site__props { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px; align-items: center; justify-items: start; grid-auto-rows: minmax(24px, auto); /* строка свойства 24, между свойствами 8 */ font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
-.rs-site__favicon { display: block; margin: -2px 0; border: 1px solid #eaeaea; border-radius: 28px; } /* 28 в строке 24: выступает на 2 сверху и снизу, высоту строки не меняет */
+/* Иконка сайта (Figma DBmmGUNJ5Pwg8BsFOI5Kuv 7113:110857): круг 28 с рамкой #eaeaea; 28 в строке 24 — выступает на 2 сверху и снизу.
+   Ховер (Variant3): рамка #d0d0d0, белая вуаль 75% и иконка 16 #656c87 — как у миниатюры QR (qr.css). Клик пока без действия */
+.rs-site__favicon { position: relative; display: block; width: 28px; height: 28px; margin: -2px 0; padding: 0; overflow: hidden; border: 1px solid var(--border-border-color, #eaeaea); border-radius: 28px; background: #fff; cursor: pointer; }
+.rs-site__favicon:hover { border-color: var(--border-hover_border-color, #d0d0d0); }
+.rs-site__favicon img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.rs-site__favicon::after { content: "\e671"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-bottom: 1px; background: rgb(255 255 255 / .75); font-family: "cbuc-icons"; font-size: 16px; line-height: 1; color: var(--icon-secondary_icon-color, #656c87); opacity: 0; transition: opacity .12s; }
+.rs-site__favicon:hover::after { opacity: 1; }
 .rs-site__props, .rs-site__chips { align-self: stretch; }
 .rs-site__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .rs-site__label { color: #8991a9; }
@@ -693,6 +698,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 :is(.rs-params, .pub) .sales-row__name .ico { width: 24px; height: 24px; } /* корона в квадрате 24, как «Инфо» в макете */
 :is(.rs-params, .pub) .sales-price { position: relative; display: flex; justify-self: start; max-width: 100%; overflow: visible; padding: 0; color: var(--text); font: inherit; letter-spacing: inherit; cursor: pointer; }
 .sales-price__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* прайс — кнопка-ссылка ui-kit в стиле default (.btn--link.btn--style-default): при наведении темнее и подчёркнуто. То же — в реестре */
+:is(.rs-params, .pub) button.sales-price:hover { color: var(--text-hover_text-color); text-decoration: underline; }
 .sales-empty { margin: 0; padding: 0 12px; color: #8991a9; font-size: 14px; line-height: 1.4; }
 .sales-empty__link { color: var(--link); } /* кнопка-ссылка в тексте: шрифт и строка — от текста */
 .sales-empty__link:hover { text-decoration: underline; }
@@ -704,7 +711,7 @@ ul { list-style: none; margin: 0; padding: 0; }
    8 от предыдущей подгруппы, от шапки компонента — 4 (её 4 и свои 4 схлопываются), 4 до содержимого */
 .sales-settings__sub { display: flex; align-items: center; gap: 8px; height: 24px; margin: 8px 0 4px; padding: 0 12px; font-size: var(--font-font-size-font-size_l); font-weight: var(--font-font-weight-bold); letter-spacing: -.2115px; color: var(--components-heading-default_text-color_heading); }
 .sales-settings__head + .sales-settings__sub { margin-top: 4px; }
-.comp-props + .sales-settings__sub { margin-top: 12px; } /* от «Товара» до «Точек продаж» — 12 */
+.comp-props + .sales-settings__sub { margin-top: 16px; } /* от последнего свойства (QR-код) до «Точек продаж» — 16 */
 /* «Точки продаж» с подписью «Прайс»: те же колонки, что у строк точек (1fr 1fr, gap 10, справа 66), «Прайс» — над колонкой прайса,
    серым обычным начертанием, по базовой линии с заголовком. Без точек подписи нет */
 .sales-settings__sub--points { align-self: stretch; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: baseline; gap: 10px; padding-right: 66px; }
@@ -712,6 +719,20 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-settings__price { font-size: var(--font-font-size-font-size_m); font-weight: var(--font-font-weight-regular); letter-spacing: -.1974px; color: #8991a9; }
 .sales-settings__sub--points:has(+ .sales-rows .sales-empty) .sales-settings__price,
 .sales-settings__sub--points:has(+ .sales-rows:empty) .sales-settings__price { visibility: hidden; }
+
+/* Экспандер «Точек продаж»: клик по заголовку сворачивает и разворачивает список точек (как группа в мастере реестра, .master__sep).
+   Шеврон 16 справа от заголовка, свёрнуто — повёрнут влево; пустой список («Добавьте ваши…») сворачивается так же */
+.sales-settings__toggle { display: flex; align-items: center; gap: 4px; padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: inherit; cursor: pointer; }
+.sales-settings__toggle-arrow { font-size: 16px; color: #8991a9; transition: transform .15s; }
+.sales-settings__toggle:hover .sales-settings__toggle-arrow { color: #313e78; }
+.sales-settings__toggle[aria-expanded="false"] .sales-settings__toggle-arrow { transform: rotate(-90deg); }
+/* Экспандеры групп «Сайт» и компонента: заголовок с шевроном (как у «Точек продаж») сворачивает всю плашку — остаётся только заголовок */
+.rs-site:has(> .rs-site__title > .params-group-toggle[aria-expanded="false"]) > :not(.rs-site__title),
+.sales-settings:has(> .sales-settings__head .params-group-toggle[aria-expanded="false"]) > :not(.sales-settings__head) { display: none; }
+.sales-settings:has(> .sales-settings__head .params-group-toggle[aria-expanded="false"]) > .sales-settings__head { margin-bottom: 0; }
+
+.sales-settings__sub--points:has(.sales-settings__toggle[aria-expanded="false"]) + .sales-rows { display: none; }
+.sales-settings__sub--points:has(.sales-settings__toggle[aria-expanded="false"]) .sales-settings__price { visibility: hidden; }
 
 .mw-menu.page-pick-menu { width: max-content; min-width: 200px; max-width: 320px; }
 .sales-row { position: relative; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 10px; min-height: 32px; padding: 0 12px; font-size: 14px; letter-spacing: -.1974px; }
@@ -741,12 +762,10 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-row__actions button:hover .ico { color: #313e78; }
 .sales-row__actions [data-sales-delete]:hover .ico { color: #8f0e07; }
 .sales-row__actions [data-sales-delete] .ico { color: #c2140a; }
-.sales-row__actions .has-tip { position: relative; }
-.sales-row__actions .has-tip[data-tip]::after { left: auto; right: 0; transform: none; } /* корона у края панели: по центру тултип обрезался бы */
 /* Окно — .pe из ui-kit (фон, тень, шапка, кнопки); здесь только место на сцене, ширина под две колонки и облачко без своих отступов — строки со своими */
 .sales-popup { position: absolute; z-index: 25; left: 585px; top: 398px; width: 430px; }
 .sales-popup--over-params { left: 50%; top: 50%; transform: translate(-50%, -50%); } /* из «Параметров сайта»: по центру страницы, как окно подтверждения */
-.sales-popup .sales-popup__add { position: relative; margin-left: 8px; } /* опора для тултипа .has-tip */
+.sales-popup .sales-popup__add { position: relative; margin-left: 8px; }
 .sales-popup__card { padding: 0; }
 .sales-popup .sales-rows { background: none; }
 .sales-spacer { flex: 1; }
@@ -763,7 +782,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-filter .ico24, .sales-list-settings .ico24 { color: #656c87; }
 .sales-picker__head .sales-filter { width: 32px; height: 32px; }
 .sales-filter[aria-pressed="true"] { background: #eeebff; }
-.sales-picker--prices .sales-filter { margin-right: 12px; } /* у прайсов gap в шапке 0 */
 .sales-picker__head .sales-done { width: 26px; height: 26px; }
 .sales-picker__search { display: flex; gap: 0; align-items: center; padding: 0 12px 0 4px; height: 32px; font-size: 14px; letter-spacing: -.1974px; color: #313e78; }
 /* Обычный поиск. От низа поля до белого списка — 10px (поле 28 в строке 32: 2px снизу + 8px отступ) */
@@ -798,17 +816,10 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-picker__rail { width: 52px; border-left: 2px solid #0000000a; display: flex; flex-direction: column; align-items: center; padding: 7px 10px 6px 12px; gap: 7px; }
 .sales-picker__rail .sales-icon { width: 32px; height: 32px; }
 
-/* Прайсы — стек-панель Figma 2560:103488. */
-.sales-picker--prices .sales-picker__head { padding-left: 0; gap: 0; }
-.sales-picker--prices .sales-picker__head > strong,
-.sales-picker--prices .sales-picker__head > .sales-spacer { display: none; }
-.sales-picker--prices .sales-picker__search { flex: 1; padding-right: 0; }
-.sales-picker--prices .sales-option { gap: 3px; min-height: 32px; padding: 4px 12px 4px 4px; font-size: 15px; letter-spacing: -.2115px; }
-.sales-picker--prices .sales-option input:checked { opacity: 1; }
-.price-picker__divider { margin: 12px 20px; height: 1px; background: #eaeaea; }
-.price-picker__group { display: flex; align-items: center; gap: 6px; width: 100%; min-height: 32px; padding: 4px 20px; font-size: 15px; letter-spacing: -.2115px; text-align: left; }
-.price-picker__group .ico { color: #8991a9; font-size: 12px; }
-.price-picker__group:hover { background: var(--menu-item-hover); }
+/* Прайсы (Figma 2829:85088) — дерево, как в реестре: второй уровень — группа на 20 правее, прайсы в ней ещё на 20 */
+.sales-picker__children .sales-picker__group { padding-left: 40px; }
+.sales-picker__children .sales-picker__children .sales-option { padding-left: 44px; }
+.sales-picker__rail [hidden] { display: none; }
 
 /* переключатель: включён — акцентный (Figma), выключен — подобран */
 .rp-switch { width: 24px; height: 24px; display: flex; align-items: center; }
@@ -1238,6 +1249,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .pub__card[hidden] { display: none; }
 .pub__card { padding: 12px; background: #fff; border-radius: 8px; }
 .pub .rs-params__body { flex: none; max-height: 600px; padding: 0; }
+.pub .rs-comps { padding-bottom: 8px; } /* снизу 8 + 4 (поле окна) = 12, как сбоку: 4 + 8 */
 /* Предупреждение — иконка и текст warning, «предпросмотра» подчёркнуто */
 .pub__warn { display: flex; align-items: flex-start; font-size: 14px; line-height: normal; letter-spacing: -.1974px; color: var(--text-warning_text-color, #e6a119); }
 .pub__warn-ico { flex: none; margin-right: 4px; padding-bottom: 1px; color: var(--icon-warning_icon-color, #e6a119); }

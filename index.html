@@ -21,6 +21,13 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="domain.css">
+  <!-- arrow-button появился в ките позже 1.13.0 (стрелки «Стиль» и шевроны цветов в окне QR-кода) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/arrow-button/arrow-button.css">
+  <!-- «Назад» кита — во вложенном списке цветов окна QR-кода -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/back/back.css">
+  <link rel="stylesheet" href="qr.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/switch/switch.css">
+  <link rel="stylesheet" href="comp-catalog.css">
 </head>
 <body>
   <div class="viewport">
@@ -376,15 +383,15 @@
       </section>
 
       <!-- Окно «Параметры сайта» (Figma 2547:76412): поверх контента, вписанная панель скрыта, её место остаётся за ней -->
-      <section class="rs-params" id="rsParams" aria-label="Параметры сайта" hidden>
+      <section class="rs-params" id="rsParams" aria-label="Параметры" hidden>
         <div class="rs-params__head">
-          <span class="rs-params__title">Параметры сайта</span>
+          <span class="rs-params__title">Параметры</span>
           <button class="btn btn--ghost btn--style-label btn--icon" type="button" id="rsParamsClose" aria-label="Закрыть"><img src="assets/img/close-tool.svg" width="28" height="28" alt=""></button>
         </div>
         <div class="rs-params__body">
           <!-- Блок «Сайт»: Figma 2854:63032. Сначала свойства, за ними SEO-чипсы. Редакторы — в одной колонке, в 8px от самой длинной метки -->
           <section class="rs-site" aria-label="Сайт">
-            <div class="rs-site__title"><img class="sales-settings__icon" src="assets/img/comp/site.svg" width="24" height="24" alt="">Сайт</div>
+            <div class="rs-site__title"><img class="sales-settings__icon" src="assets/img/comp/site.svg" width="24" height="24" alt=""><button class="sales-settings__toggle params-group-toggle" type="button" aria-expanded="true">Сайт<span class="ico sales-settings__toggle-arrow" aria-hidden="true">&#xE9AA;</span></button></div>
             <div class="rs-site__props">
               <span class="rs-site__label">Адрес сайта</span>
               <!-- Редактор домена (Figma DRIJUUCPNarHomYAJ5eMqn, 14:1683) — та же разметка, что на вкладке «Данные» реестра; стили domain.css, поведение domain.js -->
@@ -399,7 +406,7 @@
                 <div class="dom__status">Подключите домен на saby.ru или настройте свой по <span class="dom__link">инструкции</span></div>
               </div>
               <span class="rs-site__label">Владелец</span><span class="rs-site__owner"><span class="rs-site__val">Тензор, ООО</span><span class="ico rs-site__clear" aria-hidden="true">&#xE66C;</span></span>
-              <span class="rs-site__label">Иконка сайта (favicon)</span><img class="rs-site__favicon" src="assets/img/favicon.png" width="28" height="28" alt="">
+              <span class="rs-site__label">Иконка сайта (favicon)</span><button class="rs-site__favicon" type="button" aria-label="Иконка сайта (favicon)"><img src="assets/img/favicon.png" width="26" height="26" alt=""></button>
             </div>
             <div class="rs-site__chips">
             <button class="chips chips--size-m" type="button"><span class="chips__caption">HTML - код</span></button>
@@ -411,14 +418,19 @@
             </div>
           </section>
           <section class="sales-settings" id="salesSettings" aria-label="Точки продаж сайта" hidden>
-            <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt=""><span class="sales-settings__comp" id="salesSettingsTitle">Электронное меню</span><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div><span></span></div>
+            <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt=""><button class="sales-settings__toggle params-group-toggle" type="button" aria-expanded="true"><span class="sales-settings__comp" id="salesSettingsTitle">Электронное меню</span><span class="ico sales-settings__toggle-arrow" aria-hidden="true">&#xE9AA;</span></button><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div><span></span></div>
             <!-- Страница каталога и страница товара — как в «Параметрах сайта» dynamic-pages: ссылка «Выберите страницу», выбор — меню #pagePickMenu. Та же разметка — на вкладке «Данные» реестра -->
             <div class="rs-site__props comp-props">
               <span class="rs-site__label">Страница каталога</span><button class="sales-empty__link comp-props__pick" data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
               <span class="rs-site__label">Страница товара</span><button class="sales-empty__link comp-props__pick" data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
+              <!-- QR-код: миниатюра (ховер — карандаш, клик — окно «Табличка с QR-кодом»), «Привязать» и «Распечатать» без точек продаж — предупреждение (qr.js). Стили qr.css, поведение qr.js; та же разметка — в «Параметрах» реестра -->
+              <span class="rs-site__label">QR-код</span>
+              <span class="comp-qr" id="compQr" data-qr-comp="restaurant"><button class="comp-qr__thumb" type="button" data-qr-open title="Настроить табличку с QR-кодом" aria-label="Настроить табличку с QR-кодом"><span class="comp-qr__icon" aria-hidden="true">&#xe915;</span></button></span>
             </div>
+            <!-- Настройки каталога — свойство «Выбор товара из <прайс>» и «Доступно клиенту» с группой чекбоксов (дописываются в .comp-props после QR-кода), только у «Электронного меню» и «Услуг» (comp-catalog.js, comp-catalog.css). Так же — в «Данных» реестра -->
+            <div class="comp-cat" id="compCatalog" data-cat-comp="restaurant"></div>
             <!-- Две подгруппы: «Страницы» (каталог и товар) и «Точки продаж» с «+». Так же — в «Параметрах» реестра -->
-            <div class="sales-settings__sub sales-settings__sub--points"><div><span id="salesSettingsPoints">Точки продаж</span><button class="btn btn--filled btn--style-pale btn--size-m rs-plus has-tip" type="button" data-sales-add aria-label="Добавить точку продаж" data-tip="Добавить точку продаж"><span class="btn__icon">&#xEADD;</span></button></div><span class="sales-settings__price">Прайс</span></div>
+            <div class="sales-settings__sub sales-settings__sub--points"><div><span id="salesSettingsPoints">Точки продаж</span><button class="btn btn--filled btn--style-pale btn--size-m rs-plus" type="button" data-sales-add aria-label="Добавить точку продаж" title="Добавить точку продаж"><span class="btn__icon">&#xEADD;</span></button></div><span class="sales-settings__price">Прайс</span></div>
             <div class="sales-rows" id="salesSettingsRows"></div>
           </section>
           <!-- Группы остальных подключённых компонентов (у «Ресторана» — блок выше): иконка, название, крестик «отключить». Строит compChipsRender -->
@@ -450,7 +462,7 @@
            Пустой адрес сайта при первом открытии получает случайный набор букв -->
       <section class="pub" id="pub" role="dialog" aria-label="Параметры" hidden>
         <header class="pub__head">
-          <span class="pub__title">Параметры сайта</span>
+          <span class="pub__title">Параметры</span>
           <button class="btn btn--same-outlined btn--style-primary btn--size-m pub__publish" type="button"><span class="btn__caption">Опубликовать</span><span class="btn__icon">&#xE631;</span></button>
           <button class="pub__close" type="button" id="pubClose" aria-label="Закрыть"><img src="assets/img/close-tool.svg" width="24" height="24" alt=""></button>
         </header>
@@ -469,7 +481,7 @@
       <section class="pe sales-popup" id="salesPopup" role="dialog" aria-label="Точки продаж" hidden>
         <header class="pe__head">
           <span class="pe__name pe__name--static">Точки продаж</span>
-          <button class="btn btn--filled btn--style-pale btn--size-m rs-plus sales-popup__add has-tip" type="button" data-sales-add aria-label="Добавить точку продаж" data-tip="Добавить точку продаж"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
+          <button class="btn btn--filled btn--style-pale btn--size-m rs-plus sales-popup__add" type="button" data-sales-add aria-label="Добавить точку продаж" title="Добавить точку продаж"><span class="btn__icon">&#xEADD;</span><span class="pin" aria-hidden="true"><img src="assets/img/pin-cursor.svg" width="15" height="15" alt=""></span></button>
           <div class="pe__cmds">
             <button type="button" class="pe__reset" id="salesReset" aria-label="Сбросить точки продаж" disabled>&#xe629;</button>
             <button type="button" class="pe__done" id="salesDone" aria-label="Сохранить точки продаж">&#xe75e;</button>
@@ -584,7 +596,7 @@
 
       <section class="sales-picker" id="salesPicker" role="dialog" aria-modal="true" aria-labelledby="salesPickerTitle" hidden>
         <div class="sales-picker__main"><div class="sales-picker__head"><strong id="salesPickerTitle">Точки продаж</strong><span class="sales-spacer"></span><!-- Фильтр слева от галочки, через 12px (Figma 2596:108391) --><button class="sales-icon sales-filter" id="salesFilter" type="button" aria-label="Показать только отмеченные" aria-pressed="false"><span class="ico24">&#xE94C;</span></button><button class="sales-done" id="salesPickerDone" type="button" aria-label="Подтвердить выбор"><span class="ico">&#xE75E;</span></button></div><div class="sales-picker__search"><input class="sales-checkbox" id="salesSelectAll" type="checkbox" aria-label="Выбрать все точки продаж"><!-- Обычный поиск: поле 300 без плашки и фильтра --><div class="sales-search"><input id="salesSearch" type="search" placeholder="Найти" aria-label="Поиск точек продаж"></div><button id="salesCount" type="button" aria-label="Показать только отмеченные точки" aria-pressed="false"></button></div><div class="sales-picker__list" id="salesPickerList"></div></div>
-        <div class="sales-picker__rail"><button class="sales-icon" id="salesPickerClose" type="button" aria-label="Отменить выбор"><img src="assets/img/sales-close.svg" width="28" height="28" alt=""></button><span class="sales-icon sales-list-settings" title="Настройки списка"><span class="ico24">&#xEB66;</span></span><span class="sales-spacer"></span><span class="rp-help" aria-label="Помощь"><img src="assets/img/help.svg" width="12" height="16" alt=""></span></div>
+        <div class="sales-picker__rail"><button class="sales-icon" id="salesPickerClose" type="button" aria-label="Отменить выбор"><img src="assets/img/sales-close.svg" width="28" height="28" alt=""></button><span class="sales-icon sales-list-settings" title="Настройки списка"><span class="ico24">&#xEB66;</span></span><span class="sales-icon" id="salesPickerPlus" title="Добавить прайс" hidden><span class="ico24" style="color:#333">&#xEADD;</span></span><span class="sales-spacer"></span><span class="rp-help" aria-label="Помощь"><img src="assets/img/help.svg" width="12" height="16" alt=""></span></div>
       </section>
 
       <!-- Окно внешних виджетов (Figma G3QPR5r3X5ox6DmPwj6rJ7 27261:169142): открывается по центру по клику на внешний виджет в магазине, галочки нет: выбор — клик по плашке -->
@@ -995,6 +1007,8 @@
   <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/demo-frame/demo-frame.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.js"></script>
   <script src="domain.js"></script>
+  <script src="qr.js"></script>
+  <script src="comp-catalog.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

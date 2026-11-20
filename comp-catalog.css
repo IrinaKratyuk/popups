@@ -1,0 +1,14 @@
+/* Настройки каталога компонента (comp-catalog.js): свойство «Выбор товара из <прайс>» и «Доступно клиенту» с группой чекбоксов — последними строками свойств (.comp-props).
+   Общие для «Параметров сайта» конструктора и «Данных» реестра. Чекбокс — checkbox из ui-kit (components/checkbox/checkbox.css подключает страница).
+   Сама группа .comp-cat — скрытый маркер: от свойств до «Точек продаж» — 16 */
+.comp-cat, .comp-cat[hidden] { display: none; }
+.comp-cat + .sales-settings__sub { margin-top: 16px; }
+/* «Доступно клиенту» — метка в колонке меток; группа чекбоксов ui-kit (outlined) в колонке значений в одну строку через 12, не влезли — переносятся, между рядами 8 */
+.comp-props:has(.comp-cat__checks) { grid-auto-rows: minmax(24px, auto); } /* строка свойств — 24, группа чекбоксов — выше */
+.comp-cat__label { align-self: start; line-height: 24px; }
+.comp-cat__checks { justify-self: stretch; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px; min-width: 0; }
+.comp-cat__check { max-width: 100%; font-size: 14px; letter-spacing: inherit; }
+
+/* «Выбор товара из» — строка свойств после QR-кода (.comp-props), прайс ссылкой: ховер — подчёркивание, клика пока нет */
+.comp-cat__price { max-width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #2562aa; cursor: pointer; }
+.comp-cat__price:hover { text-decoration: underline; }

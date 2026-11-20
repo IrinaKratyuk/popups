@@ -14,6 +14,14 @@
 <!-- .pe — окно «Сайт» у «Подключить» (вид — как #salesPopup конструктора); стили только под .pe, шрифты cbuc-icons/cbuc-icons24 — ниже -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.css">
 <link rel="stylesheet" href="../domain.css">
+<!-- Строка «QR-код» и окно «Табличка с QR-кодом» — общие ../qr.css и ../qr.js, как в конструкторе; стрелки — arrow-button кита -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/arrow-button/arrow-button.css">
+<!-- «Назад» кита — во вложенном списке цветов окна QR-кода -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/back/back.css">
+<link rel="stylesheet" href="../qr.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/switch/switch.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/checkbox/checkbox.css">
+<link rel="stylesheet" href="../comp-catalog.css">
 <style>
 /* ==========================================================================
    0. АССЕТЫ
@@ -1662,7 +1670,13 @@ html, body{
 /* Заголовки плашек «Сайт» и компонентов («Электронное меню» и др.) — 16 полужирный, токены ui-kit tokens.css */
 .rs-site__title{ display: flex; align-items: center; gap: 8px; height: 24px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
 .rs-site__props{ display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px; align-items: center; justify-items: start; grid-auto-rows: minmax(24px, auto); /* строка свойства 24, между свойствами 8 */ font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
-.rs-site__favicon{ display: block; margin: -2px 0; border: 1px solid #eaeaea; border-radius: 28px; } /* 28 в строке 24: выступает на 2 сверху и снизу, высоту строки не меняет */
+/* Иконка сайта (Figma DBmmGUNJ5Pwg8BsFOI5Kuv 7113:110857): круг 28 с рамкой #eaeaea; 28 в строке 24 — выступает на 2 сверху и снизу.
+   Ховер (Variant3): рамка #d0d0d0, белая вуаль 75% и иконка 16 #656c87 — как у миниатюры QR (../qr.css). Клик пока без действия */
+.rs-site__favicon { position: relative; display: block; width: 28px; height: 28px; margin: -2px 0; padding: 0; overflow: hidden; border: 1px solid var(--border-border-color, #eaeaea); border-radius: 28px; background: #fff; cursor: pointer; }
+.rs-site__favicon:hover { border-color: var(--border-hover_border-color, #d0d0d0); }
+.rs-site__favicon img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.rs-site__favicon::after { content: "\e671"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding-bottom: 1px; background: rgb(255 255 255 / .75); font-family: "cbuc-icons"; font-size: 16px; line-height: 1; color: var(--icon-secondary_icon-color, #656c87); opacity: 0; transition: opacity .12s; }
+.rs-site__favicon:hover::after { opacity: 1; }
 .rs-site__props, .rs-site__chips{ align-self: stretch; }
 .rs-site__chips{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .rs-site__chips .chips__caption{ padding-bottom: 2px; }
@@ -1686,7 +1700,7 @@ html, body{
 /* От шапки до «Страниц» — 4, как в конструкторе (там 4 снизу у шапки и 4 сверху у подгруппы схлопываются).
    Здесь блок — flex, поля не схлопываются, поэтому у первой подгруппы своего поля нет */
 .sales-settings__head + .sales-settings__sub{ margin-top: 0; }
-.comp-props + .sales-settings__sub{ margin-top: 12px; } /* от «Товара» до «Точек продаж» — 12 */
+.comp-props + .sales-settings__sub{ margin-top: 16px; } /* от последнего свойства (QR-код) до «Точек продаж» — 16 */
 /* иконки «Сайта» и компонента перед заголовками плашек — как в ../styles.css */
 .sales-settings__icon{ flex: none; width: 24px; height: 24px; }
 .sales-settings__head .sales-settings__icon{ margin-right: -2px; }
@@ -1697,6 +1711,20 @@ html, body{
 .sales-settings__price{ font-size: var(--font-font-size-font-size_m); font-weight: var(--font-font-weight-regular); letter-spacing: -.1974px; color: #8991a9; }
 .sales-settings__sub--points:has(+ .sales-rows .sales-empty) .sales-settings__price,
 .sales-settings__sub--points:has(+ .sales-rows:empty) .sales-settings__price{ visibility: hidden; }
+
+/* Экспандер «Точек продаж»: клик по заголовку сворачивает и разворачивает список точек (как группа в мастере реестра, .master__sep).
+   Шеврон 16 справа от заголовка, свёрнуто — повёрнут влево; пустой список («Добавьте ваши…») сворачивается так же */
+.sales-settings__toggle{ display: flex; align-items: center; gap: 4px; padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: inherit; cursor: pointer; }
+.sales-settings__toggle-arrow{ font-size: 16px; color: #8991a9; transition: transform .15s; }
+.sales-settings__toggle:hover .sales-settings__toggle-arrow{ color: #313e78; }
+.sales-settings__toggle[aria-expanded="false"] .sales-settings__toggle-arrow{ transform: rotate(-90deg); }
+/* Экспандеры групп «Сайт» и компонента: заголовок с шевроном (как у «Точек продаж») сворачивает всю плашку — остаётся только заголовок */
+.rs-site:has(> .rs-site__title > .params-group-toggle[aria-expanded="false"]) > :not(.rs-site__title),
+.sales-settings:has(> .sales-settings__head .params-group-toggle[aria-expanded="false"]) > :not(.sales-settings__head){ display: none; }
+.sales-settings:has(> .sales-settings__head .params-group-toggle[aria-expanded="false"]) > .sales-settings__head{ margin-bottom: 0; }
+
+.sales-settings__sub--points:has(.sales-settings__toggle[aria-expanded="false"]) + .sales-rows{ display: none; }
+.sales-settings__sub--points:has(.sales-settings__toggle[aria-expanded="false"]) .sales-settings__price{ visibility: hidden; }
 /* Меню выбора страницы — .mw-menu.ls-mode из ../styles.css */
 .mw-menu[hidden]{ display: none; }
 .mw-menu{ position: absolute; z-index: 30; }
@@ -1736,6 +1764,8 @@ html, body{
 .sales-row__name > span:first-child{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sales-row__name .icon{ flex: none; width: 24px; height: 24px; font-size: 16px; color: #8991a9; }
 .sales-price{ text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+/* прайс — кнопка-ссылка ui-kit в стиле default (.btn--link.btn--style-default): при наведении темнее и подчёркнуто, как в ../styles.css */
+.sales-price:hover{ color: var(--text-hover_text-color); text-decoration: underline; }
 /* Компонент без прайса («Услуги», «Отель»): у точек только название — колонки «Прайс» нет, как в ../styles.css */
 .sales-settings--no-price .sales-settings__price, .sales-settings--no-price .sales-price{ display: none; }
 .sales-settings--no-price .sales-row{ grid-template-columns: minmax(0,1fr); } /* прайс открывает выбор — рука, как в мастере */
@@ -1809,8 +1839,9 @@ html, body{
 .connect-popup__hint a{ color: #2562aa; text-decoration: none; }
 .connect-popup__hint a:hover{ text-decoration: underline; }
 /* Крестик «Отключить компонент» и чипсы «Добавить компонент» — как .sales-settings__remove и .rs-comps в styles.css конструктора.
-   Компоненты взаимоисключающие: пока один подключён, чипсов нет. */
-.sales-settings[hidden], .rs-comps[hidden]{ display: none; }
+   Компоненты взаимоисключающие: чипсы — у всех, кроме подключённого; чипса другого компонента заменяет подключённый (с подтверждением #comp-switch).
+   Пока компонент подключён, заголовка «Добавить компонент» нет. */
+.sales-settings[hidden], .rs-comps[hidden], .rs-comps .chips[hidden], .rs-comps__title[hidden]{ display: none; }
 .comp-group .sales-settings__head{ margin-bottom: 0; }
 #regCompGroups{ align-self: stretch; width: 100%; } /* обёртка карточек компонентов — на всю ширину, как «Сайт» */
 #regCompGroups:empty{ display: none; }
@@ -3716,7 +3747,7 @@ button.tpl-cat{ cursor: pointer; }
               <!-- Блок «Сайт» — 1:1 из окна «Параметры сайта» конструктора (Figma 2854:63032):
                    свойства, за ними чипсы ui-kit. Разметка та же, что в ../index.html (.rs-site). -->
               <section class="params rs-site" aria-label="Сайт">
-                <div class="rs-site__title"><img class="sales-settings__icon" src="../assets/img/comp/site.svg" width="24" height="24" alt="">Сайт</div>
+                <div class="rs-site__title"><img class="sales-settings__icon" src="../assets/img/comp/site.svg" width="24" height="24" alt=""><button class="sales-settings__toggle params-group-toggle" type="button" aria-expanded="true">Сайт<i class="icon sales-settings__toggle-arrow" aria-hidden="true">&#xE9AA;</i></button></div>
                 <div class="rs-site__props">
                   <span class="rs-site__label">Адрес сайта</span>
                   <!-- Редактор домена (Figma DRIJUUCPNarHomYAJ5eMqn, 14:1683). Состояние Default; дальше — скрипт «Редактор домена» -->
@@ -3731,7 +3762,7 @@ button.tpl-cat{ cursor: pointer; }
                     <div class="dom__status">Подключите домен на saby.ru или настройте свой по <span class="dom__link">инструкции</span></div>
                   </div>
                   <span class="rs-site__label">Владелец</span><span class="rs-site__owner"><span class="rs-site__val">Тензор, ООО</span><i class="icon rs-site__clear" aria-hidden="true">&#xE66C;</i></span>
-                  <span class="rs-site__label">Иконка сайта (favicon)</span><img class="rs-site__favicon" src="../assets/img/favicon.png" width="28" height="28" alt="">
+                  <span class="rs-site__label">Иконка сайта (favicon)</span><button class="rs-site__favicon" type="button" aria-label="Иконка сайта (favicon)"><img src="../assets/img/favicon.png" width="26" height="26" alt=""></button>
                 </div>
                 <div class="rs-site__chips">
                   <button class="chips chips--size-m" type="button"><span class="chips__caption">HTML - код</span></button>
@@ -3748,7 +3779,7 @@ button.tpl-cat{ cursor: pointer; }
                    в ../app.js; первая — основная (корона). На ховере строки — команды. -->
               <section class="params sales-settings" id="regSales" aria-label="Точки продаж сайта">
                 <div class="sales-settings__head">
-                  <div><img class="sales-settings__icon" src="../assets/img/comp/restaurant.svg" width="24" height="24" alt=""><span class="sales-settings__comp" id="regSalesTitle">Электронное меню</span><button class="sales-settings__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE66C;</i></button></div>
+                  <div><img class="sales-settings__icon" src="../assets/img/comp/restaurant.svg" width="24" height="24" alt=""><button class="sales-settings__toggle params-group-toggle" type="button" aria-expanded="true"><span class="sales-settings__comp" id="regSalesTitle">Электронное меню</span><i class="icon sales-settings__toggle-arrow" aria-hidden="true">&#xE9AA;</i></button><button class="sales-settings__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE66C;</i></button></div>
                   <span></span>
                 </div>
                 <!-- Страница каталога и страница товара — как в «Параметрах сайта» конструктора (../index.html, .comp-props):
@@ -3756,7 +3787,12 @@ button.tpl-cat{ cursor: pointer; }
                 <div class="rs-site__props comp-props">
                   <span class="rs-site__label">Страница каталога</span><button class="comp-props__pick" data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Меню</button>
                   <span class="rs-site__label">Страница товара</span><button class="comp-props__pick" data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Карточка товара</button>
+                  <!-- QR-код — как в «Параметрах сайта» конструктора (../index.html, #compQr): миниатюра открывает окно, «Привязать» и «Распечатать» без точек продаж — предупреждение (qr.js) -->
+                  <span class="rs-site__label">QR-код</span>
+                  <span class="comp-qr" id="regCompQr" data-qr-comp="restaurant"><button class="comp-qr__thumb" type="button" data-qr-open title="Настроить табличку с QR-кодом" aria-label="Настроить табличку с QR-кодом"><span class="comp-qr__icon" aria-hidden="true">&#xe915;</span></button></span>
                 </div>
+                <!-- Настройки каталога — как #compCatalog в конструкторе: группа чекбоксов «Доступно клиенту» и свойство «Выбор товара из <прайс>», только у «Электронного меню» и «Услуг» (../comp-catalog.js) -->
+                <div class="comp-cat" id="regCompCatalog" data-cat-comp="restaurant"></div>
                 <!-- Две подгруппы: «Страницы» (каталог и товар) и «Точки продаж» с «+», как в «Параметрах сайта» конструктора -->
                 <div class="sales-settings__sub sales-settings__sub--points"><div><span id="regSalesPoints">Точки продаж</span><button class="sales-add" type="button" aria-label="Добавить точку продаж" title="Добавить точку продаж"><i class="icon" aria-hidden="true">&#xEADD;</i></button></div><span class="sales-settings__price">Прайс</span></div>
                 <div class="sales-rows">
@@ -3793,10 +3829,10 @@ button.tpl-cat{ cursor: pointer; }
               <!-- Остальные подключённые компоненты: иконка, название, крестик (строит скрипт ниже) -->
               <div id="regCompGroups"></div>
               <!-- Неподключённые компоненты — чипсы ui-kit с иконкой, как #compChipsBlock конструктора -->
-              <section class="rs-comps" id="regCompChips" aria-label="Подключить компонент" hidden>
-                <div class="rs-comps__title">Добавить компонент</div>
+              <section class="rs-comps" id="regCompChips" aria-label="Подключить компонент">
+                <div class="rs-comps__title" hidden>Добавить компонент</div>
                 <div class="rs-comps__chips">
-                  <button class="chips chips--optional" type="button" data-comp-add="restaurant" title="Меню и карточки блюд на сайте, цены и наличие из точек продаж" aria-label="Подключить компонент: Электронное меню"><span class="chips__icon"><img src="../assets/img/comp/restaurant.svg" alt=""></span><span class="chips__caption">Электронное меню</span></button>
+                  <button class="chips chips--optional" type="button" data-comp-add="restaurant" hidden title="Меню и карточки блюд на сайте, цены и наличие из точек продаж" aria-label="Подключить компонент: Электронное меню"><span class="chips__icon"><img src="../assets/img/comp/restaurant.svg" alt=""></span><span class="chips__caption">Электронное меню</span></button>
                   <button class="chips chips--optional" type="button" data-comp-add="delivery" title="Корзина, оформление и оплата заказа с доставкой, история заказов покупателя" aria-label="Подключить компонент: Доставка"><span class="chips__icon"><img src="../assets/img/comp/delivery.svg" alt=""></span><span class="chips__caption">Доставка</span></button>
                   <button class="chips chips--optional" type="button" data-comp-add="services" title="Каталог услуг и онлайн-запись к специалисту на свободное время" aria-label="Подключить компонент: Услуги"><span class="chips__icon"><img src="../assets/img/comp/services.svg" alt=""></span><span class="chips__caption">Услуги</span></button>
                   <button class="chips chips--optional" type="button" data-comp-add="hotel" title="Номера и цены, бронирование на даты с оплатой онлайн" aria-label="Подключить компонент: Отель"><span class="chips__icon"><img src="../assets/img/comp/hotel.svg" alt=""></span><span class="chips__caption">Отель</span></button>
@@ -3957,7 +3993,9 @@ button.tpl-cat{ cursor: pointer; }
                   sales.hidden = !on;
                   var ms = document.getElementById('regMasterSales');
                   if (ms) ms.hidden = sales.hidden || !ms.querySelector('[data-sales-point]');
-                  chips.hidden = !!on;
+                  // чипсы остаются: скрыта только чипса подключённого компонента, чипса другого заменяет его (после подтверждения #comp-switch)
+                  chips.querySelectorAll('[data-comp-add]').forEach(function(b){ b.hidden = b.dataset.compAdd === on; });
+                  chips.querySelector('.rs-comps__title').hidden = !!on;
                   if (!on) return;
                   var c = COMP[on];
                   sales.setAttribute('aria-label', c.name);
@@ -3965,7 +4003,12 @@ button.tpl-cat{ cursor: pointer; }
                   if (c.pages) sales.dataset.compPages = c.pages.join('|'); else delete sales.dataset.compPages;
                   sales.querySelector('.sales-settings__icon').src = '../assets/img/comp/' + on + '.svg';
                   document.getElementById('regSalesTitle').textContent = c.name;
+                  // компонент сменился — свёрнутая плашка раскрывается (экспандер заголовка), как в ../app.js
+                  if (sales.dataset.comp !== on) sales.querySelector('.params-group-toggle').setAttribute('aria-expanded', 'true');
+                  sales.dataset.comp = on;
                   document.getElementById('regSalesPoints').textContent = c.points;
+                  if (window.QrCode) window.QrCode.sync(document.getElementById('regCompQr'), on); // табличка QR — по типу сайта (../qr.js)
+                  if (window.CompCatalog) window.CompCatalog.sync(document.getElementById('regCompCatalog'), on); // настройки каталога — только у меню и услуг (../comp-catalog.js)
                   var sep = document.getElementById('regMasterSalesTitle');
                   if (sep) sep.textContent = c.points;
                   var add = sales.querySelector('.sales-add');
@@ -3975,13 +4018,36 @@ button.tpl-cat{ cursor: pointer; }
                   off.dataset.compOff = on;
                   off.setAttribute('aria-label', 'Отключить компонент «' + c.name + '»');
                 }
+                // Замена компонента — с подтверждением, как в конструкторе (compSwitchAsk в ../app.js): что отключится и какие страницы удалятся
+                // окно стоит в разметке ниже этого скрипта — ищем его в момент клика
+                var askId = null;
+                function switchAsk(cur, id){
+                  var pages = COMP[cur].pages.map(function(n){ return '«' + n + '»'; });
+                  var list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages[pages.length - 1] : pages[0];
+                  document.getElementById('comp-switch-msg').textContent = 'Сменить тип сайта на «' + COMP[id].name + '»?';
+                  document.getElementById('comp-switch-details').textContent = 'Компонент «' + COMP[cur].name + '» отключится. ' + (pages.length > 1 ? 'Удалятся страницы ' : 'Удалится страница ') + list + '.';
+                  askId = id;
+                  document.getElementById('comp-switch').hidden = false;
+                }
+                document.addEventListener('click', function(e){
+                  var b = e.target.closest('[data-comp-switch-answer]');
+                  if (!b) return;
+                  document.getElementById('comp-switch').hidden = true;
+                  if (b.dataset.compSwitchAnswer === 'yes') connect(askId);
+                });
+                document.addEventListener('keydown', function(e){ if (e.key === 'Escape') document.getElementById('comp-switch').hidden = true; });
                 document.addEventListener('click', function(e){
                   var off = e.target.closest('[data-comp-off]');
                   var add = e.target.closest('[data-comp-add]');
                   if (!off && !add) return;
                   sales = document.getElementById('regSales');
                   chips = document.getElementById('regCompChips');
-                  on = add ? add.dataset.compAdd : null;
+                  var cur = sales.hidden ? null : sales.querySelector('.sales-settings__remove').dataset.compOff;
+                  if (add && cur && cur !== add.dataset.compAdd){ switchAsk(cur, add.dataset.compAdd); return; }
+                  connect(add ? add.dataset.compAdd : null);
+                });
+                function connect(id){
+                  on = id;
                   // подключённый компонент приходит без точек, как в конструкторе (compRemove в ../app.js): ни в блоке, ни в мастере;
                   // страницы каталога и товара — по умолчанию, привязанные в компоненте
                   if (on){
@@ -3993,7 +4059,7 @@ button.tpl-cat{ cursor: pointer; }
                     window.regSalesEmpty();
                   }
                   render();
-                });
+                }
               })();
               </script>
               <script>
@@ -4007,6 +4073,13 @@ button.tpl-cat{ cursor: pointer; }
                 document.addEventListener('click', function(e){
                   var sep = e.target.closest('#regMasterSales .master__sep');
                   if (sep) sep.setAttribute('aria-expanded', sep.getAttribute('aria-expanded') === 'false' ? 'true' : 'false');
+                });
+                // Экспандеры «Сайт» и «Электронное меню» (вся группа) — как в «Параметрах сайта» конструктора (../app.js)
+                document.addEventListener('click', function(e){
+                  var t = e.target.closest('.sales-settings__toggle');
+                  if (!t) return;
+                  var open = t.getAttribute('aria-expanded') === 'false';
+                  t.setAttribute('aria-expanded', String(open));
                 });
                 // Точек не осталось: в мастере группа скрыта, в блоке — «Добавьте ваши точки продаж…» (как salesRenderRows в ../app.js)
                 window.regSalesEmpty = function(){
@@ -5156,6 +5229,9 @@ button.tpl-cat{ cursor: pointer; }
         window.regSalesApply = apply; // точки сайта, опубликованного из шаблона (reg:publish-site)
         document.addEventListener('click', function(e){
           if (e.target.closest('#regSales .sales-add, #regSales .sales-empty__link')) open();
+          // прайс в строке точки — панель «Прайсы» этой точки, как в конструкторе
+          var priceRow = e.target.closest('#regSales .sales-price') && e.target.closest('.sales-row[data-sales-point]');
+          if (priceRow) open(priceRow.dataset.salesPoint);
           // прайс в каталоге точки — панель «Прайсы» выбранной в мастере точки
           if (e.target.closest('#regSalesCatalog .reg-cat__link')){
             var sel = document.querySelector('#regMasterSales .master__item--selected');
@@ -5207,6 +5283,21 @@ button.tpl-cat{ cursor: pointer; }
 о домене может занять до 48 часов</p>
     </div>
     <div class="dlg__footer"><button class="dlg__btn dlg__btn--primary" type="button" data-domain-info-ok>ОК</button></div>
+  </div>
+</div>
+
+<!-- Замена компонента чипсой на вкладке «Параметры» — подтверждение, как в конструкторе (compSwitchAsk). Текст ставит скрипт компонентов; «Да», «Отмена» и Esc закрывают окно -->
+<div class="dlg-layer" id="comp-switch" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="comp-switch-msg" aria-describedby="comp-switch-details">
+    <div class="dlg__head"><span class="dlg__marker"></span></div>
+    <div class="dlg__content">
+      <p class="dlg__message" id="comp-switch-msg"></p>
+      <p class="dlg__details" id="comp-switch-details"></p>
+    </div>
+    <div class="dlg__footer">
+      <button class="dlg__btn dlg__btn--primary" type="button" data-comp-switch-answer="yes">Да</button>
+      <button class="dlg__btn" type="button" data-comp-switch-answer="cancel">Отмена</button>
+    </div>
   </div>
 </div>
 
@@ -6507,5 +6598,7 @@ button.tpl-cat{ cursor: pointer; }
 })();
 </script>
 <script src="../domain.js"></script>
+<script src="../qr.js"></script>
+<script src="../comp-catalog.js"></script>
 </body>
 </html>
