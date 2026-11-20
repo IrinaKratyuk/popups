@@ -28,6 +28,8 @@
   <link rel="stylesheet" href="qr.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/switch/switch.css">
   <link rel="stylesheet" href="comp-catalog.css">
+  <!-- master-list — мастер групп расширенного магазина; его CSS берёт только токены, которые есть и в 1.13.0 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/master-list/master-list.css">
 </head>
 <body>
   <div class="viewport">
@@ -351,9 +353,21 @@
       <!-- Вписанная панель правого сайдбара (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 148:15451): «Магазин» или «Данные», слева от тулбара -->
       <section class="rs-panel" id="rs-shop" aria-label="Магазин">
         <div class="rs-head">
-          <div class="rs-head__title">Виджеты<button class="btn btn--ghost btn--style-label btn--size-m btn--icon" type="button" aria-label="Список"><span class="btn__icon">&#xE995;</span></button></div>
+          <div class="rs-head__title">Виджеты<button class="btn btn--ghost btn--style-label btn--size-m btn--icon" type="button" id="rsShopExpand" aria-label="Группы" title="Группы" aria-expanded="false"><span class="btn__icon"></span></button></div>
           <div class="rs-find rs-find--shop">Найти</div>
         </div>
+        <!-- Расширенный магазин (ui-kit shop, «Открытие расширенного=on»): кнопка у «Виджеты» раздвигает панель влево, слева мастер групп — master-list кита.
+             Клик по группе прокручивает список к её разделу -->
+        <div class="rs-body">
+        <nav class="rs-master" aria-label="Группы">
+          <ul class="ml ml--nav" id="rsGroups">
+            <li class="ml__item is-selected" aria-current="true" data-shop-group="all"><span class="ml__caption">Все</span><span class="ml__counter"><span class="ml__count ml__count--secondary"></span></span></li>
+            <li class="ml__item" data-shop-group="containers"><span class="ml__caption">Контейнеры</span><span class="ml__counter"><span class="ml__count ml__count--secondary"></span></span></li>
+            <li class="ml__item" data-shop-group="basic"><span class="ml__caption">Базовые</span><span class="ml__counter"><span class="ml__count ml__count--secondary"></span></span></li>
+            <li class="ml__item rs-group--ext" data-shop-group="ext"><span class="ml__caption">Расширенные</span><span class="ml__counter"><span class="ml__count ml__count--secondary"></span></span></li>
+            <li class="ml__item rs-group--outer" data-shop-group="outer"><span class="ml__caption">Внешние</span><span class="ml__counter"><span class="ml__count ml__count--secondary"></span></span></li>
+          </ul>
+        </nav>
         <div class="rs-shop">
           <div class="rs-small" id="rsSmall"></div>
           <div class="rs-medium" id="rsMedium"></div>
@@ -365,6 +379,7 @@
             <div class="rs-ext__title">Внешние</div>
             <div class="rs-widgets" id="rsOuter"></div>
           </div>
+        </div>
         </div>
       </section>
 
@@ -421,8 +436,8 @@
             <div class="sales-settings__head"><div><img class="sales-settings__icon" src="assets/img/comp/restaurant.svg" width="24" height="24" alt=""><button class="sales-settings__toggle params-group-toggle" type="button" aria-expanded="true"><span class="sales-settings__comp" id="salesSettingsTitle">Электронное меню</span><span class="ico sales-settings__toggle-arrow" aria-hidden="true">&#xE9AA;</span></button><button class="sales-settings__remove" type="button" id="salesSettingsRemove" data-comp-toggle="restaurant" aria-label="Отключить компонент «Ресторан»"><span class="ico">&#xE66C;</span></button></div><span></span></div>
             <!-- Страница каталога и страница товара — как в «Параметрах сайта» dynamic-pages: ссылка «Выберите страницу», выбор — меню #pagePickMenu. Та же разметка — на вкладке «Данные» реестра -->
             <div class="rs-site__props comp-props">
-              <span class="rs-site__label">Страница каталога</span><button class="sales-empty__link comp-props__pick" data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
-              <span class="rs-site__label">Страница товара</span><button class="sales-empty__link comp-props__pick" data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
+              <span class="rs-site__label" hidden>Страница каталога</span><button class="sales-empty__link comp-props__pick" hidden data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
+              <span class="rs-site__label" hidden>Страница товара</span><button class="sales-empty__link comp-props__pick" hidden data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="pagePickMenu" aria-expanded="false">Выберите</button>
               <!-- QR-код: миниатюра (ховер — карандаш, клик — окно «Табличка с QR-кодом»), «Привязать» и «Распечатать» без точек продаж — предупреждение (qr.js). Стили qr.css, поведение qr.js; та же разметка — в «Параметрах» реестра -->
               <span class="rs-site__label">QR-код</span>
               <span class="comp-qr" id="compQr" data-qr-comp="restaurant"><button class="comp-qr__thumb" type="button" data-qr-open title="Настроить табличку с QR-кодом" aria-label="Настроить табличку с QR-кодом"><span class="comp-qr__icon" aria-hidden="true">&#xe915;</span></button></span>

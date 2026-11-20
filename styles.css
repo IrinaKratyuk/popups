@@ -520,8 +520,19 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-find { flex: none; display: flex; align-items: center; background: #fff; font-size: 14px; letter-spacing: -.1974px; color: rgba(137, 145, 169, .6); }
 .rs-find--shop { width: 163px; height: 24px; padding: 0 4px 0 12px; border: 1px solid #e5e7eb; border-radius: 12px; }
 
+/* Расширенный магазин (ui-kit shop .is-expanded): раздвигается влево поверх страницы на мастер 220 и поля 4, место в потоке прежнее */
+#rsShopExpand .btn__icon::before { content: "\e995"; }
+.rs-panel.is-expanded #rsShopExpand .btn__icon::before { content: "\ebfb"; }
+.rs-panel.is-expanded { z-index: 11; left: 968px; width: 578px; box-shadow: 0 0 15px rgba(0, 0, 0, .12), 0 0 46px rgba(0, 0, 0, .12); }
+.rs-body { flex: 1; min-height: 0; display: flex; gap: 4px; }
+.rs-panel.is-expanded .rs-body { padding-left: 4px; }
+.rs-master { display: none; flex: none; width: 220px; overflow: auto; scrollbar-width: none; }
+.rs-panel.is-expanded .rs-master { display: block; }
+.rs-master .ml { gap: 2px; margin-top: 8px; } /* между пунктами мастера 2px */
+.stage[data-scenario^="ext-"] .rs-group--ext, .stage:not([data-scenario^="ext-"]) .rs-group--outer { display: none; }
+
 /* магазин */
-.rs-shop { flex: 1; min-height: 0; padding: 0 12px 4px; overflow: hidden auto; scrollbar-width: none; }
+.rs-shop { flex: 1; min-width: 0; min-height: 0; padding: 0 12px 4px; overflow: hidden auto; scrollbar-width: none; }
 .rs-small { display: flex; gap: 8px; padding-bottom: 8px; }
 .rs-cell { flex: 1 0 0; min-width: 0; padding: 8px 0; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 8px; cursor: pointer; transition: box-shadow .12s; }
 .rs-cell .ico24 { padding-bottom: 1px; color: #656c87; }
@@ -660,6 +671,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-site { display: flex; flex-direction: column; align-items: flex-start; padding: 8px 12px; background: #fff; border-radius: 8px; } /* Figma 2854:63032 */
 /* Заголовки плашек «Сайт» и компонентов («Электронное меню» и др.) — 16 полужирный, токены ui-kit tokens.css */
 .rs-site__title { display: flex; align-items: center; gap: 8px; height: 24px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
+.rs-site__title + .rs-site__props { margin-top: 4px; } /* от заголовка «Сайт» до первого свойства 4 — как у шапок компонентов (.sales-settings__head) */
 /* свойства: метки в первой колонке, редакторы — в 8px от самой длинной метки */
 .rs-site__props { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px; align-items: center; justify-items: start; grid-auto-rows: minmax(24px, auto); /* строка свойства 24, между свойствами 8 */ font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
 /* Иконка сайта (Figma DBmmGUNJ5Pwg8BsFOI5Kuv 7113:110857): круг 28 с рамкой #eaeaea; 28 в строке 24 — выступает на 2 сверху и снизу.
@@ -707,6 +719,7 @@ ul { list-style: none; margin: 0; padding: 0; }
    Та же разметка и те же значения — на вкладке «Данные» реестра (registry/index.html) */
 .comp-props { padding: 0 12px; grid-auto-rows: 24px; row-gap: 8px; }
 .comp-props__pick { font-size: 14px; }
+.comp-props > [hidden] { display: none; } /* «Страница каталога» и «Страница товара» пока скрыты */
 /* Подгруппы «Электронного меню» — «Страницы» (каталог и товар) и «Точки продаж» с «+»: заголовок 15 полужирный чёрный (токены ui-kit), «Прайс» — 14 обычный,
    8 от предыдущей подгруппы, от шапки компонента — 4 (её 4 и свои 4 схлопываются), 4 до содержимого */
 .sales-settings__sub { display: flex; align-items: center; gap: 8px; height: 24px; margin: 8px 0 4px; padding: 0 12px; font-size: var(--font-font-size-font-size_l); font-weight: var(--font-font-weight-bold); letter-spacing: -.2115px; color: var(--components-heading-default_text-color_heading); }

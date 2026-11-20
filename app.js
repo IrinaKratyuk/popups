@@ -188,7 +188,9 @@
     const points = salesSaved.map((row) => ({ name: SALES.find((p) => p.id === row.id).name, price: row.price }));
     const pages = {};
     for (const kind of Object.keys(pagePicks)) pages[kind] = lsPage(pagePicks[kind])?.name ?? null;
-    return { domain, points, pages };
+    // список страниц — набор и порядок как в левой панели: свои страницы сайта, потом группы компонентов
+    const list = lsOrdered().map((p) => ({ name: p.name, group: lsGroupOf(p) ?? null }));
+    return { domain, points, pages, list };
   }
 
   $('.df-team__name', frame.panel).after(el('span', 'df-team__name', 'Смирнова Мария')); // второй дизайнер в той же плашке: team в demo-frame знает одно имя на строку
@@ -865,6 +867,33 @@
     ['Обратная связь', 'Позволяет получить данные для связи с клиентом', 350, 'feedback', true, CONTAIN],
     ['Онлайн-запись', 'Дает возможность быстро записаться на услугу к нужному мастеру', 412, 'booking', true, CONTAIN],
   ]);
+  // Расширенный магазин (ui-kit shop): кнопка у «Виджеты» раздвигает панель влево, слева мастер групп — разделы магазина.
+  // Клик по группе выделяет её и прокручивает список к разделу, «Все» и «Контейнеры» — к началу. Счётчики — видимые сейчас виджеты раздела
+  const rsShopPanel = $('#rs-shop'), rsShopList = $('.rs-shop', rsShopPanel), rsShopExpand = $('#rsShopExpand');
+  const rsVisible = (sel) => [...rsShopPanel.querySelectorAll(sel)].filter((e) => e.offsetParent !== null).length;
+  function rsGroupsCount() {
+    const n = { containers: rsVisible('.rs-cell'), basic: rsVisible('.rs-item:not(.rs-item--empty)'), ext: rsVisible('#rsWidgets .rs-w'), outer: rsVisible('#rsOuter .rs-w') };
+    n.all = n.containers + n.basic + (stage.dataset.scenario.startsWith('ext-') ? n.outer : n.ext);
+    for (const li of $('#rsGroups').children) li.querySelector('.ml__count').textContent = n[li.dataset.shopGroup];
+  }
+  rsShopExpand.addEventListener('click', () => {
+    const on = !rsShopPanel.classList.contains('is-expanded');
+    rsShopPanel.classList.toggle('is-expanded', on);
+    rsShopExpand.setAttribute('aria-expanded', String(on));
+    if (on) rsGroupsCount();
+  });
+  $('#rsGroups').addEventListener('click', (e) => {
+    const item = e.target.closest('.ml__item');
+    if (!item) return;
+    for (const li of $('#rsGroups').children) {
+      li.classList.toggle('is-selected', li === item);
+      if (li === item) li.setAttribute('aria-current', 'true'); else li.removeAttribute('aria-current');
+    }
+    const section = { basic: '.rs-medium', ext: '.rs-ext:not(.rs-ext--outer)', outer: '.rs-ext--outer' }[item.dataset.shopGroup];
+    const top = section ? $(section, rsShopList).offsetTop - rsShopList.offsetTop : 0;
+    rsShopList.scrollTo({ top, behavior: 'smooth' });
+    rsGroupsCount();
+  });
   const shopFeedback = $('#rsOuter [data-widget="feedback"]').closest('.rs-w');
   const shopFeedbackPin = el('span', 'pin', '<img src="assets/img/pin-cursor.svg" width="15" height="15" alt="">');
   shopFeedbackPin.setAttribute('aria-hidden', 'true');
@@ -2711,9 +2740,13 @@
   }
 
   // Порядок показа: сначала страницы сайта, потом страницы компонента — одним списком, без групп
-  function lsOrdered() {
-    return [...lsPages.filter((p) => !p.comp), ...Object.keys(COMP).flatMap((id) => lsPages.filter((p) => p.comp === id))];
+  // Порядок показа: сначала страницы сайта, потом страницы компонентов группами — в порядке компонентов, как в «Параметрах сайта».
+  // Группа — компонент страницы; group — только для показа (своя страница сайта в группе компонента, механика как у своей)
+  const lsGroupOf = (p) => p.group ?? p.comp;
+  function lsGroups() {
+    return [lsPages.filter((p) => !lsGroupOf(p)), ...Object.keys(COMP).map((id) => lsPages.filter((p) => lsGroupOf(p) === id))];
   }
+  const lsOrdered = () => lsGroups().flat();
   function lsRenderLines() {
     lsLines.replaceChildren(...lsOrdered().map((p) => el('span', 'lsb__line' + (p.id === lsActive ? ' is-active' : ''))));
   }
@@ -2728,8 +2761,23 @@
     row.querySelector('.lsb__page-name').textContent = p.name;
     return row;
   }
+  // Группа компонента (.lsb__group из ui-kit): иконка компонента и его название, под ним — его страницы
+  function lsGroupHead(id) {
+    const head = el('div', 'lsb__group');
+    const icon = el('img', 'lsb__group-icon');
+    icon.src = `assets/img/comp/${id}.svg`;
+    icon.width = icon.height = 24;
+    icon.alt = '';
+    const name = el('span', 'lsb__group-name');
+    name.textContent = COMP[id].name;
+    head.append(icon, name);
+    return head;
+  }
   function lsRender() {
-    lsList.replaceChildren(...lsOrdered().map(lsRow));
+    const [own, ...groups] = lsGroups();
+    const shown = groups.filter((g) => g.length);
+    lsList.classList.toggle('has-groups', shown.length > 0);
+    lsList.replaceChildren(...own.map(lsRow), ...shown.flatMap((g) => [lsGroupHead(lsGroupOf(g[0])), ...g.map(lsRow)]));
     lsRenderLines();
     siteShowPage(lsPage(lsActive));
     siteProductSyncShop();
@@ -2760,8 +2808,9 @@
     popupsClose();
     lsMenuPage = id;
     btn.closest('.lsb__page').classList.add('is-menu');
-    // Страница компонента принадлежит ему: её нельзя сделать главной, скрыть, дублировать и удалить — удаляет только сам компонент
-    const comp = !!lsPage(id).comp;
+    // Страница компонента принадлежит ему: её нельзя сделать главной, скрыть, дублировать и удалить — удаляет только сам компонент.
+    // Так же и страницы собранного сайта в группе компонента (group, «В конструкторе»)
+    const comp = !!lsGroupOf(lsPage(id));
     for (const act of ['home', 'duplicate', 'hide', 'delete']) $(`[data-act="${act}"]`, lsMenu).hidden = comp;
     lsMenu.hidden = false;
     const r = stageRect(btn);
@@ -3231,10 +3280,11 @@
       if (scenario === 'catalog-setup') {
         // «В конструкторе» — сайт уже собран (как «Типовое заполнение» в dynamic-pages): «Главная», «О нас», «Профиль» с виджетом покупателя
         // (эти три есть на любом сайте, как в реестре),
-        // «Меню» с каталогом, «Карточка товара» с карточкой. Это свои страницы сайта, не страницы компонента.
+        // «Меню» с каталогом, «Карточка товара» с карточкой. Это свои страницы сайта, не страницы компонента,
+        // но в списке страниц стоят в группе «Электронного меню» (group — только для показа).
         // «Электронное меню» подключено без своих страниц, у него две точки продаж; сайт открывается на «Главной»
         const page = (name, extra) => ({ id: lsNextId++, name, off: false, mode: 'page', fixed: true, ...extra });
-        lsPages.push(page('О нас', { about: true }), page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), page('Меню', { menu: true }), page('Карточка товара', { blank: true, product: true, key: true }));
+        lsPages.push(page('О нас', { about: true }), page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), page('Меню', { menu: true, group: 'restaurant' }), page('Карточка товара', { blank: true, product: true, key: true, group: 'restaurant' }));
         lsActive = lsPages.find((p) => p.home).id; // редактор открывается на «Главной»
         compOn.add('restaurant');
         compRoots.add('restaurant');

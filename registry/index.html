@@ -22,6 +22,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/switch/switch.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/checkbox/checkbox.css">
 <link rel="stylesheet" href="../comp-catalog.css">
+<!-- Тень прокрутки кита — у детали «Параметров», которую прокручивает навигация мастера -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/scroll-shadow/scroll-shadow.css">
+<script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/scroll-shadow/scroll-shadow.js"></script>
 <style>
 /* ==========================================================================
    0. АССЕТЫ
@@ -1396,6 +1399,10 @@ html, body{
   background: var(--c-marker);
 }
 .master__name{ flex: 1 0 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Группа страниц компонента на «Страницах» — как .lsb__group в списке страниц конструктора: иконка 24 и название жирным,
+   без ховера и клика; страницы группы — без дополнительного отступа, вровень с остальными */
+.master__comp{ display: flex; align-items: center; gap: var(--o-xs); min-height: 31px; margin-top: var(--o-xs); padding: 0 var(--o-m) 0 var(--o-l); font-size: var(--fs-l); font-weight: 600; color: var(--c-text); cursor: default; }
+.master__comp > span{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Состояния пункта — фрейм «Пункты в master [09.06.26]».
    Наведение на строку: подсветка и выезжающие справа опции записи.
@@ -1614,11 +1621,31 @@ html, body{
 .master__item .sales-row__actions{ background: var(--c-list-hover); border-radius: 0 var(--r-xs) var(--r-xs) 0; }
 .master__item:hover .sales-row__actions{ display: flex; }
 .master__item .sales-row__actions .icon{ font-size: 16px; color: #656c87; }
-.master__item .sales-row__actions [data-sales-delete] .icon{ color: #c2140a; }
-.master__item .sales-row__actions [data-sales-delete]:hover .icon{ color: #8f0e07; }
+.master__item .sales-row__actions :is([data-sales-delete], [data-comp-off]) .icon{ color: #c2140a; } /* красный ✕, как удаление точки в конструкторе */
+.master__item .sales-row__actions :is([data-sales-delete], [data-comp-off]):hover .icon{ color: #8f0e07; }
 .master--data .master__list > .master__item{ cursor: pointer; }
+.master__item[hidden]{ display: none; }
+/* Деталь «Параметров» прокручивается: мастер слева — навигация по её блокам. Полосы нет, как у .detail--scroll;
+   поля 8 px вокруг — чтобы тень карточек не обрезалась */
+.reg-nav-detail{ align-self: stretch; min-height: 0; overflow-y: auto; scrollbar-width: none; margin: 0 calc(-1 * var(--o-s)); padding: 0 var(--o-s) var(--o-s); } /* поля по бокам и снизу — под тень карточек; сверху поля нет: область прокрутки начинается под вкладками и не заезжает на них */
+.reg-nav-detail::-webkit-scrollbar{ display: none; }
+.reg-nav-detail > *{ flex: none; }
+/* пустой запас в конце детали — чтобы последний блок доезжал до верха по клику в мастере (высоту ставит скрипт навигации) */
+.reg-nav-room{ height: 0; pointer-events: none; }
+/* тень кита — sticky ::before; в колонке с align-items: flex-start растягиваем её на ширину, поля детали — в --scroll-shadow-inset */
+.reg-nav-detail{ --scroll-shadow-inset: var(--o-s); }
+.reg-nav-detail::before{ align-self: stretch; }
 /* Выбранная точка (Figma 2829:79753): фон и маркер выбранного пункта, текст обычный */
 .master--data .master__group .master__item--selected:hover{ background: var(--c-bg-secondary); }
+.addable{ margin-top: 20px; display: flex; flex-direction: column; gap: 8px; padding: var(--o-m) var(--o-xs) var(--o-l); border-radius: var(--r-s); background: var(--c-bg-active); }
+/* без заголовка (компонент подключён) — поля чипсов одинаковые со всех сторон: 8 px (6 + 2 у списка) */
+.addable:has(> .addable__caption[hidden]){ padding: var(--o-s) var(--o-xs); }
+.addable__caption[hidden]{ display: none; }
+.addable__caption{ margin: 0; padding-left: var(--o-s); font-size: var(--fs-xs); font-weight: 400; line-height: normal; letter-spacing: 1.2px; text-transform: uppercase; color: var(--c-text-label-contrast); }
+.addable__list{ display: flex; flex-wrap: wrap; gap: 8px; padding: 0 var(--o-3xs); }
+.addable__list .chips[hidden]{ display: none; }
+.addable .chips__icon{ padding: 0; }
+.addable .chips__icon img{ display: block; width: 24px; height: 24px; }
 
 /* Каталог точки продаж (Figma 2829:79851): вместо настроек, пока в мастере выбрана точка.
    Белая панель на всю высоту, «Прайс» + ссылка с прайсом точки, плитки категорий 300×300. */
@@ -1669,6 +1696,7 @@ html, body{
 .rs-site{ padding: var(--o-s) var(--o-m); }
 /* Заголовки плашек «Сайт» и компонентов («Электронное меню» и др.) — 16 полужирный, токены ui-kit tokens.css */
 .rs-site__title{ display: flex; align-items: center; gap: 8px; height: 24px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
+.rs-site__title + .rs-site__props{ margin-top: 4px; } /* от заголовка «Сайт» до первого свойства 4 — как у шапок компонентов */
 .rs-site__props{ display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px; align-items: center; justify-items: start; grid-auto-rows: minmax(24px, auto); /* строка свойства 24, между свойствами 8 */ font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
 /* Иконка сайта (Figma DBmmGUNJ5Pwg8BsFOI5Kuv 7113:110857): круг 28 с рамкой #eaeaea; 28 в строке 24 — выступает на 2 сверху и снизу.
    Ховер (Variant3): рамка #d0d0d0, белая вуаль 75% и иконка 16 #656c87 — как у миниатюры QR (../qr.css). Клик пока без действия */
@@ -1695,6 +1723,7 @@ html, body{
 /* «Страница каталога» и «Страница товара», заголовок «Точки продаж» с «+» — как .comp-props и .sales-settings__sub в ../styles.css */
 .comp-props{ padding: 0 12px; grid-auto-rows: 24px; row-gap: 8px; }
 .comp-props__pick{ padding: 0; border: 0; background: none; font: inherit; font-size: 14px; letter-spacing: inherit; color: #2562aa; cursor: pointer; }
+.comp-props > [hidden]{ display: none; } /* «Страница каталога» и «Страница товара» пока скрыты */
 .comp-props__pick:hover{ text-decoration: underline; }
 .sales-settings__sub{ display: flex; align-items: center; gap: 8px; height: 24px; margin: 8px 0 4px; padding: 0 12px; font-size: var(--font-font-size-font-size_l); font-weight: var(--font-font-weight-bold); letter-spacing: -.2115px; color: var(--components-heading-default_text-color_heading); } /* «Страницы», «Точки продаж» — 15 */
 /* От шапки до «Страниц» — 4, как в конструкторе (там 4 снизу у шапки и 4 сверху у подгруппы схлопываются).
@@ -3718,35 +3747,37 @@ button.tpl-cat{ cursor: pointer; }
           <div class="content">
 
             <!-- Состав — как в окне «Параметры сайта» конструктора: блок «Сайт»,
-                 ниже «Добавить компонент» с теми же компонентами (COMP в app.js).
+                 подключённые компоненты (COMP в app.js); чипсы «Добавить компонент» — только в мастере (#regAddable).
                  Разделы, а не страницы сайта: опций записи у пунктов нет. -->
             <aside class="master master--data" data-no-options>
               <ul class="master__list">
-                <li class="master__item master__item--selected" data-reg-general>
+                <li class="master__item master__item--selected" data-reg-nav="general">
                   <span class="master__name">Общие</span>
                 </li>
+                <!-- Подключённый компонент — пункт навигации: клик прокручивает деталь к его блоку (#regSales); название и видимость задаёт render() скрипта компонентов -->
+                <li class="master__item" data-reg-nav="comp" id="regMasterComp">
+                  <span class="master__name">Электронное меню</span>
+                  <!-- Команда по ховеру — как у точки продаж в мастере; ✕ работает как крестик блока компонента: окно подтверждения -->
+                  <span class="sales-row__actions"><button type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE65C;</i></button></span>
+                </li>
               </ul>
-              <!-- Точки продаж «Электронного меню» (Figma 2841:47928): те же строки, что в .sales-rows блока #regSales,
-                   удаление синхронно в обоих местах (скрипт «Точки продаж в мастере» ниже). Группа видна, пока подключено меню и есть точки -->
-              <div class="master__group" id="regMasterSales">
-                <button class="master__sep" type="button" aria-expanded="true"><i class="icon master__sep-arrow" aria-hidden="true">&#xE9AA;</i><span id="regMasterSalesTitle">Точки продаж</span></button>
-                <ul class="master__list">
-                  <li class="master__item" data-sales-point="Ресторан “Мили”">
-                    <span class="master__name">Ресторан “Мили”</span>
-                    <div class="sales-row__actions"><button type="button" data-sales-delete aria-label="Удалить точку: Ресторан “Мили”"><i class="icon" aria-hidden="true">&#xE65C;</i></button></div>
-                  </li>
-                  <li class="master__item" data-sales-point="Ресторан “Мили” на Угличской">
-                    <span class="master__name">Ресторан “Мили” на Угличской</span>
-                    <div class="sales-row__actions"><button type="button" data-sales-delete aria-label="Удалить точку: Ресторан “Мили” на Угличской"><i class="icon" aria-hidden="true">&#xE65C;</i></button></div>
-                  </li>
-                </ul>
-              </div>
+              <!-- «Добавить компонент»: все компоненты чипсами, как #compChipsBlock конструктора.
+                   Клик подключает компонент тем же скриптом (data-comp-add); чипса подключённого скрыта, пока компонент подключён — заголовка нет -->
+              <section class="addable" id="regAddable" aria-label="Добавить компонент">
+                <h3 class="addable__caption" hidden>Добавить компонент</h3>
+                <div class="addable__list">
+                  <button class="chips chips--optional" type="button" data-comp-add="restaurant" hidden title="Меню и карточки блюд на сайте, цены и наличие из точек продаж" aria-label="Подключить компонент: Электронное меню"><span class="chips__icon"><img src="../assets/img/comp/restaurant.svg" alt=""></span><span class="chips__caption">Электронное меню</span></button>
+                  <button class="chips chips--optional" type="button" data-comp-add="delivery" title="Корзина, оформление и оплата заказа с доставкой, история заказов покупателя" aria-label="Подключить компонент: Доставка"><span class="chips__icon"><img src="../assets/img/comp/delivery.svg" alt=""></span><span class="chips__caption">Доставка</span></button>
+                  <button class="chips chips--optional" type="button" data-comp-add="services" title="Каталог услуг и онлайн-запись к специалисту на свободное время" aria-label="Подключить компонент: Услуги"><span class="chips__icon"><img src="../assets/img/comp/services.svg" alt=""></span><span class="chips__caption">Услуги</span></button>
+                  <button class="chips chips--optional" type="button" data-comp-add="hotel" title="Номера и цены, бронирование на даты с оплатой онлайн" aria-label="Подключить компонент: Отель"><span class="chips__icon"><img src="../assets/img/comp/hotel.svg" alt=""></span><span class="chips__caption">Отель</span></button>
+                </div>
+              </section>
             </aside>
 
-            <div class="detail detail--flush">
+            <div class="detail detail--flush reg-nav-detail scroll-shadow scroll-shadow--top" id="regDetail">
               <!-- Блок «Сайт» — 1:1 из окна «Параметры сайта» конструктора (Figma 2854:63032):
                    свойства, за ними чипсы ui-kit. Разметка та же, что в ../index.html (.rs-site). -->
-              <section class="params rs-site" aria-label="Сайт">
+              <section class="params rs-site" id="regSite" aria-label="Сайт">
                 <div class="rs-site__title"><img class="sales-settings__icon" src="../assets/img/comp/site.svg" width="24" height="24" alt=""><button class="sales-settings__toggle params-group-toggle" type="button" aria-expanded="true">Сайт<i class="icon sales-settings__toggle-arrow" aria-hidden="true">&#xE9AA;</i></button></div>
                 <div class="rs-site__props">
                   <span class="rs-site__label">Адрес сайта</span>
@@ -3785,8 +3816,8 @@ button.tpl-cat{ cursor: pointer; }
                 <!-- Страница каталога и страница товара — как в «Параметрах сайта» конструктора (../index.html, .comp-props):
                      ссылка со страницей, клик открывает меню #regPagePickMenu. Выбраны «Меню» и «Карточка товара», как в сценарии «В конструкторе» -->
                 <div class="rs-site__props comp-props">
-                  <span class="rs-site__label">Страница каталога</span><button class="comp-props__pick" data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Меню</button>
-                  <span class="rs-site__label">Страница товара</span><button class="comp-props__pick" data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Карточка товара</button>
+                  <span class="rs-site__label" hidden>Страница каталога</span><button class="comp-props__pick" hidden data-page-pick="catalog" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Меню</button>
+                  <span class="rs-site__label" hidden>Страница товара</span><button class="comp-props__pick" hidden data-page-pick="product" type="button" aria-haspopup="menu" aria-controls="regPagePickMenu" aria-expanded="false">Карточка товара</button>
                   <!-- QR-код — как в «Параметрах сайта» конструктора (../index.html, #compQr): миниатюра открывает окно, «Привязать» и «Распечатать» без точек продаж — предупреждение (qr.js) -->
                   <span class="rs-site__label">QR-код</span>
                   <span class="comp-qr" id="regCompQr" data-qr-comp="restaurant"><button class="comp-qr__thumb" type="button" data-qr-open title="Настроить табличку с QR-кодом" aria-label="Настроить табличку с QR-кодом"><span class="comp-qr__icon" aria-hidden="true">&#xe915;</span></button></span>
@@ -3828,16 +3859,7 @@ button.tpl-cat{ cursor: pointer; }
               </section>
               <!-- Остальные подключённые компоненты: иконка, название, крестик (строит скрипт ниже) -->
               <div id="regCompGroups"></div>
-              <!-- Неподключённые компоненты — чипсы ui-kit с иконкой, как #compChipsBlock конструктора -->
-              <section class="rs-comps" id="regCompChips" aria-label="Подключить компонент">
-                <div class="rs-comps__title" hidden>Добавить компонент</div>
-                <div class="rs-comps__chips">
-                  <button class="chips chips--optional" type="button" data-comp-add="restaurant" hidden title="Меню и карточки блюд на сайте, цены и наличие из точек продаж" aria-label="Подключить компонент: Электронное меню"><span class="chips__icon"><img src="../assets/img/comp/restaurant.svg" alt=""></span><span class="chips__caption">Электронное меню</span></button>
-                  <button class="chips chips--optional" type="button" data-comp-add="delivery" title="Корзина, оформление и оплата заказа с доставкой, история заказов покупателя" aria-label="Подключить компонент: Доставка"><span class="chips__icon"><img src="../assets/img/comp/delivery.svg" alt=""></span><span class="chips__caption">Доставка</span></button>
-                  <button class="chips chips--optional" type="button" data-comp-add="services" title="Каталог услуг и онлайн-запись к специалисту на свободное время" aria-label="Подключить компонент: Услуги"><span class="chips__icon"><img src="../assets/img/comp/services.svg" alt=""></span><span class="chips__caption">Услуги</span></button>
-                  <button class="chips chips--optional" type="button" data-comp-add="hotel" title="Номера и цены, бронирование на даты с оплатой онлайн" aria-label="Подключить компонент: Отель"><span class="chips__icon"><img src="../assets/img/comp/hotel.svg" alt=""></span><span class="chips__caption">Отель</span></button>
-                </div>
-              </section>
+              <!-- Чипсов «Добавить компонент» в карточке нет: подключение — блоком в мастере (#regAddable), в конструкторе — #compChipsBlock -->
               <!-- Каталог точки продаж (Figma 2829:79707): показывается вместо настроек по клику на точку в мастере.
                    Прайс — тот, что у точки в блоке «Электронное меню»; категории — как на странице «Меню» сайта -->
               <section class="reg-cat" id="regSalesCatalog" aria-label="Каталог точки продаж" hidden>
@@ -3846,9 +3868,8 @@ button.tpl-cat{ cursor: pointer; }
                 <div class="reg-cat__body" id="regCatBody"></div>
               </section>
               <script>
-              /* Выбор в мастере: точка продаж — справа её каталог вместо настроек, «Общие» — снова настройки.
-                 Клик после перетаскивания точки не выбирает её. Выбранной точки не стало (удалили, сняли в выборе точек) —
-                 снова «Общие». Разметку перевставляет apply(), поэтому слушаем document. */
+              /* Мастер «Параметров» — навигация по блокам детали (обработчики внизу); каталог точки (show, renderCatalog)
+                 из мастера больше не открывается — точек в мастере нет. Разметку перевставляет apply(), поэтому слушаем document. */
               (function(){
                 if (window.regSalesSelectBound) return;
                 window.regSalesSelectBound = true;
@@ -3952,20 +3973,70 @@ button.tpl-cat{ cursor: pointer; }
                     }).join('') + '</div>';
                   }).join('');
                 }
-                document.addEventListener('click', function(e){
-                  var cat = document.getElementById('regSalesCatalog');
-                  var item = e.target.closest('#screen-3 .master--data .master__item');
-                  if (item && !moved && !e.target.closest('button')){ current = item.dataset.salesPoint || null; show(current); return; }
-                  if (!cat || cat.hidden) return;
-                  // выбранная точка пропала из мастера — назад к «Общим»; осталась (список пересобран) — выделение и прайс заново.
-                  // После остальных обработчиков клика: удаление и выбор точек слушают document ниже по странице
-                  setTimeout(function(){
-                    var ms = document.getElementById('regMasterSales');
-                    var still = ms && !ms.hidden && Array.prototype.some.call(ms.querySelectorAll('[data-sales-point]'), function(el){ return el.dataset.salesPoint === current; });
-                    if (!still) current = null;
-                    show(current);
+                /* Мастер — навигация по детали: «Общие» — блок «Сайт», пункт компонента — его блок (#regSales).
+                   Клик плавно прокручивает деталь к блоку; при прокрутке выделен пункт блока у верхнего края. */
+                var NAV = { general: 'regSite', comp: 'regSales' };
+                var navTo = null; // цель плавной прокрутки после клика в мастере
+                function dropRoom(detail){ var r = detail.querySelector(':scope > .reg-nav-room'); if (r) r.style.height = '0px'; }
+                window.regNavDropRoom = dropRoom;
+                window.regNavSelect = function(key){
+                  document.querySelectorAll('#screen-3 [data-reg-nav]').forEach(function(el){
+                    el.classList.toggle('master__item--selected', el.dataset.regNav === key);
                   });
+                };
+                document.addEventListener('click', function(e){
+                  var item = e.target.closest('#screen-3 [data-reg-nav]');
+                  if (!item || moved || e.target.closest('[data-comp-off]')) return;
+                  var picker = document.getElementById('regSalesPicker');
+                  if (picker) picker.hidden = true; // смена пункта мастера закрывает панель «Прайсы» / выбора точек
+                  var detail = document.getElementById('regDetail');
+                  var target = document.getElementById(NAV[item.dataset.regNav]);
+                  window.regNavSelect(item.dataset.regNav);
+                  if (!detail || !target) return;
+                  // блок встаёт под верхним полем детали (8 px) — тень карточки не срезается краем прокрутки
+                  var top = Math.max(0, target.getBoundingClientRect().top - detail.getBoundingClientRect().top + detail.scrollTop - parseFloat(getComputedStyle(detail).paddingTop));
+                  // содержимого ниже блока мало — пустой запас в конце детали, чтобы блок доехал до верха за один клик
+                  // (только растёт, иначе прокрутка дёрнется; убирается, когда деталь снова у верха — см. обработчик прокрутки).
+                  // Высоту досчитываем по факту: сколько не хватило — столько и добавляем, пока не хватит
+                  var room = detail.querySelector(':scope > .reg-nav-room');
+                  if (!room){ room = document.createElement('div'); room.className = 'reg-nav-room'; room.setAttribute('aria-hidden', 'true'); detail.appendChild(room); }
+                  for (var i = 0; i < 3; i++){
+                    var max = detail.scrollHeight - detail.clientHeight;
+                    if (max >= top) break;
+                    room.style.height = (room.offsetHeight + top - max) + 'px';
+                  }
+                  top = Math.min(top, detail.scrollHeight - detail.clientHeight);
+                  if (Math.abs(detail.scrollTop - top) < 1){ navTo = null; return; } // уже на месте — прокрутки не будет
+                  // пока плавная прокрутка не доехала, выделение не пересчитывается (не мигает по пути); страховка — 1,5 с
+                  navTo = { top: top, until: Date.now() + 1500 };
+                  detail.scrollTo({ top: top, behavior: 'smooth' });
                 });
+                // колесо или палец посреди плавной прокрутки — дальше выделение следует за прокруткой пользователя
+                ['wheel', 'touchstart'].forEach(function(t){
+                  document.addEventListener(t, function(e){ if (e.target.closest && e.target.closest('#regDetail')) navTo = null; }, { passive: true, capture: true });
+                });
+                var scr = document.getElementById('screen-3');
+                if (window.ScrollShadow && scr && !window.regNavShadow) window.regNavShadow = window.ScrollShadow.mount(scr);
+                document.addEventListener('scroll', function(e){
+                  var detail = e.target;
+                  if (detail.id !== 'regDetail') return;
+                  if (navTo){
+                    if (Math.abs(detail.scrollTop - navTo.top) >= 1 && Date.now() < navTo.until) return;
+                    navTo = null; // доехали: выделение уже стоит на пункте клика, не пересчитываем
+                    if (detail.scrollTop < 1) dropRoom(detail);
+                    return;
+                  }
+                  if (detail.scrollTop < 1) dropRoom(detail); // у верха запас под навигацию не нужен — убираем без скачка
+                  var comp = document.getElementById('regSales');
+                  var mc = document.getElementById('regMasterComp');
+                  var key = 'general';
+                  if (comp && !comp.hidden && mc && !mc.hidden){
+                    var atEnd = detail.scrollTop + detail.clientHeight >= detail.scrollHeight - 2;
+                    var reached = comp.getBoundingClientRect().top - detail.getBoundingClientRect().top <= 40;
+                    if (atEnd || reached) key = 'comp';
+                  }
+                  window.regNavSelect(key);
+                }, true);
               })();
               </script>
               <script>
@@ -3978,8 +4049,8 @@ button.tpl-cat{ cursor: pointer; }
                 if (window.regCompsBound) return;
                 window.regCompsBound = true;
                 var COMP = {
-                  restaurant: { name: 'Электронное меню', pages: ['Меню', 'Карточка товара', 'Заказы'], catalog: 'Меню', product: 'Карточка товара', points: 'Точки продаж', point: 'точку продаж', price: true },
-                  delivery: { name: 'Доставка', pages: ['Меню', 'Корзина', 'Заказы', 'Карточка заказа'], catalog: 'Корзина', product: 'Карточка заказа', points: 'Точки продаж', point: 'точку продаж', price: true },
+                  restaurant: { name: 'Электронное меню', pages: ['Меню', 'Карточка товара'], catalog: 'Меню', product: 'Карточка товара', points: 'Точки продаж', point: 'точку продаж', price: true },
+                  delivery: { name: 'Доставка', pages: ['Корзина', 'Заказы', 'Карточка заказа'], catalog: 'Корзина', product: 'Карточка заказа', points: 'Точки продаж', point: 'точку продаж', price: true },
                   services: { name: 'Услуги', pages: ['Услуги', 'Карточка услуги', 'Специалисты', 'Карточка специалиста', 'Выбор времени записи'], catalog: 'Услуги', product: 'Карточка услуги', points: 'Филиалы', point: 'филиал', price: false },
                   hotel: { name: 'Отель', pages: ['Номера', 'Карточка номера'], catalog: 'Номера', product: 'Карточка номера', points: 'Объекты размещения', point: 'объект размещения', price: false }
                 };
@@ -3988,14 +4059,21 @@ button.tpl-cat{ cursor: pointer; }
                   var el = document.getElementById('regSalesPoints');
                   return el ? el.textContent : 'Точки продаж';
                 };
-                var sales, chips, on;
+                var sales, on;
                 function render(){
                   sales.hidden = !on;
-                  var ms = document.getElementById('regMasterSales');
-                  if (ms) ms.hidden = sales.hidden || !ms.querySelector('[data-sales-point]');
+                  var mc = document.getElementById('regMasterComp');
+                  var rd = document.getElementById('regDetail');
+                  var st = rd ? rd.scrollTop : 0; // прокрутка до смены компонента — вернём её в конце
+                  if (rd && !rd.scrollTop && window.regNavDropRoom) window.regNavDropRoom(rd); // запас под прокрутку навигации — заново при следующем клике
+                  if (mc){
+                    mc.hidden = !on;
+                    if (on) mc.querySelector('.master__name').textContent = COMP[on].name;
+                    if (!on && mc.classList.contains('master__item--selected')) window.regNavSelect && window.regNavSelect('general');
+                  }
                   // чипсы остаются: скрыта только чипса подключённого компонента, чипса другого заменяет его (после подтверждения #comp-switch)
-                  chips.querySelectorAll('[data-comp-add]').forEach(function(b){ b.hidden = b.dataset.compAdd === on; });
-                  chips.querySelector('.rs-comps__title').hidden = !!on;
+                  document.querySelectorAll('#regAddable [data-comp-add]').forEach(function(b){ b.hidden = b.dataset.compAdd === on; });
+                  document.querySelector('#regAddable .addable__caption').hidden = !!on; // компонент подключён — заголовка «Добавить компонент» нет
                   if (!on) return;
                   var c = COMP[on];
                   sales.setAttribute('aria-label', c.name);
@@ -4009,14 +4087,22 @@ button.tpl-cat{ cursor: pointer; }
                   document.getElementById('regSalesPoints').textContent = c.points;
                   if (window.QrCode) window.QrCode.sync(document.getElementById('regCompQr'), on); // табличка QR — по типу сайта (../qr.js)
                   if (window.CompCatalog) window.CompCatalog.sync(document.getElementById('regCompCatalog'), on); // настройки каталога — только у меню и услуг (../comp-catalog.js)
-                  var sep = document.getElementById('regMasterSalesTitle');
-                  if (sep) sep.textContent = c.points;
                   var add = sales.querySelector('.sales-add');
                   add.title = 'Добавить ' + c.point;
                   add.setAttribute('aria-label', 'Добавить ' + c.point);
-                  var off = sales.querySelector('.sales-settings__remove');
-                  off.dataset.compOff = on;
-                  off.setAttribute('aria-label', 'Отключить компонент «' + c.name + '»');
+                  document.querySelectorAll('#screen-3 [data-comp-off]').forEach(function(off){
+                    off.dataset.compOff = on;
+                    off.setAttribute('aria-label', 'Отключить компонент «' + c.name + '»');
+                  });
+                  // блок другого компонента может быть короче — деталь укорачивается, браузер сам поджимает прокрутку и карточка скачет.
+                  // Держим прокрутку на месте: не хватает высоты — добавляем пустой запас в конце (как навигация мастера)
+                  if (rd && st > 0){
+                    var room = rd.querySelector(':scope > .reg-nav-room');
+                    if (!room){ room = document.createElement('div'); room.className = 'reg-nav-room'; room.setAttribute('aria-hidden', 'true'); rd.appendChild(room); }
+                    var max = rd.scrollHeight - rd.clientHeight;
+                    if (max < st) room.style.height = (room.offsetHeight + st - max) + 'px';
+                    rd.scrollTop = st;
+                  }
                 }
                 // Замена компонента — с подтверждением, как в конструкторе (compSwitchAsk в ../app.js): что отключится и какие страницы удалятся
                 // окно стоит в разметке ниже этого скрипта — ищем его в момент клика
@@ -4027,6 +4113,15 @@ button.tpl-cat{ cursor: pointer; }
                   document.getElementById('comp-switch-msg').textContent = 'Сменить тип сайта на «' + COMP[id].name + '»?';
                   document.getElementById('comp-switch-details').textContent = 'Компонент «' + COMP[cur].name + '» отключится. ' + (pages.length > 1 ? 'Удалятся страницы ' : 'Удалится страница ') + list + '.';
                   askId = id;
+                  document.getElementById('comp-switch').hidden = false;
+                }
+                // Отключение — крестик блока компонента и ✕ пункта в мастере: то же окно, как compRemoveAsk в ../app.js
+                function offAsk(cur){
+                  var pages = COMP[cur].pages.map(function(n){ return '«' + n + '»'; });
+                  var list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages[pages.length - 1] : pages[0];
+                  document.getElementById('comp-switch-msg').textContent = 'Отключить компонент «' + COMP[cur].name + '»?';
+                  document.getElementById('comp-switch-details').textContent = (pages.length > 1 ? 'Удалятся страницы ' : 'Удалится страница ') + list + '.';
+                  askId = null;
                   document.getElementById('comp-switch').hidden = false;
                 }
                 document.addEventListener('click', function(e){
@@ -4041,11 +4136,27 @@ button.tpl-cat{ cursor: pointer; }
                   var add = e.target.closest('[data-comp-add]');
                   if (!off && !add) return;
                   sales = document.getElementById('regSales');
-                  chips = document.getElementById('regCompChips');
                   var cur = sales.hidden ? null : sales.querySelector('.sales-settings__remove').dataset.compOff;
                   if (add && cur && cur !== add.dataset.compAdd){ switchAsk(cur, add.dataset.compAdd); return; }
-                  connect(add ? add.dataset.compAdd : null);
+                  if (off){ if (cur) offAsk(cur); return; }
+                  connect(add.dataset.compAdd);
                 });
+                /* Компонент сайта при открытии карточки (apply() скрипта модели ниже): «Параметры» показывают тот компонент,
+                   чья группа стоит в списке страниц, без сайта-компонента — ни одного. Без окон и reg:comp — страницы уже его.
+                   Точки в разметке — «Электронного меню»: у другого компонента их нет */
+                window.regCompSet = function(id){
+                  sales = document.getElementById('regSales');
+                  if (!sales) return;
+                  on = id || null;
+                  render();
+                  if (!on) return;
+                  sales.querySelectorAll('[data-page-pick]').forEach(function(b){ b.textContent = COMP[on][b.dataset.pagePick === 'catalog' ? 'catalog' : 'product']; });
+                  if (on !== 'restaurant'){
+                    document.querySelectorAll('#screen-3 [data-sales-point]').forEach(function(el){ el.remove(); });
+                    sales.querySelectorAll('.sales-rows .sales-empty').forEach(function(el){ el.remove(); });
+                    window.regSalesEmpty();
+                  }
+                };
                 function connect(id){
                   on = id;
                   // подключённый компонент приходит без точек, как в конструкторе (compRemove в ../app.js): ни в блоке, ни в мастере;
@@ -4059,6 +4170,10 @@ button.tpl-cat{ cursor: pointer; }
                     window.regSalesEmpty();
                   }
                   render();
+                  // группа на «Страницах» — страницы подключённого компонента (скрипт модели сайта ниже, reg:comp)
+                  document.dispatchEvent(new CustomEvent('reg:comp', { detail: { id: on, name: on ? COMP[on].name : '', pages: on ? COMP[on].pages.slice() : [] } }));
+                  // подключили чипсой — мастер сразу на пункте компонента, деталь прокручивается к его блоку (как клик по пункту)
+                  if (on) document.getElementById('regMasterComp').click();
                 }
               })();
               </script>
@@ -4069,11 +4184,6 @@ button.tpl-cat{ cursor: pointer; }
               (function(){
                 if (window.regSalesDeleteBound) return;
                 window.regSalesDeleteBound = true;
-                // Шапка группы «Точки продаж» сворачивает и разворачивает список точек
-                document.addEventListener('click', function(e){
-                  var sep = e.target.closest('#regMasterSales .master__sep');
-                  if (sep) sep.setAttribute('aria-expanded', sep.getAttribute('aria-expanded') === 'false' ? 'true' : 'false');
-                });
                 // Экспандеры «Сайт» и «Электронное меню» (вся группа) — как в «Параметрах сайта» конструктора (../app.js)
                 document.addEventListener('click', function(e){
                   var t = e.target.closest('.sales-settings__toggle');
@@ -4083,8 +4193,6 @@ button.tpl-cat{ cursor: pointer; }
                 });
                 // Точек не осталось: в мастере группа скрыта, в блоке — «Добавьте ваши точки продаж…» (как salesRenderRows в ../app.js)
                 window.regSalesEmpty = function(){
-                  var ms = document.getElementById('regMasterSales');
-                  if (ms && !ms.querySelector('[data-sales-point]')) ms.hidden = true;
                   var rows = document.querySelector('#regSales .sales-rows');
                   if (rows && !rows.querySelector('[data-sales-point], .sales-empty'))
                     rows.innerHTML = '<p class="sales-empty">Добавьте ваши <button class="sales-empty__link" type="button">' + window.regPointsName().toLowerCase() + '</button>, чтобы получать актуальную информацию о них</p>';
@@ -4194,7 +4302,7 @@ button.tpl-cat{ cursor: pointer; }
                 if (window.regPagePickBound) return;
                 window.regPagePickBound = true;
                 var BASE = ['Главная', 'О нас', 'Профиль']; // есть на любом сайте, какой бы компонент ни был подключён
-                var PAGES = ['Меню', 'Карточка товара', 'Заказы']; // «Электронное меню» — подключено по умолчанию
+                var PAGES = ['Меню', 'Карточка товара']; // «Электронное меню» — подключено по умолчанию
                 var from = null; // ссылка, из которой открыто меню
                 function close(){
                   var menu = document.getElementById('regPagePickMenu');
@@ -5208,21 +5316,13 @@ button.tpl-cat{ cursor: pointer; }
         // точки в блоке и в мастере — одной разметкой с исходной; корону ставит regSalesCrown
         function apply(points){
           var rows = document.querySelector('#regSales .sales-rows');
-          var ms = document.getElementById('regMasterSales');
-          var sales = document.getElementById('regSales');
-          if (!rows || !ms) return;
+          if (!rows) return;
           rows.innerHTML = points.map(function(p){
             var n = esc(p.name);
             return '<div class="sales-row" data-sales-point="' + n + '"><div class="sales-row__name"><span>' + n + '</span></div>' +
               '<span class="sales-price">' + esc(p.price) + '</span><div class="sales-row__actions">' +
               '<button type="button" data-sales-delete aria-label="Удалить точку: ' + n + '"><i class="icon" aria-hidden="true">&#xE65C;</i></button></div></div>';
           }).join('');
-          ms.querySelector('.master__list').innerHTML = points.map(function(p){
-            var n = esc(p.name);
-            return '<li class="master__item" data-sales-point="' + n + '"><span class="master__name">' + n + '</span>' +
-              '<div class="sales-row__actions"><button type="button" data-sales-delete aria-label="Удалить точку: ' + n + '"><i class="icon" aria-hidden="true">&#xE65C;</i></button></div></li>';
-          }).join('');
-          ms.hidden = sales.hidden || !points.length;
           if (window.regSalesCrown) window.regSalesCrown();
           if (!points.length && window.regSalesEmpty) window.regSalesEmpty();
         }
@@ -5809,7 +5909,51 @@ button.tpl-cat{ cursor: pointer; }
   /* --- модель ---------------------------------------------------------------- */
   /* страница: имя, путь, доля визитов, отклики на визит (0 — откликов нет, как
      у «Контактов» в макете), среднее время в секундах */
-  function P(name, path, w, cr, t){ return { name: name, path: path, w: w, cr: cr, t: t }; }
+  /* group — компонент, в группе которого страница стоит в списке (как в списке страниц конструктора, ../app.js lsRender) */
+  function P(name, path, w, cr, t, group){ return { name: name, path: path, w: w, cr: cr, t: t, group: group }; }
+
+  /* Компонент, подключённый в «Параметрах» (reg:comp): адрес сайта → { id, name, pages }; null — компонент отключён.
+     Нет записи — страницы как в EXTRA. Группа на «Страницах» — его название и его страницы: свои страницы сайта остаются,
+     страницы прежнего компонента уходят. Тот же компонент, что в EXTRA, — его страницы оттуда (с их путями и долями). */
+  var COMP_OF = {};
+  var LAT = { а:'a', б:'b', в:'v', г:'g', д:'d', е:'e', ё:'e', ж:'zh', з:'z', и:'i', й:'y', к:'k', л:'l', м:'m', н:'n', о:'o', п:'p', р:'r', с:'s', т:'t', у:'u', ф:'f', х:'h', ц:'c', ч:'ch', ш:'sh', щ:'sch', ъ:'', ы:'y', ь:'', э:'e', ю:'yu', я:'ya' };
+  function slug(s){ return s.toLowerCase().split('').map(function(ch){ return ch in LAT ? LAT[ch] : (/[a-z0-9]/.test(ch) ? ch : '-'); }).join('').replace(/-+/g, '-').replace(/^-|-$/g, ''); }
+  /* Список страниц из конструктора (../app.js regParams, list): адрес сайта → [{ name, group }] — набор и порядок
+     левой панели конструктора. Страница, что есть в EXTRA, берёт оттуда путь, долю и время; новая — придуманные */
+  var PAGE_LIST = {};
+  var GROUP_ORDER = ['restaurant', 'delivery', 'services', 'hotel']; // порядок компонентов, как COMP в ../app.js
+  function listPages(link, x){
+    var list = PAGE_LIST[link];
+    if (!list) return x.pages;
+    return list.map(function(it, i){
+      var p = x.pages.filter(function(q){ return q.name === it.name; })[0];
+      if (p) return P(p.name, p.path, p.w, p.cr, p.t, it.group || undefined);
+      return P(it.name, i ? '/' + slug(it.name) : '', 8, .6, 60 + 23 * ((i * 5 + it.name.length) % 7), it.group || undefined);
+    });
+  }
+  /* порядок показа на всех вкладках — как в конструкторе: свои страницы сайта, потом группы в порядке компонентов */
+  function groupOrder(pages){
+    var out = pages.filter(function(p){ return !p.group; });
+    GROUP_ORDER.forEach(function(id){ out = out.concat(pages.filter(function(p){ return p.group === id; })); });
+    return out;
+  }
+  function sitePages(link, x){
+    return groupOrder(compPages(link, { pages: listPages(link, x) }));
+  }
+  function compPages(link, x){
+    if (!(link in COMP_OF)) return x.pages;
+    var c = COMP_OF[link];
+    var own = x.pages.filter(function(p){ return !p.group; });
+    if (!c) return own;
+    var same = x.pages.filter(function(p){ return p.group === c.id; });
+    if (same.length) return own.concat(same);
+    // новый компонент: страницы — его, доля визитов — как у прежней группы (или по 15 на страницу), отклики чаще на первой
+    var was = x.pages.filter(function(p){ return p.group; });
+    var total = was.length ? was.reduce(function(s, p){ return s + p.w; }, 0) : 15 * c.pages.length;
+    return own.concat(c.pages.map(function(name, i){
+      return P(name, '/' + slug(name), total / c.pages.length, i ? 1.2 : 1.8, 120 + 37 * ((i * 7 + name.length) % 5), c.id);
+    }));
+  }
 
   /* источник: имя, логотип (--logo-…, пусто — «Прямые заходы»), доля, отклики на посетителя */
   var SRC = {
@@ -5840,32 +5984,32 @@ button.tpl-cat{ cursor: pointer; }
   /* по домену: средний чек, позиции для откликов, страницы */
   var EXTRA = {
     'mili-yar.saby.ws': { avg: 2900, items: ['Пицца пепперони', 'Тартар из тунца', 'Севиче из лангустинов', 'Кейтеринг на 20 персон'],
-      // состав и порядок — как в конструкторе («В конструкторе») и в шаблоне: Главная, О нас, Профиль, Меню, Карточка товара
-      pages: [P('Главная', '', 34, .8, 168), P('О нас', '/about', 7, .2, 95), P('Профиль', '/profile', 9, .4, 72), P('Меню', '/menu', 33, 1.6, 241), P('Карточка товара', '/product', 17, 2.4, 133)] },
+      // состав, порядок и группы — как в конструкторе («В конструкторе») и в шаблоне: Главная, О нас, Профиль; «Электронное меню»: Меню, Карточка товара
+      pages: [P('Главная', '', 34, .8, 168), P('О нас', '/about', 7, .2, 95), P('Профиль', '/profile', 9, .4, 72), P('Меню', '/menu', 33, 1.6, 241, 'restaurant'), P('Карточка товара', '/product', 17, 2.4, 133, 'restaurant')] },
     'saby.ru': { avg: 11900, items: ['Saby Бухгалтерия', 'Saby ЭДО', 'Saby Отчетность', 'Saby Престо'],
       pages: [P('Главная', '', 46, 1, 215), P('Тарифы', '/tariffs', 24, 2.2, 262), P('Решения', '/solutions', 21, .8, 318), P('Контакты', '/contacts', 9, 0, 64)] },
     'mili-rest.ru': { avg: 3200, items: ['Стейк рибай', 'Паста карбонара', 'Тирамису', 'Бургер с трюфелем'],
-      pages: [P('Главная', '', 42, .8, 174), P('Меню', '/menu', 31, 1.4, 236), P('Бронь стола', '/booking', 17, 2.6, 128), P('Контакты', '/contacts', 10, 0, 48)] },
+      pages: [P('Главная', '', 42, .8, 174), P('Бронь стола', '/booking', 17, 2.6, 128), P('Контакты', '/contacts', 10, 0, 48), P('Меню', '/menu', 21, 1.5, 236, 'restaurant'), P('Карточка товара', '/product', 10, 2.2, 133, 'restaurant')] },
     'shefexpress.saby.ws': { avg: 1300, items: ['Бизнес-ланч', 'Плов с бараниной', 'Борщ', 'Цезарь с курицей'],
-      pages: [P('Главная', '', 40, .8, 151), P('Меню', '/menu', 36, 1.6, 247), P('Доставка', '/delivery', 16, 1.2, 96), P('Контакты', '/contacts', 8, 0, 41)] },
+      pages: [P('Главная', '', 40, .8, 151), P('Доставка', '/delivery', 16, 1.2, 96), P('Контакты', '/contacts', 8, 0, 41), P('Меню', '/menu', 24, 1.5, 236, 'restaurant'), P('Карточка товара', '/product', 12, 2.2, 133, 'restaurant')] },
     'parkotelmsk.ru': { avg: 14500, items: ['Стандарт', 'Делюкс с видом на парк', 'Семейный люкс'],
-      pages: [P('Главная', '', 45, .7, 205), P('Номера', '/rooms', 30, 2.1, 284), P('Спа', '/spa', 15, .9, 152), P('Контакты', '/contacts', 10, 0, 58)] },
+      pages: [P('Главная', '', 45, .7, 205), P('Спа', '/spa', 15, .9, 152), P('Контакты', '/contacts', 10, 0, 58), P('Номера', '/rooms', 18, 1.6, 284, 'hotel'), P('Карточка номера', '/room', 12, 2.8, 196, 'hotel')] },
     'blanchill.saby.ws': { avg: 18000, items: ['Стандарт', 'Люкс'],
-      pages: [P('Главная', '', 60, 1, 0), P('Номера', '/rooms', 30, 1.5, 0), P('Контакты', '/contacts', 10, 0, 0)] },
+      pages: [P('Главная', '', 60, 1, 0), P('Контакты', '/contacts', 10, 0, 0), P('Номера', '/rooms', 18, 1.5, 0, 'hotel'), P('Карточка номера', '/room', 12, 1.5, 0, 'hotel')] },
     'kolos-bakery.saby.ws': { avg: 760, items: ['Капкейк с клубникой', 'Панна-котта', 'Торт «Медовик»', 'Круассаны'],
-      pages: [P('Главная', '', 44, .8, 132), P('Меню', '/menu', 30, 1.5, 188), P('Торты на заказ', '/cakes', 18, 2, 221), P('Контакты', '/contacts', 8, 0, 37)] },
+      pages: [P('Главная', '', 44, .8, 132), P('Торты на заказ', '/cakes', 18, 2, 221), P('Контакты', '/contacts', 8, 0, 37), P('Меню', '/menu', 20, 1.5, 236, 'restaurant'), P('Карточка товара', '/product', 10, 2.2, 133, 'restaurant')] },
     'sushitime.ru': { avg: 1900, items: ['Сет «Филадельфия»', 'Тартар из тунца', 'Роллы с лососем', 'Севиче из гребешка'],
-      pages: [P('Главная', '', 38, .8, 143), P('Меню', '/menu', 40, 1.5, 264), P('Акции', '/promo', 14, .8, 87), P('Контакты', '/contacts', 8, 0, 35)] },
+      pages: [P('Главная', '', 38, .8, 143), P('Акции', '/promo', 14, .8, 87), P('Контакты', '/contacts', 8, 0, 35), P('Меню', '/menu', 27, 1.5, 236, 'restaurant'), P('Карточка товара', '/product', 13, 2.2, 133, 'restaurant')] },
     'zerno-coffee.saby.ws': { avg: 420, items: ['Капучино', 'Матча-латте', 'Сырники со сметаной', 'Эспрессо'],
-      pages: [P('Главная', '', 50, .8, 98), P('Меню', '/menu', 38, 1.6, 156), P('Контакты', '/contacts', 12, 0, 33)] },
+      pages: [P('Главная', '', 50, .8, 98), P('Контакты', '/contacts', 12, 0, 33), P('Меню', '/menu', 26, 1.5, 236, 'restaurant'), P('Карточка товара', '/product', 12, 2.2, 133, 'restaurant')] },
     'britva-barber.ru': { avg: 1900, items: ['Артём', 'Илья', 'Денис', 'Марк'], svc: ['стрижка', 'стрижка и борода', 'королевское бритьё', 'детская стрижка'],
-      pages: [P('Главная', '', 41, .8, 117), P('Услуги', '/services', 27, 1.3, 164), P('Мастера', '/masters', 22, 1.8, 139), P('Контакты', '/contacts', 10, 0, 44)] },
+      pages: [P('Главная', '', 41, .8, 117), P('Контакты', '/contacts', 10, 0, 44), P('Услуги', '/services', 17, 1.3, 164, 'services'), P('Карточка услуги', '/service', 10, 1.6, 118, 'services'), P('Специалисты', '/specialists', 12, 1.2, 139, 'services'), P('Карточка специалиста', '/specialist', 6, 1.4, 102, 'services'), P('Выбор времени записи', '/booking', 4, 3, 87, 'services')] },
     'dentaplus.saby.ws': { avg: 6800, items: ['Ольга Ким', 'Сергей Лаптев', 'Анна Белова', 'Павел Орлов'], svc: ['лечение кариеса', 'профгигиена', 'консультация ортодонта', 'удаление зуба'],
-      pages: [P('Главная', '', 39, .8, 186), P('Услуги', '/services', 28, 1.4, 233), P('Врачи', '/doctors', 21, 1.6, 172), P('Цены', '/prices', 12, .6, 141)] },
+      pages: [P('Главная', '', 39, .8, 186), P('Цены', '/prices', 12, .6, 141), P('Услуги', '/services', 18, 1.3, 164, 'services'), P('Карточка услуги', '/service', 10, 1.6, 118, 'services'), P('Специалисты', '/specialists', 11, 1.2, 139, 'services'), P('Карточка специалиста', '/specialist', 6, 1.4, 102, 'services'), P('Выбор времени записи', '/booking', 4, 3, 87, 'services')] },
     'sosny-glamping.ru': { avg: 15800, items: ['Домик с видом на горы', 'Эко-шатёр у ручья'],
-      pages: [P('Главная', '', 47, .8, 198), P('Домики', '/houses', 36, 1.8, 276), P('Как добраться', '/route', 17, 0, 83)] },
+      pages: [P('Главная', '', 47, .8, 198), P('Как добраться', '/route', 17, 0, 83), P('Номера', '/rooms', 22, 1.6, 276, 'hotel'), P('Карточка номера', '/room', 14, 2.4, 188, 'hotel')] },
     'lozhka-food.saby.ws': { avg: 1110, items: ['Пицца пепперони', 'Паста с овощами', 'Утка с пюре', 'Обед дня'],
-      pages: [P('Главная', '', 35, .8, 104), P('Каталог', '/catalog', 45, 1.6, 211), P('Акции', '/promo', 20, .7, 76)] }
+      pages: [P('Главная', '', 35, .8, 104), P('Каталог', '/catalog', 33, 1.6, 211), P('Акции', '/promo', 14, .7, 76), P('Корзина', '/cart', 10, 2.4, 96, 'delivery'), P('Заказы', '/orders', 5, .6, 64, 'delivery'), P('Карточка заказа', '/order', 3, .4, 52, 'delivery')] }
   };
 
   var NAMES = ['Смирнов Алексей', 'Кузнецова Ольга Игоревна', 'Попов Дмитрий', 'Васильева Анна', 'Новиков Сергей Петрович',
@@ -5886,10 +6030,11 @@ button.tpl-cat{ cursor: pointer; }
     var Sl = Math.round(R * type.conv);                  // продажи — часть откликов
     var sales = Sl * x.avg;
 
-    var pages = x.pages.map(function(p){ return { name: p.name, link: link + p.path, t: p.t, cr: p.cr }; });
-    var pv = split(V, x.pages.map(function(p){ return p.w; }));
-    var pu = split(U, x.pages.map(function(p){ return p.w; }));
-    var pr = split(R, x.pages.map(function(p, i){ return pv[i] * p.cr; }));
+    var xp = sitePages(link, x);
+    var pages = xp.map(function(p){ return { name: p.name, link: link + p.path, t: p.t, cr: p.cr, group: p.group }; });
+    var pv = split(V, xp.map(function(p){ return p.w; }));
+    var pu = split(U, xp.map(function(p){ return p.w; }));
+    var pr = split(R, xp.map(function(p, i){ return pv[i] * p.cr; }));
     var ps = split(Sl, pr);
     var pm = split(sales, ps);
     pages.forEach(function(p, i){ p.visits = pv[i]; p.users = pu[i]; p.replies = pr[i]; p.sales = ps[i]; p.sum = pm[i]; p.time = p.t; });
@@ -5909,9 +6054,17 @@ button.tpl-cat{ cursor: pointer; }
   /* --- разметка экранов ------------------------------------------------------ */
   var OPTIONS = document.getElementById('tpl-master-options').innerHTML;
 
+  /* Группы компонентов — как в списке страниц конструктора: сначала страницы сайта, потом группы в порядке компонентов;
+     заголовок группы — иконка компонента и название, без ховера и клика */
+  var PAGE_GROUPS = { restaurant: 'Электронное меню', delivery: 'Доставка', services: 'Услуги', hotel: 'Отель' };
   function masterList(m){
+    function row(p){ return '<li class="master__item' + (p.group ? ' master__item--grouped' : '') + '"><span class="master__name">' + esc(p.name) + '</span><span class="master__count">' + fmt(p.users) + '</span>' + OPTIONS + '</li>'; }
     return '<li class="master__item master__item--selected"><span class="master__name">Всего</span><span class="master__count">' + fmt(m.U) + '</span>' + OPTIONS + '</li>' +
-      m.pages.map(function(p){ return '<li class="master__item"><span class="master__name">' + esc(p.name) + '</span><span class="master__count">' + fmt(p.users) + '</span>' + OPTIONS + '</li>'; }).join('');
+      m.pages.filter(function(p){ return !p.group; }).map(row).join('') +
+      Object.keys(PAGE_GROUPS).map(function(id){
+        var g = m.pages.filter(function(p){ return p.group === id; });
+        return g.length ? '<li class="master__comp" aria-hidden="true"><span>' + PAGE_GROUPS[id] + '</span></li>' + g.map(row).join('') : '';
+      }).join('');
   }
 
   function counters(m){
@@ -6075,6 +6228,20 @@ button.tpl-cat{ cursor: pointer; }
     var m = build(tile, k);
     if (m) MODELS[m.link] = m;
   });
+  // модель сайта заново — после смены компонента (страницы и их цифры); визиты и отклики сайта те же, с плитки
+  function rebuild(link){
+    var tile = $('#screen-1 .tile[data-site="' + link + '"]');
+    var m = MODELS[link];
+    if (tile && m) MODELS[link] = build(tile, m.k);
+  }
+  /* Компонент подключили, сменили или отключили в «Параметрах» (скрипт компонентов, reg:comp) —
+     группа на «Страницах» и строки страниц на остальных вкладках следуют за ним */
+  document.addEventListener('reg:comp', function(e){
+    if (current !== BILLING && !MODELS[current]) return;
+    COMP_OF[current] = e.detail.id ? e.detail : null;
+    rebuild(current);
+    apply(true);
+  });
 
   /* все плитки обоих реестров открывают карточку; доля на плитке — отклики к визитам */
   $$('.tile').forEach(tileInit);
@@ -6126,13 +6293,59 @@ button.tpl-cat{ cursor: pointer; }
     });
   }
 
-  function apply(){
+  /* Компонент открытого сайта: подключённый в «Параметрах» (COMP_OF), иначе — тот, чья группа в его страницах; у биллинга — нет */
+  function siteComp(){
+    if (current in COMP_OF) return COMP_OF[current] ? COMP_OF[current].id : null;
+    var m = MODELS[current];
+    var g = m && m.pages.filter(function(p){ return p.group; })[0];
+    return g ? g.group : null;
+  }
+  /* Биллинг свёрстан вручную (макет Axure): страницы подключённого компонента дописываются его группой в список страниц
+     каждой вкладки, карточками на «Страницах» и строками «Статистики» — с нулями, страницы новые */
+  function billingComp(){
+    var c = COMP_OF[BILLING];
+    if (!c) return;
+    var zero = { users: 0, replies: 0, sales: 0, sum: 0, time: 0 };
+    IDS.forEach(function(id){
+      var list = $('#' + id + ' .master:not([data-no-options]) .master__list');
+      if (!list) return;
+      var items = $$('.master__item', list), last = items[items.length - 1];
+      list.insertAdjacentHTML('beforeend', '<li class="master__comp" aria-hidden="true"><span>' + esc(c.name) + '</span></li>');
+      c.pages.forEach(function(name){
+        var li = last.cloneNode(true);
+        li.classList.toggle('master__item--selected', false);
+        li.classList.add('master__item--grouped');
+        $('.master__name', li).textContent = name;
+        var n = $('.master__count', li); if (n) n.textContent = '0';
+        list.appendChild(li);
+      });
+    });
+    var cards = $('#screen-2 .pagecards');
+    c.pages.forEach(function(name){
+      cards.insertAdjacentHTML('beforeend', '<article class="card pagecard">' +
+        '<div class="pagecard__row"><h3 class="pagecard__title">' + esc(name) + '</h3></div>' +
+        '<div class="pagecard__row"><a class="pagecard__link" href="#/screen-2">' + esc(BILLING + '/' + slug(name)) + '</a>' +
+          '<span class="pagecard__stats"><span class="pagecard__num" title="Визиты">0</span><i class="icon icon--label" aria-hidden="true">&#xEB6B;</i></span></div>' +
+        '<div class="pagecard__shot" style="background-image:var(--shot-billing)" role="img" aria-label="Превью страницы «' + esc(name) + '»"></div>' +
+      '</article>');
+    });
+    var rows = $('#screen-4 .grid__rows');
+    if (rows) rows.insertAdjacentHTML('beforeend', c.pages.map(function(name){ return gridRow(name, zero); }).join(''));
+  }
+
+  // keepParams — смена компонента в «Параметрах»: их разметку не трогаем (там уже новый компонент), остальные вкладки — заново
+  function apply(keepParams){
     markTiles();
+    // «Параметры» перевставляются из исходной разметки — компонент снова «Электронное меню», страницы — как в EXTRA
+    if (!keepParams && current in COMP_OF){ delete COMP_OF[current]; rebuild(current); }
     var m = current === BILLING ? null : MODELS[current];
     IDS.forEach(function(id){
+      if (keepParams && id === 'screen-3') return;
       var s = document.getElementById(id);
       markAcc(s);
       $('.workspace', s).innerHTML = ORIG[id];
+      // «Параметры» — компонент сайта, тот же, чья группа в его списке страниц (правило: страницы бьются с компонентом)
+      if (id === 'screen-3' && window.regCompSet) window.regCompSet(siteComp());
       var back = $('.sitehead', s);
       back.setAttribute('href', '#/' + origin);
       back.dataset.goto = origin;
@@ -6153,9 +6366,9 @@ button.tpl-cat{ cursor: pointer; }
       if (list) list.innerHTML = masterList(m);
       if ($('.chart', s)) chart(s, m);
     });
-    if (!m) return;
+    if (!m){ if (current === BILLING) billingComp(); return; }
     // у сайта из шаблона — точки, настроенные в конструкторе (в разметке — точки «Мили»)
-    if (SITE_SALES[current] && window.regSalesApply) window.regSalesApply(SITE_SALES[current]);
+    if (!keepParams && SITE_SALES[current] && window.regSalesApply) window.regSalesApply(SITE_SALES[current]);
 
     $('#screen-2 .pagecards').innerHTML = pagecards(m);
     fitPageShots();
@@ -6215,6 +6428,7 @@ button.tpl-cat{ cursor: pointer; }
     if (p && p.domain){ DOMAIN[current] = p.domain; UNPUBLISHED[current] = p.domain.state !== 'Connected'; }
     if (p && p.points) SITE_SALES[current] = p.points;
     if (p && p.pages) PAGES[current] = p.pages;
+    if (p && p.list){ PAGE_LIST[current] = p.list; rebuild(current); } // страницы — как в списке конструктора
     try { sessionStorage.setItem('reg-site', JSON.stringify({ site: current, origin: origin })); } catch (err) {}
     apply();
     location.hash = '#/' + (/^screen-\d+$/.test(e.data.screen) ? e.data.screen : 'screen-2');
@@ -6230,7 +6444,9 @@ button.tpl-cat{ cursor: pointer; }
     var from = (location.hash || '').replace(/^#\/?/, '');
     origin = from === 'screen-delivery' ? from : 'screen-1'; // реестр, из которого открыли панель «Шаблоны»
     var comp = d.kind === 'hotel' ? 'hotel' : 'restaurant';
-    EXTRA[link] = { avg: EXTRA[mili].avg, items: EXTRA[mili].items, pages: EXTRA[mili].pages };
+    if (d.params && d.params.list) PAGE_LIST[link] = d.params.list; // страницы — как в списке конструктора
+    else delete PAGE_LIST[link];
+    EXTRA[link] ={ avg: EXTRA[mili].avg, items: EXTRA[mili].items, pages: EXTRA[mili].pages };
     SITE_SALES[link] = d.points || []; // точки — как в конструкторе; не настроены — «Добавьте ваши точки продаж…»
     SITE_TPL[link] = { tpl: d.tpl, kind: d.kind, title: d.title };
     // превью страниц на «Страницах» — мини-копия шаблона с плитки (pagecards), не страницы «Мили»
