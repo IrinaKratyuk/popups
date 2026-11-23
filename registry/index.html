@@ -1412,6 +1412,21 @@ html, body{
 #screen-2 .master__comp{ margin-top: 0; }
 .master__comp > span{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .master__comp > .master__expander{ flex: none; }
+:is(#screen-2, #screen-3) .master__list{
+  --page-list-icon-size: 24px;
+  --page-list-icon-gap: 6px;
+}
+:is(#screen-2, #screen-3) .master__list > .master__item:not(#regMasterComp){
+  padding-inline-start: calc(var(--o-l) + var(--page-list-icon-size) + var(--page-list-icon-gap));
+}
+.master__comp-icon{ display: none; }
+:is(#screen-2, #screen-3) .master__comp-icon{
+  display: block;
+  flex: none;
+  width: var(--page-list-icon-size);
+  height: var(--page-list-icon-size);
+  margin-inline-end: var(--page-list-icon-gap);
+}
 
 /* Состояния пункта — фрейм «Пункты в master [09.06.26]».
    Наведение на строку: подсветка и выезжающие справа опции записи.
@@ -3778,6 +3793,7 @@ button.tpl-cat{ cursor: pointer; }
                 </li>
                 <!-- Подключённый компонент — пункт навигации: клик открывает его настройки (#regSales); название и видимость задаёт render() скрипта компонентов -->
                 <li class="master__item" data-reg-nav="comp" tabindex="0" role="button" id="regMasterComp">
+                  <img class="master__comp-icon" src="../assets/img/comp/restaurant.svg" alt="">
                   <span class="master__name ml__caption">Электронное меню</span>
                   <button class="master__expander ml__arrow ml__arrow--down" type="button" aria-label="Страницы компонента" aria-expanded="true"></button>
                   <!-- Команда по ховеру — как у точки продаж в мастере; ✕ работает как крестик блока компонента: окно подтверждения -->
@@ -4025,7 +4041,10 @@ button.tpl-cat{ cursor: pointer; }
                   var mc = document.getElementById('regMasterComp');
                   if (mc){
                     mc.hidden = !on;
-                    if (on) mc.querySelector('.master__name').textContent = COMP[on].name;
+                    if (on){
+                      mc.querySelector('.master__name').textContent = COMP[on].name;
+                      mc.querySelector('.master__comp-icon').src = '../assets/img/comp/' + on + '.svg';
+                    }
                     if (!on && mc.classList.contains('master__item--selected')) window.regNavSelect && window.regNavSelect('general');
                   }
                   // чипсы остаются: скрыта только чипса подключённого компонента, чипса другого заменяет его (после подтверждения #comp-switch)
@@ -5994,8 +6013,9 @@ button.tpl-cat{ cursor: pointer; }
 
   /* Сначала страницы сайта, затем группы в порядке компонентов. */
   var PAGE_GROUPS = { restaurant: 'Электронное меню', delivery: 'Доставка', services: 'Услуги', hotel: 'Отель' };
-  function masterGroupHead(name){
-    return '<li class="master__comp"><span class="ml__caption">' + esc(name) + '</span>' +
+  function masterGroupHead(id, name){
+    return '<li class="master__comp"><img class="master__comp-icon" src="../assets/img/comp/' + esc(id) + '.svg" alt="">' +
+      '<span class="ml__caption">' + esc(name) + '</span>' +
       '<button class="master__expander ml__arrow ml__arrow--down" type="button" aria-expanded="true" aria-label="' +
       esc('Страницы компонента «' + name + '»') + '"></button></li>';
   }
@@ -6005,7 +6025,7 @@ button.tpl-cat{ cursor: pointer; }
       m.pages.filter(function(p){ return !p.group; }).map(row).join('') +
       Object.keys(PAGE_GROUPS).map(function(id){
         var g = m.pages.filter(function(p){ return p.group === id; });
-        return g.length ? masterGroupHead(PAGE_GROUPS[id]) + g.map(row).join('') : '';
+        return g.length ? masterGroupHead(id, PAGE_GROUPS[id]) + g.map(row).join('') : '';
       }).join('');
   }
 
@@ -6252,7 +6272,7 @@ button.tpl-cat{ cursor: pointer; }
       var list = $('#' + id + ' .master:not([data-no-options]) .master__list');
       if (!list) return;
       var items = $$('.master__item', list), last = items[items.length - 1];
-      list.insertAdjacentHTML('beforeend', masterGroupHead(c.name));
+      list.insertAdjacentHTML('beforeend', masterGroupHead(c.id, c.name));
       c.pages.forEach(function(name){
         var li = last.cloneNode(true);
         li.classList.toggle('master__item--selected', false);

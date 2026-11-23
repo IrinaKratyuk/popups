@@ -92,13 +92,35 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ch-done { --btn-is: 20px; --btn-if: "cbuc-icons"; } /* галочка сохранения, как в accordion-setup и interface-prototype */
 
 /* ---------- Список страниц конструктора ---------- */
-.lsb__list { gap: 2px; }
+.lsb__list {
+  --page-list-inset: 8px;
+  --page-list-icon-size: 24px;
+  --page-list-icon-gap: 6px;
+  gap: 2px;
+}
 .lsb__list > :is(.lsb__page, .lsb__group) { height: 31px; }
+.lsb__list > .lsb__page {
+  position: relative;
+  padding-inline-start: calc(var(--page-list-inset) + var(--page-list-icon-size) + var(--page-list-icon-gap));
+}
+.lsb__page > .lsb__marker {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+}
 .lsb__list > .lsb__group {
   margin-top: 0;
   gap: 0;
+  padding-inline-start: var(--page-list-inset);
   padding-block: var(--components-list-master-master_item_padding-top_list)
     var(--components-list-master-master_item_padding-bottom_list);
+}
+.lsb__list .lsb__group-icon {
+  flex: none;
+  width: var(--page-list-icon-size);
+  height: var(--page-list-icon-size);
+  margin-inline-end: var(--page-list-icon-gap);
 }
 .lsb__group-expander { flex: none; }
 .lsb__page[hidden] { display: none; }

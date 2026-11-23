@@ -2710,6 +2710,9 @@
   // Заголовок группы компонента, под ним — его страницы.
   function lsGroupHead(id) {
     const head = el('div', 'lsb__group');
+    const icon = el('img', 'lsb__group-icon');
+    icon.src = `assets/img/comp/${id}.svg`;
+    icon.alt = '';
     const name = el('span', 'lsb__group-name ml__caption');
     name.textContent = COMP[id].name;
     const expander = el('button', 'lsb__group-expander ml__arrow');
@@ -2719,7 +2722,7 @@
     expander.setAttribute('aria-label', `Страницы компонента «${COMP[id].name}»`);
     expander.setAttribute('aria-expanded', String(expanded));
     expander.classList.toggle('ml__arrow--down', expanded);
-    head.append(name, expander);
+    head.append(icon, name, expander);
     return head;
   }
   function lsToggleGroup(expander) {
