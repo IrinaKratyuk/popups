@@ -1611,7 +1611,7 @@ html, body{
 .master__sep:hover, .master__sep:hover .master__sep-arrow{ color: #313e78; }
 .master__sep[aria-expanded="false"] .master__sep-arrow{ transform: rotate(-90deg); }
 .master__sep[aria-expanded="false"] + .master__list{ display: none; }
-.master--data .master__group .master__item{ font-weight: 400; cursor: pointer; } /* рука, как у «Общие»: пункт кликабельный */
+.master--data .master__group .master__item{ font-weight: 400; cursor: pointer; } /* рука, как у «Сайт»: пункт кликабельный */
 /* Перетаскиваемая строка — своего размера; пока тянем, текст не выделяется, курсор «рука» */
 /* Перетаскиваемая строка — белая, как в списках Saby */
 .master__item.is-drag, .sales-row.is-drag{ background: #fff; }
@@ -1625,19 +1625,23 @@ html, body{
 .master__item .sales-row__actions :is([data-sales-delete], [data-comp-off]):hover .icon{ color: #8f0e07; }
 .master--data .master__list > .master__item{ cursor: pointer; }
 .master__item[hidden]{ display: none; }
-/* Деталь «Параметров» прокручивается: мастер слева — навигация по её блокам. Полосы нет, как у .detail--scroll;
-   поля 8 px вокруг — чтобы тень карточек не обрезалась */
-.reg-nav-detail{ align-self: stretch; min-height: 0; overflow-y: auto; scrollbar-width: none; margin: 0 calc(-1 * var(--o-s)); padding: 0 var(--o-s) var(--o-s); } /* поля по бокам и снизу — под тень карточек; сверху поля нет: область прокрутки начинается под вкладками и не заезжает на них */
-.reg-nav-detail::-webkit-scrollbar{ display: none; }
+/* Верхнее поле сохраняет тень карточки без зазора под вкладками. */
+#screen-3 .tabs{ position: relative; z-index: 1; }
+.reg-nav-detail{ overflow-y: auto; scrollbar-width: none; }
+/* Прокрученная деталь рисуется только ниже вкладок, включая тень верхней карточки. */
+.reg-nav-detail.is-nav-scrolled{ clip-path: inset(var(--o-s) 0 0); }
 .reg-nav-detail > *{ flex: none; }
-/* пустой запас в конце детали — чтобы последний блок доезжал до верха по клику в мастере (высоту ставит скрипт навигации) */
-.reg-nav-room{ height: 0; pointer-events: none; }
+/* Запас высоты позволяет прокрутить последний блок до вкладок. */
+.reg-nav-component{ width: 100%; min-height: 100%; margin-top: var(--o-s); }
+.reg-nav-component:has(> [hidden]){ display: none; }
+.reg-nav-component > .params.sales-settings{ margin-top: 0; }
 /* тень кита — sticky ::before; в колонке с align-items: flex-start растягиваем её на ширину, поля детали — в --scroll-shadow-inset */
 .reg-nav-detail{ --scroll-shadow-inset: var(--o-s); }
-.reg-nav-detail::before{ align-self: stretch; }
+/* В flex-колонке отрицательный отступ тени сдвигает карточку вверх. */
+.reg-nav-detail::before{ align-self: stretch; top: var(--o-s); margin-bottom: 0; }
 /* Выбранная точка (Figma 2829:79753): фон и маркер выбранного пункта, текст обычный */
 .master--data .master__group .master__item--selected:hover{ background: var(--c-bg-secondary); }
-.addable{ margin-top: 20px; display: flex; flex-direction: column; gap: 8px; padding: var(--o-m) var(--o-xs) var(--o-l); border-radius: var(--r-s); background: var(--c-bg-active); }
+.addable{ margin-top: 16px; display: flex; flex-direction: column; gap: 8px; padding: var(--o-m) var(--o-xs) var(--o-l); border-radius: var(--r-s); background: var(--c-bg-active); }
 /* без заголовка (компонент подключён) — поля чипсов одинаковые со всех сторон: 8 px (6 + 2 у списка) */
 .addable:has(> .addable__caption[hidden]){ padding: var(--o-s) var(--o-xs); }
 .addable__caption[hidden]{ display: none; }
@@ -3752,7 +3756,7 @@ button.tpl-cat{ cursor: pointer; }
             <aside class="master master--data" data-no-options>
               <ul class="master__list">
                 <li class="master__item master__item--selected" data-reg-nav="general">
-                  <span class="master__name">Общие</span>
+                  <span class="master__name">Сайт</span>
                 </li>
                 <!-- Подключённый компонент — пункт навигации: клик прокручивает деталь к его блоку (#regSales); название и видимость задаёт render() скрипта компонентов -->
                 <li class="master__item" data-reg-nav="comp" id="regMasterComp">
@@ -3774,7 +3778,7 @@ button.tpl-cat{ cursor: pointer; }
               </section>
             </aside>
 
-            <div class="detail detail--flush reg-nav-detail scroll-shadow scroll-shadow--top" id="regDetail">
+            <div class="detail detail--scroll reg-nav-detail scroll-shadow scroll-shadow--top" id="regDetail">
               <!-- Блок «Сайт» — 1:1 из окна «Параметры сайта» конструктора (Figma 2854:63032):
                    свойства, за ними чипсы ui-kit. Разметка та же, что в ../index.html (.rs-site). -->
               <section class="params rs-site" id="regSite" aria-label="Сайт">
@@ -3808,6 +3812,7 @@ button.tpl-cat{ cursor: pointer; }
               <!-- Точки продаж компонента «Электронное меню» — 1:1 из «Параметров сайта» конструктора
                    (Figma 2547:71389, .sales-settings в ../styles.css). Точки — первые две из ROOT_SALES
                    в ../app.js; первая — основная (корона). На ховере строки — команды. -->
+              <div class="reg-nav-component">
               <section class="params sales-settings" id="regSales" aria-label="Точки продаж сайта">
                 <div class="sales-settings__head">
                   <div><img class="sales-settings__icon" src="../assets/img/comp/restaurant.svg" width="24" height="24" alt=""><button class="sales-settings__toggle params-group-toggle" type="button" aria-expanded="true"><span class="sales-settings__comp" id="regSalesTitle">Электронное меню</span><i class="icon sales-settings__toggle-arrow" aria-hidden="true">&#xE9AA;</i></button><button class="sales-settings__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE66C;</i></button></div>
@@ -3857,6 +3862,7 @@ button.tpl-cat{ cursor: pointer; }
                   </div>
                 </div>
               </section>
+              </div>
               <!-- Остальные подключённые компоненты: иконка, название, крестик (строит скрипт ниже) -->
               <div id="regCompGroups"></div>
               <!-- Чипсов «Добавить компонент» в карточке нет: подключение — блоком в мастере (#regAddable), в конструкторе — #compChipsBlock -->
@@ -3973,70 +3979,52 @@ button.tpl-cat{ cursor: pointer; }
                     }).join('') + '</div>';
                   }).join('');
                 }
-                /* Мастер — навигация по детали: «Общие» — блок «Сайт», пункт компонента — его блок (#regSales).
+                /* Мастер — навигация по детали: «Сайт» — блок #regSite, пункт компонента — его блок (#regSales).
                    Клик плавно прокручивает деталь к блоку; при прокрутке выделен пункт блока у верхнего края. */
                 var NAV = { general: 'regSite', comp: 'regSales' };
-                var navTo = null; // цель плавной прокрутки после клика в мастере
-                function dropRoom(detail){ var r = detail.querySelector(':scope > .reg-nav-room'); if (r) r.style.height = '0px'; }
-                window.regNavDropRoom = dropRoom;
                 window.regNavSelect = function(key){
                   document.querySelectorAll('#screen-3 [data-reg-nav]').forEach(function(el){
                     el.classList.toggle('master__item--selected', el.dataset.regNav === key);
                   });
                 };
+                function blockTop(detail, block){
+                  return block.getBoundingClientRect().top - detail.getBoundingClientRect().top - parseFloat(getComputedStyle(detail).paddingTop);
+                }
+                function syncNav(detail){
+                  var comp = document.getElementById('regSales');
+                  var componentTop = comp.hidden ? Infinity : blockTop(detail, comp);
+                  var scrolled = detail.scrollTop > 0;
+                  var atComponent = scrolled && componentTop <= 1;
+                  detail.classList.toggle('is-nav-scrolled', scrolled);
+                  window.regNavSelect(atComponent ? 'comp' : 'general');
+                }
+                window.regScrollToBlock = function(key){
+                  var detail = document.getElementById('regDetail');
+                  var target = document.getElementById(NAV[key]);
+                  var top = key === 'general' ? 0 : detail.scrollTop + blockTop(detail, target);
+                  detail.scrollTo({ top: top, behavior: 'smooth' });
+                  syncNav(detail);
+                };
                 document.addEventListener('click', function(e){
                   var item = e.target.closest('#screen-3 [data-reg-nav]');
                   if (!item || moved || e.target.closest('[data-comp-off]')) return;
                   var picker = document.getElementById('regSalesPicker');
-                  if (picker) picker.hidden = true; // смена пункта мастера закрывает панель «Прайсы» / выбора точек
+                  if (picker) picker.hidden = true;
+                  window.regScrollToBlock(item.dataset.regNav);
+                });
+                document.addEventListener('scroll', function(e){
+                  if (e.target.id === 'regDetail') syncNav(e.target);
+                }, true);
+                // После выбора раздела указатель остаётся над мастером. Колесо там тоже прокручивает блоки.
+                document.addEventListener('wheel', function(e){
+                  if (e.ctrlKey || !e.deltaY || !e.target.closest('#screen-3 .master--data')) return;
                   var detail = document.getElementById('regDetail');
-                  var target = document.getElementById(NAV[item.dataset.regNav]);
-                  window.regNavSelect(item.dataset.regNav);
-                  if (!detail || !target) return;
-                  // блок встаёт под верхним полем детали (8 px) — тень карточки не срезается краем прокрутки
-                  var top = Math.max(0, target.getBoundingClientRect().top - detail.getBoundingClientRect().top + detail.scrollTop - parseFloat(getComputedStyle(detail).paddingTop));
-                  // содержимого ниже блока мало — пустой запас в конце детали, чтобы блок доехал до верха за один клик
-                  // (только растёт, иначе прокрутка дёрнется; убирается, когда деталь снова у верха — см. обработчик прокрутки).
-                  // Высоту досчитываем по факту: сколько не хватило — столько и добавляем, пока не хватит
-                  var room = detail.querySelector(':scope > .reg-nav-room');
-                  if (!room){ room = document.createElement('div'); room.className = 'reg-nav-room'; room.setAttribute('aria-hidden', 'true'); detail.appendChild(room); }
-                  for (var i = 0; i < 3; i++){
-                    var max = detail.scrollHeight - detail.clientHeight;
-                    if (max >= top) break;
-                    room.style.height = (room.offsetHeight + top - max) + 'px';
-                  }
-                  top = Math.min(top, detail.scrollHeight - detail.clientHeight);
-                  if (Math.abs(detail.scrollTop - top) < 1){ navTo = null; return; } // уже на месте — прокрутки не будет
-                  // пока плавная прокрутка не доехала, выделение не пересчитывается (не мигает по пути); страховка — 1,5 с
-                  navTo = { top: top, until: Date.now() + 1500 };
-                  detail.scrollTo({ top: top, behavior: 'smooth' });
-                });
-                // колесо или палец посреди плавной прокрутки — дальше выделение следует за прокруткой пользователя
-                ['wheel', 'touchstart'].forEach(function(t){
-                  document.addEventListener(t, function(e){ if (e.target.closest && e.target.closest('#regDetail')) navTo = null; }, { passive: true, capture: true });
-                });
+                  var unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? detail.clientHeight : 1;
+                  e.preventDefault();
+                  detail.scrollBy({ top: e.deltaY * unit, behavior: 'instant' });
+                }, { passive: false });
                 var scr = document.getElementById('screen-3');
                 if (window.ScrollShadow && scr && !window.regNavShadow) window.regNavShadow = window.ScrollShadow.mount(scr);
-                document.addEventListener('scroll', function(e){
-                  var detail = e.target;
-                  if (detail.id !== 'regDetail') return;
-                  if (navTo){
-                    if (Math.abs(detail.scrollTop - navTo.top) >= 1 && Date.now() < navTo.until) return;
-                    navTo = null; // доехали: выделение уже стоит на пункте клика, не пересчитываем
-                    if (detail.scrollTop < 1) dropRoom(detail);
-                    return;
-                  }
-                  if (detail.scrollTop < 1) dropRoom(detail); // у верха запас под навигацию не нужен — убираем без скачка
-                  var comp = document.getElementById('regSales');
-                  var mc = document.getElementById('regMasterComp');
-                  var key = 'general';
-                  if (comp && !comp.hidden && mc && !mc.hidden){
-                    var atEnd = detail.scrollTop + detail.clientHeight >= detail.scrollHeight - 2;
-                    var reached = comp.getBoundingClientRect().top - detail.getBoundingClientRect().top <= 40;
-                    if (atEnd || reached) key = 'comp';
-                  }
-                  window.regNavSelect(key);
-                }, true);
               })();
               </script>
               <script>
@@ -4050,8 +4038,8 @@ button.tpl-cat{ cursor: pointer; }
                 window.regCompsBound = true;
                 var COMP = {
                   restaurant: { name: 'Электронное меню', pages: ['Меню', 'Карточка товара'], catalog: 'Меню', product: 'Карточка товара', points: 'Точки продаж', point: 'точку продаж', price: true },
-                  delivery: { name: 'Доставка', pages: ['Корзина', 'Заказы', 'Карточка заказа'], catalog: 'Корзина', product: 'Карточка заказа', points: 'Точки продаж', point: 'точку продаж', price: true },
-                  services: { name: 'Услуги', pages: ['Услуги', 'Карточка услуги', 'Специалисты', 'Карточка специалиста', 'Выбор времени записи'], catalog: 'Услуги', product: 'Карточка услуги', points: 'Филиалы', point: 'филиал', price: false },
+                  delivery: { name: 'Доставка', pages: ['Каталог', 'Корзина', 'Заказы', 'Карточка заказа'], catalog: 'Каталог', product: 'Карточка заказа', points: 'Точки продаж', point: 'точку продаж', price: true },
+                  services: { name: 'Услуги', pages: ['Каталог услуг', 'Карточка услуги', 'Специалисты', 'Карточка специалиста', 'Выбор времени записи'], catalog: 'Каталог услуг', product: 'Карточка услуги', points: 'Филиалы', point: 'филиал', price: false },
                   hotel: { name: 'Отель', pages: ['Номера', 'Карточка номера'], catalog: 'Номера', product: 'Карточка номера', points: 'Объекты размещения', point: 'объект размещения', price: false }
                 };
                 // название точек подключённого компонента — из разметки блока (после смены сайта она снова «Электронного меню»)
@@ -4063,9 +4051,6 @@ button.tpl-cat{ cursor: pointer; }
                 function render(){
                   sales.hidden = !on;
                   var mc = document.getElementById('regMasterComp');
-                  var rd = document.getElementById('regDetail');
-                  var st = rd ? rd.scrollTop : 0; // прокрутка до смены компонента — вернём её в конце
-                  if (rd && !rd.scrollTop && window.regNavDropRoom) window.regNavDropRoom(rd); // запас под прокрутку навигации — заново при следующем клике
                   if (mc){
                     mc.hidden = !on;
                     if (on) mc.querySelector('.master__name').textContent = COMP[on].name;
@@ -4094,15 +4079,7 @@ button.tpl-cat{ cursor: pointer; }
                     off.dataset.compOff = on;
                     off.setAttribute('aria-label', 'Отключить компонент «' + c.name + '»');
                   });
-                  // блок другого компонента может быть короче — деталь укорачивается, браузер сам поджимает прокрутку и карточка скачет.
-                  // Держим прокрутку на месте: не хватает высоты — добавляем пустой запас в конце (как навигация мастера)
-                  if (rd && st > 0){
-                    var room = rd.querySelector(':scope > .reg-nav-room');
-                    if (!room){ room = document.createElement('div'); room.className = 'reg-nav-room'; room.setAttribute('aria-hidden', 'true'); rd.appendChild(room); }
-                    var max = rd.scrollHeight - rd.clientHeight;
-                    if (max < st) room.style.height = (room.offsetHeight + st - max) + 'px';
-                    rd.scrollTop = st;
-                  }
+
                 }
                 // Замена компонента — с подтверждением, как в конструкторе (compSwitchAsk в ../app.js): что отключится и какие страницы удалятся
                 // окно стоит в разметке ниже этого скрипта — ищем его в момент клика
@@ -4173,7 +4150,7 @@ button.tpl-cat{ cursor: pointer; }
                   // группа на «Страницах» — страницы подключённого компонента (скрипт модели сайта ниже, reg:comp)
                   document.dispatchEvent(new CustomEvent('reg:comp', { detail: { id: on, name: on ? COMP[on].name : '', pages: on ? COMP[on].pages.slice() : [] } }));
                   // подключили чипсой — мастер сразу на пункте компонента, деталь прокручивается к его блоку (как клик по пункту)
-                  if (on) document.getElementById('regMasterComp').click();
+                  window.regScrollToBlock(on ? 'comp' : 'general');
                 }
               })();
               </script>
@@ -6003,13 +5980,13 @@ button.tpl-cat{ cursor: pointer; }
     'zerno-coffee.saby.ws': { avg: 420, items: ['Капучино', 'Матча-латте', 'Сырники со сметаной', 'Эспрессо'],
       pages: [P('Главная', '', 50, .8, 98), P('Контакты', '/contacts', 12, 0, 33), P('Меню', '/menu', 26, 1.5, 236, 'restaurant'), P('Карточка товара', '/product', 12, 2.2, 133, 'restaurant')] },
     'britva-barber.ru': { avg: 1900, items: ['Артём', 'Илья', 'Денис', 'Марк'], svc: ['стрижка', 'стрижка и борода', 'королевское бритьё', 'детская стрижка'],
-      pages: [P('Главная', '', 41, .8, 117), P('Контакты', '/contacts', 10, 0, 44), P('Услуги', '/services', 17, 1.3, 164, 'services'), P('Карточка услуги', '/service', 10, 1.6, 118, 'services'), P('Специалисты', '/specialists', 12, 1.2, 139, 'services'), P('Карточка специалиста', '/specialist', 6, 1.4, 102, 'services'), P('Выбор времени записи', '/booking', 4, 3, 87, 'services')] },
+      pages: [P('Главная', '', 41, .8, 117), P('Контакты', '/contacts', 10, 0, 44), P('Каталог услуг', '/services', 17, 1.3, 164, 'services'), P('Карточка услуги', '/service', 10, 1.6, 118, 'services'), P('Специалисты', '/specialists', 12, 1.2, 139, 'services'), P('Карточка специалиста', '/specialist', 6, 1.4, 102, 'services'), P('Выбор времени записи', '/booking', 4, 3, 87, 'services')] },
     'dentaplus.saby.ws': { avg: 6800, items: ['Ольга Ким', 'Сергей Лаптев', 'Анна Белова', 'Павел Орлов'], svc: ['лечение кариеса', 'профгигиена', 'консультация ортодонта', 'удаление зуба'],
-      pages: [P('Главная', '', 39, .8, 186), P('Цены', '/prices', 12, .6, 141), P('Услуги', '/services', 18, 1.3, 164, 'services'), P('Карточка услуги', '/service', 10, 1.6, 118, 'services'), P('Специалисты', '/specialists', 11, 1.2, 139, 'services'), P('Карточка специалиста', '/specialist', 6, 1.4, 102, 'services'), P('Выбор времени записи', '/booking', 4, 3, 87, 'services')] },
+      pages: [P('Главная', '', 39, .8, 186), P('Цены', '/prices', 12, .6, 141), P('Каталог услуг', '/services', 18, 1.3, 164, 'services'), P('Карточка услуги', '/service', 10, 1.6, 118, 'services'), P('Специалисты', '/specialists', 11, 1.2, 139, 'services'), P('Карточка специалиста', '/specialist', 6, 1.4, 102, 'services'), P('Выбор времени записи', '/booking', 4, 3, 87, 'services')] },
     'sosny-glamping.ru': { avg: 15800, items: ['Домик с видом на горы', 'Эко-шатёр у ручья'],
       pages: [P('Главная', '', 47, .8, 198), P('Как добраться', '/route', 17, 0, 83), P('Номера', '/rooms', 22, 1.6, 276, 'hotel'), P('Карточка номера', '/room', 14, 2.4, 188, 'hotel')] },
     'lozhka-food.saby.ws': { avg: 1110, items: ['Пицца пепперони', 'Паста с овощами', 'Утка с пюре', 'Обед дня'],
-      pages: [P('Главная', '', 35, .8, 104), P('Каталог', '/catalog', 33, 1.6, 211), P('Акции', '/promo', 14, .7, 76), P('Корзина', '/cart', 10, 2.4, 96, 'delivery'), P('Заказы', '/orders', 5, .6, 64, 'delivery'), P('Карточка заказа', '/order', 3, .4, 52, 'delivery')] }
+      pages: [P('Главная', '', 35, .8, 104), P('Акции', '/promo', 14, .7, 76), P('Каталог', '/catalog', 33, 1.6, 211, 'delivery'), P('Корзина', '/cart', 10, 2.4, 96, 'delivery'), P('Заказы', '/orders', 5, .6, 64, 'delivery'), P('Карточка заказа', '/order', 3, .4, 52, 'delivery')] }
   };
 
   var NAMES = ['Смирнов Алексей', 'Кузнецова Ольга Игоревна', 'Попов Дмитрий', 'Васильева Анна', 'Новиков Сергей Петрович',
