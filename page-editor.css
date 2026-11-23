@@ -1,0 +1,23 @@
+.ls-new__main { gap: 8px; }
+.ls-new__main > .pe__rows { display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; gap: 8px; }
+.ls-new__main > .pe__rows > .pe__row { display: contents; }
+.ls-new__main .ls-new__access { padding-inline: 0; }
+.ls-new__addr { min-width: 0; display: flex; align-items: baseline; }
+.ls-new__addr .input { flex: 1; }
+.ls-new__access, .open-mode__value { justify-self: start; }
+.ls-new__index { align-self: flex-start; height: 24px; display: flex; align-items: center; gap: 6px; color: var(--text-label_text-color); }
+.ls-new__index:hover span:first-child { text-decoration: underline; }
+.ls-new__seo { display: flex; flex-direction: column; gap: 4px; }
+.ls-new .pe__x { margin-left: 0; } /* в ките поправка под зазор строки, в заголовке зазора нет */
+.ls-new__seo-fields { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.ls-new__seo-fields .input { width: 100%; }
+.ls-new__seo-fields .ls-new__seo-title { display: grid; grid-template-columns: minmax(0, 1fr) max-content; align-items: center; gap: 8px; }
+.ls-new__seo-fields .chips { background-color: var(--background-contrast-pale_color, #eceef1); }
+.ls-new__description[hidden], #lsSeoDescriptionAdd[hidden] { display: none; }
+.ls-new__description .input__body, .ls-new__description .input__field { height: auto; }
+.ls-new__description textarea.input__control { display: block; min-height: 72px; height: auto; line-height: 1.4; resize: vertical; white-space: pre-wrap; }
+.rp-switch { width: 24px; height: 24px; display: flex; align-items: center; }
+.rp-switch::before { content: ""; width: 24px; height: 16px; border-radius: 8px; background: var(--border, #d2d6da) radial-gradient(circle 6px at 8px 8px, #fff 5.5px, transparent 6px); transition: background-color .12s; }
+.rp-switch:hover::before { background-color: #b8bdc3; }
+.rp-switch.is-on::before { background: var(--accent, #f6733c) radial-gradient(circle 6px at 16px 8px, #fff 5.5px, transparent 6px); }
+.rp-switch.is-on:hover::before { background-color: #e5622b; }

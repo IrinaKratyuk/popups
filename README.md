@@ -6,7 +6,7 @@
 
 - Демо (GitHub Pages): https://irinakratyuk.github.io/popups/
 - Репозиторий (публичный): https://github.com/IrinaKratyuk/popups
-- Разработка макета: https://tensor.saby.ru/opendoc.html?guid=01a10b9e-d00c-7be9-9307-91f4f08a3298&client=3
+- Разработка макета: https://online.sbis.ru/opendoc.html?guid=01a2074d-afd2-7c2b-a0bb-3d52051c939a&client=3
 - Макет: будет добавлен
 - Концептуальное описание: [docs/concept/index.md](docs/concept/index.md)
 - Компоненты интернет магазина: https://online.sbis.ru/shared/disk/3d890419-0681-49c4-a247-1dd6f27cc2e2

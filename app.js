@@ -2,6 +2,7 @@
   'use strict';
 
   // ---------- DOM ----------
+  const openModeFill = PageEditor.openModeFill;
   const $ = (sel, root = document) => root.querySelector(sel);
   const el = (tag, cls, html) => {
     const n = document.createElement(tag);
@@ -62,15 +63,12 @@
         { id: 'ext-link', title: 'Связь кнопки с окном' },
       ] },
     ],
-    links: [
-      { title: 'Задача и макеты', href: 'https://online.sbis.ru/opendoc.html?guid=01a0c7e3-54f0-7007-a2ce-242d0b23fe4e&client=3' },
-    ],
     team: [
-      { label: 'Design', name: 'Пахтусова Ирина', links: [
+      { label: 'Design', name: 'Смирнова Мария', links: [
         { title: 'Описание', href: 'https://online.sbis.ru/shared/disk/8a1d0f8c-06f5-47f1-924b-23c7f2efd143' },
       ] },
       { label: 'Develop', name: 'Сухоручкин Андрей', links: [
-        { title: 'Разработка макета', href: 'https://tensor.saby.ru/opendoc.html?guid=01a10b9e-d00c-7be9-9307-91f4f08a3298&client=3' },
+        { title: 'Разработка макета', href: 'https://online.sbis.ru/opendoc.html?guid=01a2074d-afd2-7c2b-a0bb-3d52051c939a&client=3' },
       ] },
     ],
     value: { scenario: 'sites' }, // старт — «Реестр сайтов»; конструктор под ним собирается по data-scenario (catalog-setup), см. scenApply внизу
@@ -189,11 +187,10 @@
     const pages = {};
     for (const kind of Object.keys(pagePicks)) pages[kind] = lsPage(pagePicks[kind])?.name ?? null;
     // список страниц — набор и порядок как в левой панели: свои страницы сайта, потом группы компонентов
-    const list = lsOrdered().map((p) => ({ name: p.name, group: lsGroupOf(p) ?? null }));
+    const list = lsOrdered().map((p) => ({ id: p.id, name: p.name, group: lsGroupOf(p) ?? null, addr: p.addr, access: p.access, noindex: p.noindex, mode: p.mode, seo: p.seo, seoDescription: p.seoDescription }));
     return { domain, points, pages, list };
   }
 
-  $('.df-team__name', frame.panel).after(el('span', 'df-team__name', 'Смирнова Мария')); // второй дизайнер в той же плашке: team в demo-frame знает одно имя на строку
 
   function stageRect(node) {
     const s = stage.getBoundingClientRect();
@@ -1662,70 +1659,6 @@
     root.querySelectorAll('[data-pos-row]').forEach((row) => { row.hidden = true; });
   }
 
-  // Свойство «Способ отображения» — одно на все окна: настройки страницы и настройки кнопки. Разметка в <template id="openMode">, поведение здесь. Окно задаёт только список вариантов, отдельных копий заводить нельзя.
-  // Меню без заголовка: первый пункт на уровне строки, текст пунктов — под значением. Клик мимо и Esc закрывают только меню.
-  function openModeFill(root, modes, { onOpen, onChange, title, options } = {}) {
-    const parts = $('#openMode').content.cloneNode(true);
-    const row = $('.open-mode', parts);
-    const button = $('.open-mode__value', parts);
-    const menu = $('.open-mode__menu', parts);
-    // Подпись и список можно задать свои: вид и поведение остаются общими
-    if (title) {
-      $('.pe__label', row).textContent = title;
-      menu.setAttribute('aria-label', title);
-    }
-    const sample = $('[data-mode]', menu);
-    const list = sample.parentNode;
-    menu.querySelectorAll('[data-mode]').forEach((item) => { if (options || !modes.includes(item.dataset.mode)) item.remove(); });
-    for (const [mode, text] of options ?? []) {
-      const item = sample.cloneNode(true);
-      item.dataset.mode = mode;
-      $('.mw-menu__text', item).textContent = text;
-      list.append(item);
-    }
-    $('[data-open-mode]', root).replaceWith(row);
-    root.append(menu);
-    const close = () => {
-      menu.hidden = true;
-      button.setAttribute('aria-expanded', 'false');
-    };
-    const control = {
-      row,
-      button,
-      close,
-      get isOpen() { return !menu.hidden; },
-      get mode() { return menu.querySelector('.is-selected').dataset.mode; },
-      set(mode) {
-        menu.querySelectorAll('[data-mode]').forEach((item) => {
-          const on = item.dataset.mode === mode;
-          item.classList.toggle('is-selected', on);
-          item.setAttribute('aria-checked', on);
-          if (on) button.textContent = item.textContent;
-        });
-      },
-    };
-    button.addEventListener('click', () => {
-      if (!menu.hidden) { close(); return; }
-      onOpen?.();
-      const r = stageRect(button);
-      const box = stageRect(root);
-      menu.hidden = false;
-      menu.style.left = Math.round(r.left - box.left - 30) + 'px';
-      menu.style.top = Math.round(r.top + r.height / 2 - box.top - 22) + 'px';
-      button.setAttribute('aria-expanded', 'true');
-    });
-    menu.addEventListener('click', (e) => {
-      const item = e.target.closest('[data-mode]');
-      if (item) {
-        control.set(item.dataset.mode);
-        onChange?.(item.dataset.mode);
-      }
-      if (item || e.target.closest('.mw-menu__close')) close();
-    });
-    document.addEventListener('mousedown', (e) => { if (!menu.contains(e.target) && !button.contains(e.target)) close(); });
-    return control;
-  }
-
   // Настройки кнопки: в сценарии открыты сразу, закрываются и снова открываются шестерёнкой тулбара. Стоят слева от кнопки, чтобы она и тулбар оставались видны.
   // Правки сразу видны, галочка сохраняет, крестик и Esc возвращают прежние, сброс — исходные. «Действие» в тулбаре — только с ховером.
   const BTN_DEFAULTS = () => ({ text: stage.dataset.scenario.startsWith('ext-') ? 'Обратная связь' : 'Товар', pageId: null, mode: 'window', pos: 'screen', cell: POS_CENTER });
@@ -2724,6 +2657,7 @@
   let lsMenuPage = null; // страница, у которой открыто меню «⋮»
   let lsEditing = null;  // { page, row, input } — идёт переименование
   let lsCloseTimer = 0;
+  const lsCollapsedGroups = new Set();
 
   const lsPage = (id) => lsPages.find((p) => p.id === id);
   const lsVisibleCount = () => lsPages.filter((p) => !p.off).length;
@@ -2765,25 +2699,46 @@
       '<button class="btn btn--link btn--style-label btn--size-m btn--icon" type="button" data-cmd="more" aria-label="Ещё"><span class="btn__icon">&#xE9D9;</span></button>' +
       '</span>');
     row.dataset.id = p.id;
+    const group = lsGroupOf(p);
+    if (group) {
+      row.dataset.pageGroup = group;
+      row.hidden = lsCollapsedGroups.has(group);
+    }
     row.querySelector('.lsb__page-name').textContent = p.name;
     return row;
   }
-  // Группа компонента (.lsb__group из ui-kit): иконка компонента и его название, под ним — его страницы
+  // Заголовок группы компонента, под ним — его страницы.
   function lsGroupHead(id) {
     const head = el('div', 'lsb__group');
-    const icon = el('img', 'lsb__group-icon');
-    icon.src = `assets/img/comp/${id}.svg`;
-    icon.width = icon.height = 24;
-    icon.alt = '';
-    const name = el('span', 'lsb__group-name');
+    const name = el('span', 'lsb__group-name ml__caption');
     name.textContent = COMP[id].name;
-    head.append(icon, name);
+    const expander = el('button', 'lsb__group-expander ml__arrow');
+    const expanded = !lsCollapsedGroups.has(id);
+    expander.type = 'button';
+    expander.dataset.groupExpander = id;
+    expander.setAttribute('aria-label', `Страницы компонента «${COMP[id].name}»`);
+    expander.setAttribute('aria-expanded', String(expanded));
+    expander.classList.toggle('ml__arrow--down', expanded);
+    head.append(name, expander);
     return head;
+  }
+  function lsToggleGroup(expander) {
+    const id = expander.dataset.groupExpander;
+    const expanded = lsCollapsedGroups.delete(id);
+    if (!expanded) lsCollapsedGroups.add(id);
+    lsCloseMenu();
+    if (lsEditing) {
+      lsFinishRename(true);
+      lsList.querySelector(`[data-group-expander="${id}"]`).focus();
+      return;
+    }
+    expander.setAttribute('aria-expanded', String(expanded));
+    expander.classList.toggle('ml__arrow--down', expanded);
+    lsList.querySelectorAll(`[data-page-group="${id}"]`).forEach((row) => { row.hidden = !expanded; });
   }
   function lsRender() {
     const [own, ...groups] = lsGroups();
     const shown = groups.filter((g) => g.length);
-    lsList.classList.toggle('has-groups', shown.length > 0);
     lsList.replaceChildren(...own.map(lsRow), ...shown.flatMap((g) => [lsGroupHead(lsGroupOf(g[0])), ...g.map(lsRow)]));
     lsRenderLines();
     siteShowPage(lsPage(lsActive));
@@ -2919,6 +2874,8 @@
   lsToggle.addEventListener('click', () => lsSetCollapsed(!lsRoot.classList.contains('lsb--hover')));
 
   lsList.addEventListener('click', (e) => {
+    const expander = e.target.closest('[data-group-expander]');
+    if (expander) { lsToggleGroup(expander); return; }
     const row = e.target.closest('.lsb__page');
     if (!row) return;
     const id = Number(row.dataset.id);
@@ -2939,6 +2896,7 @@
     if (row && !e.target.closest('[data-cmd], [data-save]') && !row.classList.contains('is-edit')) lsStartRename(Number(row.dataset.id));
   });
   lsList.addEventListener('keydown', (e) => {
+    if (e.target.closest('[data-group-expander]')) return;
     if (e.key === 'Enter') lsFinishRename(true);
     else if (e.key === 'Escape') lsFinishRename(false);
   });
@@ -2960,6 +2918,7 @@
   // «Сохранить» и Enter в названии добавляют страницу и открывают её, крестик и Esc закрывают без добавления. Клик мимо окно не закрывает.
   // Это же окно — настройки страницы: открывается из меню «⋮» с её значениями, «Сохранить» применяет их к ней.
   const lsNew = $('#lsNew');
+  const { lsOpenMode, lsAccess, lsAccessMenu, lsAccessSelect, lsAccessClose } = PageEditor.mount(lsNew);
   peDraggable(lsNew);
   const lsNewName = $('#lsNewName');
   const lsNewAddr = $('#lsNewAddr');
@@ -3055,40 +3014,6 @@
     lsNewClose();
   }
 
-  const lsOpenMode = openModeFill(lsNew, ['page', 'window', 'both'], { onOpen: () => lsAccessClose() });
-
-  // Доступ — настройка прототипа; здесь задаётся состояние страницы, серверной авторизации нет.
-  const lsAccess = $('#lsAccess');
-  const lsAccessMenu = $('#lsAccessMenu');
-  function lsAccessSelect(item) {
-    lsAccessMenu.querySelectorAll('[data-access]').forEach((option) => {
-      const selected = option === item;
-      option.classList.toggle('is-selected', selected);
-      option.setAttribute('aria-checked', selected);
-    });
-    lsAccess.textContent = item.textContent;
-  }
-  function lsAccessClose() {
-    lsAccessMenu.hidden = true;
-    lsAccess.setAttribute('aria-expanded', 'false');
-  }
-  lsAccess.addEventListener('click', () => {
-    if (!lsAccessMenu.hidden) { lsAccessClose(); return; }
-    lsOpenMode.close();
-    const r = stageRect(lsAccess);
-    const box = stageRect(lsNew);
-    lsAccessMenu.style.left = Math.round(r.left - box.left - 30) + 'px';
-    lsAccessMenu.style.top = Math.round(r.top + r.height / 2 - box.top - 22) + 'px';
-    lsAccessMenu.hidden = false;
-    lsAccess.setAttribute('aria-expanded', 'true');
-  });
-  lsAccessMenu.addEventListener('click', (e) => {
-    const item = e.target.closest('[data-access]');
-    if (item) lsAccessSelect(item);
-    if (item || e.target.closest('#lsAccessClose')) { lsAccessClose(); lsAccess.focus(); }
-  });
-  document.addEventListener('mousedown', (e) => { if (!e.target.closest('#lsAccessMenu, #lsAccess')) lsAccessClose(); });
-
   function lsDescriptionShow(show) {
     lsSeoDescriptionField.hidden = !show;
     lsSeoDescriptionAdd.hidden = show;
@@ -3118,10 +3043,6 @@
   lsNewName.addEventListener('focus', () => { if (lsNewName.value === LS_NEW_NAME) lsNewName.select(); });
   lsNewName.addEventListener('keydown', (e) => { if (e.key === 'Enter') lsNewSave(); });
   lsNewSeoTitle.addEventListener('input', () => { lsNewSeoEdited = true; });
-  lsNewIndex.addEventListener('click', () => {
-    const on = lsNewIndex.querySelector('.rp-switch').classList.toggle('is-on');
-    lsNewIndex.setAttribute('aria-checked', on);
-  });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (!lsAccessMenu.hidden) { lsAccessClose(); lsAccess.focus(); }
@@ -3137,7 +3058,7 @@
   // Клик мимо закрывает меню и сохраняет название.
   stage.addEventListener('mousedown', (e) => {
     if (lsMenuPage != null && !e.target.closest('#lsMenu, [data-cmd="more"]')) lsCloseMenu();
-    if (lsEditing && !lsEditing.row.contains(e.target)) lsFinishRename(true);
+    if (lsEditing && !lsEditing.row.contains(e.target) && !e.target.closest('[data-group-expander]')) lsFinishRename(true);
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lsCloseMenu(); });
 
@@ -3276,6 +3197,7 @@
     } else {
       // Сценарии компонентов начинаются с одной главной: страницы приходят с компонентами
       const isComp = ['catalog-add', 'catalog-setup'].includes(scenario);
+      lsCollapsedGroups.clear();
       lsPages = isComp ? lsInitialPages().filter((p) => p.home) : lsInitialPages();
       lsActive = isComp ? 1 : 2;
       lsCardPageId = null;

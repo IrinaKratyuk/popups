@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/left-sidebar/left-sidebar.css">
   <!-- шрифт сайта в макете -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap">
+  <link rel="stylesheet" href="page-editor.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="domain.css">
   <!-- arrow-button появился в ките позже 1.13.0 (стрелки «Стиль» и шевроны цветов в окне QR-кода) -->
@@ -28,8 +29,8 @@
   <link rel="stylesheet" href="qr.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/switch/switch.css">
   <link rel="stylesheet" href="comp-catalog.css">
-  <!-- master-list — мастер групп расширенного магазина; его CSS берёт только токены, которые есть и в 1.13.0 -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/master-list/master-list.css">
+  <!-- master-list — мастер групп расширенного магазина и экспандеры групп страниц -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.21.0/components/master-list/master-list.css">
 </head>
 <body>
   <div class="viewport">
@@ -661,45 +662,6 @@
             <button type="button" class="pe__close" aria-label="Закрыть">&#xe66c;</button>
           </div>
         </header>
-        <div class="pe__body">
-          <div class="pe__card ls-new__main">
-            <div class="pe__rows">
-              <div class="pe__row">
-                <span class="pe__label">Адрес</span>
-                <span class="ls-new__addr">/<label class="input input--size-l"><span class="input__body"><span class="input__field"><input class="input__control" id="lsNewAddr" aria-label="Адрес страницы"></span></span></label></span>
-              </div>
-              <div class="pe__row">
-                <span class="pe__label">Доступ</span>
-                <button class="btn btn--link btn--style-link btn--size-m ls-new__access" type="button" id="lsAccess" aria-haspopup="menu" aria-controls="lsAccessMenu" aria-expanded="false">Без авторизации</button>
-              </div>
-            </div>
-            <button class="ls-new__index" type="button" id="lsNewIndex" role="switch" aria-checked="false"><span>Запретить поисковую индексацию</span><span class="rp-switch"></span></button>
-          </div>
-          <div class="pe__card">
-            <div class="pe__rows">
-              <div data-open-mode></div>
-            </div>
-          </div>
-          <div class="pe__card">
-            <div class="ls-new__seo" data-pe-row="seo" hidden>
-              <div class="pe__title">SEO<button type="button" class="pe__x" data-pe-clear aria-label="Убрать SEO">&#xe66c;</button></div>
-              <div class="ls-new__seo-fields">
-                <label class="input input--label-top"><span class="input__label">Заголовок</span><span class="input__body"><span class="input__field"><input class="input__control" id="lsNewSeoTitle"></span></span></label>
-                <button class="btn btn--filled btn--style-pale btn--size-m" id="lsSeoDescriptionAdd" type="button" aria-expanded="false" aria-controls="lsSeoDescriptionField">Описание</button>
-                <label class="input input--label-top ls-new__description" id="lsSeoDescriptionField" hidden><span class="input__label">Описание</span><span class="input__body"><span class="input__field"><textarea class="input__control" id="lsNewSeoDescription" aria-label="SEO-описание" rows="3"></textarea></span></span></label>
-              </div>
-            </div>
-          </div>
-          <div class="pe__chips"><button type="button" class="chips chips--optional" data-pe-chip="seo"><span class="chips__caption">SEO</span></button></div>
-        </div>
-        <div class="mw-menu ls-mode ls-access" id="lsAccessMenu" role="menu" aria-label="Доступ" hidden>
-          <div class="mw-menu__list">
-            <div class="ls-mode__head">Доступ</div>
-            <button class="mw-menu__item ls-mode__item is-selected" type="button" role="menuitemradio" aria-checked="true" data-access="public"><span class="ls-mode__toggle"></span><span class="mw-menu__text">Без авторизации</span></button>
-            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-access="authorized"><span class="ls-mode__toggle"></span><span class="mw-menu__text">Только авторизованным</span></button>
-          </div>
-          <button class="mw-menu__close" type="button" id="lsAccessClose" aria-label="Закрыть меню доступа"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
-        </div>
       </section>
 
       <!-- Настройки окна: .pe из ui-kit, свойства — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2489:24408. Редакторы, крестики и чипсы — PropertyEditor -->
@@ -782,21 +744,6 @@
         </div>
       </section>
 
-      <!-- Свойство «Способ отображения» — одно на все окна: настройки страницы и настройки кнопки. Правится только здесь, в openModeFill и стилях .open-mode*. Окно задаёт только список вариантов. Меню — Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2406:20980 -->
-      <template id="openMode">
-              <div class="pe__row open-mode">
-                <span class="pe__label">Способ отображения</span>
-                <button class="btn btn--link btn--style-link btn--size-m open-mode__value" type="button" aria-haspopup="menu" aria-expanded="false"></button>
-              </div>
-        <div class="mw-menu ls-mode open-mode__menu" role="menu" aria-label="Способ отображения" hidden>
-          <div class="mw-menu__list">
-            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="window"><span class="ls-mode__toggle"></span><span class="mw-menu__text">В новом окне</span></button>
-            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="page"><span class="ls-mode__toggle"></span><span class="mw-menu__text">На странице</span></button>
-            <button class="mw-menu__item ls-mode__item" type="button" role="menuitemradio" aria-checked="false" data-mode="both"><span class="ls-mode__toggle"></span><span class="mw-menu__text">В окне и на странице</span></button>
-          </div>
-          <button class="mw-menu__close" type="button" aria-label="Закрыть"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
-        </div>
-      </template>
       <!-- Редактор положения — один на все окна: настройки окна и настройки кнопки. Правится только здесь, в posEditor* и стилях .pos* -->
       <template id="posEditor">
               <!-- Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2489:25551. Переключатель «От элемента / На экране» пока убран, режим всегда «На экране» -->
@@ -1024,6 +971,7 @@
   <script src="domain.js"></script>
   <script src="qr.js"></script>
   <script src="comp-catalog.js"></script>
+  <script src="page-editor.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

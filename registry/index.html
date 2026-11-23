@@ -10,9 +10,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@400;500&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/tokens.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.21.0/components/master-list/master-list.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/chips/chips.css">
 <!-- .pe — окно «Сайт» у «Подключить» (вид — как #salesPopup конструктора); стили только под .pe, шрифты cbuc-icons/cbuc-icons24 — ниже -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.css">
+<link rel="stylesheet" href="../page-editor.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/input/input.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/button/button.css">
+<script src="../page-editor.js"></script>
 <link rel="stylesheet" href="../domain.css">
 <!-- Строка «QR-код» и окно «Табличка с QR-кодом» — общие ../qr.css и ../qr.js, как в конструкторе; стрелки — arrow-button кита -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/arrow-button/arrow-button.css">
@@ -1368,13 +1373,16 @@ html, body{
   margin: 0;
   padding: 0;
 }
+#screen-2 .master__comp,
 .master__item{
-  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--o-2xs);
   min-height: 31px;
   padding: 4px var(--o-m) 3px var(--o-l);
+}
+.master__item{
+  position: relative;
+  gap: var(--o-2xs);
   border-radius: var(--r-xs);
   background: var(--c-bg-unaccented);
   font-size: var(--fs-l);
@@ -1399,10 +1407,11 @@ html, body{
   background: var(--c-marker);
 }
 .master__name{ flex: 1 0 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* Группа страниц компонента на «Страницах» — как .lsb__group в списке страниц конструктора: иконка 24 и название жирным,
-   без ховера и клика; страницы группы — без дополнительного отступа, вровень с остальными */
-.master__comp{ display: flex; align-items: center; gap: var(--o-xs); min-height: 31px; margin-top: var(--o-xs); padding: 0 var(--o-m) 0 var(--o-l); font-size: var(--fs-l); font-weight: 600; color: var(--c-text); cursor: default; }
+/* Заголовок группы страниц компонента с экспандером, как на вкладке «Параметры». */
+.master__comp{ display: flex; align-items: center; min-height: 31px; margin-top: var(--o-xs); padding: 0 var(--o-m) 0 var(--o-l); font-size: var(--fs-l); font-weight: 600; color: var(--c-text); }
+#screen-2 .master__comp{ margin-top: 0; }
 .master__comp > span{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.master__comp > .master__expander{ flex: none; }
 
 /* Состояния пункта — фрейм «Пункты в master [09.06.26]».
    Наведение на строку: подсветка и выезжающие справа опции записи.
@@ -1625,20 +1634,47 @@ html, body{
 .master__item .sales-row__actions :is([data-sales-delete], [data-comp-off]):hover .icon{ color: #8f0e07; }
 .master--data .master__list > .master__item{ cursor: pointer; }
 .master__item[hidden]{ display: none; }
+#regMasterComp{ gap: 0; font-weight: 600; }
+#regMasterComp .master__name{ flex: 0 1 auto; }
+.master__expander{ padding: 0; border: 0; background: transparent; cursor: pointer; }
+.master__expander[hidden]{ display: none; }
 /* Верхнее поле сохраняет тень карточки без зазора под вкладками. */
 #screen-3 .tabs{ position: relative; z-index: 1; }
 .reg-nav-detail{ overflow-y: auto; scrollbar-width: none; }
-/* Прокрученная деталь рисуется только ниже вкладок, включая тень верхней карточки. */
-.reg-nav-detail.is-nav-scrolled{ clip-path: inset(var(--o-s) 0 0); }
+#regDetail [hidden]{ display: none; }
 .reg-nav-detail > *{ flex: none; }
-/* Запас высоты позволяет прокрутить последний блок до вкладок. */
-.reg-nav-component{ width: 100%; min-height: 100%; margin-top: var(--o-s); }
-.reg-nav-component:has(> [hidden]){ display: none; }
+.reg-nav-component{ width: 100%; }
 .reg-nav-component > .params.sales-settings{ margin-top: 0; }
+/* Встроенная форма использует редакторы окна внутри одной карточки. */
+.reg-page{ position: relative; }
+.reg-page .pe__body{ display: grid; gap: 8px; padding: 0; }
+.reg-page .pe__card, .reg-page .pe__rows{ display: grid; gap: 8px; }
+.reg-page .pe__card{ padding: 0; background: transparent; box-shadow: none; }
+.reg-page .ls-new__main > .pe__rows{ grid-auto-rows: 24px; }
+.reg-page .pe__row:has(> .ls-new__addr) > *{ align-self: baseline; }
+.reg-page .ls-new__addr{ align-items: baseline; }
+.reg-page .ls-new__addr :is(.input, .input__body, .input__field){
+  display: flex;
+  align-items: baseline;
+}
+.reg-page .ls-new__addr :is(.input, .input__body, .input__field, .input__control),
+.reg-page .ls-new__access{ height: 24px; }
+.reg-page .ls-new__addr .input__control{
+  display: block;
+  padding-block: 0;
+  font: 400 var(--fs-m)/var(--lh-m) var(--font-ui);
+  letter-spacing: inherit;
+}
+.reg-page .ls-new__main :is(.pe__label, .ls-new__addr){ line-height: var(--lh-m); }
+.reg-page .pe__label{ color: var(--c-label, #8991a9); }
+.reg-page .ls-access{ width: 280px; }
+.reg-page .ls-new__index,
+.reg-page .pe__card:has(.open-mode, .ls-new__seo),
+.reg-page .rs-site__chips{ display: none; }
 /* тень кита — sticky ::before; в колонке с align-items: flex-start растягиваем её на ширину, поля детали — в --scroll-shadow-inset */
 .reg-nav-detail{ --scroll-shadow-inset: var(--o-s); }
-/* В flex-колонке отрицательный отступ тени сдвигает карточку вверх. */
-.reg-nav-detail::before{ align-self: stretch; top: var(--o-s); margin-bottom: 0; }
+/* Компенсацию высоты тени задаёт scroll-shadow. */
+.reg-nav-detail::before{ align-self: stretch; top: var(--o-s); }
 /* Выбранная точка (Figma 2829:79753): фон и маркер выбранного пункта, текст обычный */
 .master--data .master__group .master__item--selected:hover{ background: var(--c-bg-secondary); }
 .addable{ margin-top: 16px; display: flex; flex-direction: column; gap: 8px; padding: var(--o-m) var(--o-xs) var(--o-l); border-radius: var(--r-s); background: var(--c-bg-active); }
@@ -1691,12 +1727,12 @@ html, body{
 .reg-card__buy{ display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 12px; background: rgba(51,51,51,.05); border-radius: 39px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; color: #cc3d00; }
 .reg-card__cart{ font-family: var(--font-icon-m); font-size: 24px; line-height: 1; padding-bottom: 4px; color: #f47843; }
 .reg-cat__title{ position: absolute; z-index: 1; left: 0; top: 0; width: 100%; padding: 12px; font-size: 20px; font-weight: 600; line-height: normal; letter-spacing: -.282px; color: #fff; }
-.master--data{ padding-top: 4px; } /* текст пункта — по базовой с заголовком «Сайт»: 8 (поле блока) = 4 (поле мастера) + 4 (поле пункта), строки по 24 px */
+.master--data{ overflow-y: auto; padding-top: 4px; } /* текст пункта — по базовой с заголовком «Сайт»: 8 (поле блока) = 4 (поле мастера) + 4 (поле пункта), строки по 24 px */
 
 
 /* Блок «Сайт» — как .rs-site в styles.css конструктора (Figma 2854:63032).
    Карточка — .params: фон, скругление и тень как у «Источников». */
-/* Плашка прижата к вкладкам; поля — как в конструкторе: 8 сверху и снизу, 12 по бокам (заголовок «Сайт» вернулся — доп. отступ сверху не нужен) */
+/* У карточек сайта и страницы одинаковые вертикальные поля. */
 .rs-site{ padding: var(--o-s) var(--o-m); }
 /* Заголовки плашек «Сайт» и компонентов («Электронное меню» и др.) — 16 полужирный, токены ui-kit tokens.css */
 .rs-site__title{ display: flex; align-items: center; gap: 8px; height: 24px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
@@ -1745,19 +1781,6 @@ html, body{
 .sales-settings__sub--points:has(+ .sales-rows .sales-empty) .sales-settings__price,
 .sales-settings__sub--points:has(+ .sales-rows:empty) .sales-settings__price{ visibility: hidden; }
 
-/* Экспандер «Точек продаж»: клик по заголовку сворачивает и разворачивает список точек (как группа в мастере реестра, .master__sep).
-   Шеврон 16 справа от заголовка, свёрнуто — повёрнут влево; пустой список («Добавьте ваши…») сворачивается так же */
-.sales-settings__toggle{ display: flex; align-items: center; gap: 4px; padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: inherit; cursor: pointer; }
-.sales-settings__toggle-arrow{ font-size: 16px; color: #8991a9; transition: transform .15s; }
-.sales-settings__toggle:hover .sales-settings__toggle-arrow{ color: #313e78; }
-.sales-settings__toggle[aria-expanded="false"] .sales-settings__toggle-arrow{ transform: rotate(-90deg); }
-/* Экспандеры групп «Сайт» и компонента: заголовок с шевроном (как у «Точек продаж») сворачивает всю плашку — остаётся только заголовок */
-.rs-site:has(> .rs-site__title > .params-group-toggle[aria-expanded="false"]) > :not(.rs-site__title),
-.sales-settings:has(> .sales-settings__head .params-group-toggle[aria-expanded="false"]) > :not(.sales-settings__head){ display: none; }
-.sales-settings:has(> .sales-settings__head .params-group-toggle[aria-expanded="false"]) > .sales-settings__head{ margin-bottom: 0; }
-
-.sales-settings__sub--points:has(.sales-settings__toggle[aria-expanded="false"]) + .sales-rows{ display: none; }
-.sales-settings__sub--points:has(.sales-settings__toggle[aria-expanded="false"]) .sales-settings__price{ visibility: hidden; }
 /* Меню выбора страницы — .mw-menu.ls-mode из ../styles.css */
 .mw-menu[hidden]{ display: none; }
 .mw-menu{ position: absolute; z-index: 30; }
@@ -1871,16 +1894,13 @@ html, body{
 .connect-popup__hint{ margin: 8px 0 0; font-size: 16px; line-height: 1.4; color: #8991a9; }
 .connect-popup__hint a{ color: #2562aa; text-decoration: none; }
 .connect-popup__hint a:hover{ text-decoration: underline; }
-/* Крестик «Отключить компонент» и чипсы «Добавить компонент» — как .sales-settings__remove и .rs-comps в styles.css конструктора.
+/* Чипсы «Добавить компонент» — как .rs-comps в styles.css конструктора.
    Компоненты взаимоисключающие: чипсы — у всех, кроме подключённого; чипса другого компонента заменяет подключённый (с подтверждением #comp-switch).
    Пока компонент подключён, заголовка «Добавить компонент» нет. */
 .sales-settings[hidden], .rs-comps[hidden], .rs-comps .chips[hidden], .rs-comps__title[hidden]{ display: none; }
 .comp-group .sales-settings__head{ margin-bottom: 0; }
 #regCompGroups{ align-self: stretch; width: 100%; } /* обёртка карточек компонентов — на всю ширину, как «Сайт» */
 #regCompGroups:empty{ display: none; }
-.sales-settings__remove{ position: absolute; top: 8px; right: 8px; font-weight: 400; letter-spacing: normal; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; border: 0; background: transparent; cursor: pointer; }
-.sales-settings__remove .icon{ font-size: 16px; color: #ccc; }        /* icon/unaccented_icon-color */
-.sales-settings__remove:hover .icon{ color: #999; }                  /* icon/unaccented_hover_icon-color */
 .rs-comps{ width: 100%; padding: 12px 8px; }
 .rs-comps__title{ padding: 0 0 8px 16px; font-size: 12px; line-height: normal; letter-spacing: .24px; text-transform: uppercase; color: #8991a9; }
 .rs-comps__chips{ display: flex; flex-wrap: wrap; gap: 8px; }
@@ -3750,17 +3770,16 @@ button.tpl-cat{ cursor: pointer; }
         <main class="workspace">
           <div class="content">
 
-            <!-- Состав — как в окне «Параметры сайта» конструктора: блок «Сайт»,
-                 подключённые компоненты (COMP в app.js); чипсы «Добавить компонент» — только в мастере (#regAddable).
-                 Разделы, а не страницы сайта: опций записи у пунктов нет. -->
+            <!-- Страницы сайта и раскрытая группа компонента заполняются из списка страниц карточки. -->
             <aside class="master master--data" data-no-options>
               <ul class="master__list">
-                <li class="master__item master__item--selected" data-reg-nav="general">
+                <li class="master__item master__item--selected" data-reg-nav="general" tabindex="0" role="button">
                   <span class="master__name">Сайт</span>
                 </li>
-                <!-- Подключённый компонент — пункт навигации: клик прокручивает деталь к его блоку (#regSales); название и видимость задаёт render() скрипта компонентов -->
-                <li class="master__item" data-reg-nav="comp" id="regMasterComp">
-                  <span class="master__name">Электронное меню</span>
+                <!-- Подключённый компонент — пункт навигации: клик открывает его настройки (#regSales); название и видимость задаёт render() скрипта компонентов -->
+                <li class="master__item" data-reg-nav="comp" tabindex="0" role="button" id="regMasterComp">
+                  <span class="master__name ml__caption">Электронное меню</span>
+                  <button class="master__expander ml__arrow ml__arrow--down" type="button" aria-label="Страницы компонента" aria-expanded="true"></button>
                   <!-- Команда по ховеру — как у точки продаж в мастере; ✕ работает как крестик блока компонента: окно подтверждения -->
                   <span class="sales-row__actions"><button type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE65C;</i></button></span>
                 </li>
@@ -3782,7 +3801,6 @@ button.tpl-cat{ cursor: pointer; }
               <!-- Блок «Сайт» — 1:1 из окна «Параметры сайта» конструктора (Figma 2854:63032):
                    свойства, за ними чипсы ui-kit. Разметка та же, что в ../index.html (.rs-site). -->
               <section class="params rs-site" id="regSite" aria-label="Сайт">
-                <div class="rs-site__title"><img class="sales-settings__icon" src="../assets/img/comp/site.svg" width="24" height="24" alt=""><button class="sales-settings__toggle params-group-toggle" type="button" aria-expanded="true">Сайт<i class="icon sales-settings__toggle-arrow" aria-hidden="true">&#xE9AA;</i></button></div>
                 <div class="rs-site__props">
                   <span class="rs-site__label">Адрес сайта</span>
                   <!-- Редактор домена (Figma DRIJUUCPNarHomYAJ5eMqn, 14:1683). Состояние Default; дальше — скрипт «Редактор домена» -->
@@ -3809,15 +3827,13 @@ button.tpl-cat{ cursor: pointer; }
                 </div>
               </section>
 
+              <section class="params rs-site reg-page" id="regPage" aria-label="Настройки страницы" hidden>
+              </section>
               <!-- Точки продаж компонента «Электронное меню» — 1:1 из «Параметров сайта» конструктора
                    (Figma 2547:71389, .sales-settings в ../styles.css). Точки — первые две из ROOT_SALES
                    в ../app.js; первая — основная (корона). На ховере строки — команды. -->
               <div class="reg-nav-component">
               <section class="params sales-settings" id="regSales" aria-label="Точки продаж сайта">
-                <div class="sales-settings__head">
-                  <div><img class="sales-settings__icon" src="../assets/img/comp/restaurant.svg" width="24" height="24" alt=""><button class="sales-settings__toggle params-group-toggle" type="button" aria-expanded="true"><span class="sales-settings__comp" id="regSalesTitle">Электронное меню</span><i class="icon sales-settings__toggle-arrow" aria-hidden="true">&#xE9AA;</i></button><button class="sales-settings__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE66C;</i></button></div>
-                  <span></span>
-                </div>
                 <!-- Страница каталога и страница товара — как в «Параметрах сайта» конструктора (../index.html, .comp-props):
                      ссылка со страницей, клик открывает меню #regPagePickMenu. Выбраны «Меню» и «Карточка товара», как в сценарии «В конструкторе» -->
                 <div class="rs-site__props comp-props">
@@ -3979,50 +3995,6 @@ button.tpl-cat{ cursor: pointer; }
                     }).join('') + '</div>';
                   }).join('');
                 }
-                /* Мастер — навигация по детали: «Сайт» — блок #regSite, пункт компонента — его блок (#regSales).
-                   Клик плавно прокручивает деталь к блоку; при прокрутке выделен пункт блока у верхнего края. */
-                var NAV = { general: 'regSite', comp: 'regSales' };
-                window.regNavSelect = function(key){
-                  document.querySelectorAll('#screen-3 [data-reg-nav]').forEach(function(el){
-                    el.classList.toggle('master__item--selected', el.dataset.regNav === key);
-                  });
-                };
-                function blockTop(detail, block){
-                  return block.getBoundingClientRect().top - detail.getBoundingClientRect().top - parseFloat(getComputedStyle(detail).paddingTop);
-                }
-                function syncNav(detail){
-                  var comp = document.getElementById('regSales');
-                  var componentTop = comp.hidden ? Infinity : blockTop(detail, comp);
-                  var scrolled = detail.scrollTop > 0;
-                  var atComponent = scrolled && componentTop <= 1;
-                  detail.classList.toggle('is-nav-scrolled', scrolled);
-                  window.regNavSelect(atComponent ? 'comp' : 'general');
-                }
-                window.regScrollToBlock = function(key){
-                  var detail = document.getElementById('regDetail');
-                  var target = document.getElementById(NAV[key]);
-                  var top = key === 'general' ? 0 : detail.scrollTop + blockTop(detail, target);
-                  detail.scrollTo({ top: top, behavior: 'smooth' });
-                  syncNav(detail);
-                };
-                document.addEventListener('click', function(e){
-                  var item = e.target.closest('#screen-3 [data-reg-nav]');
-                  if (!item || moved || e.target.closest('[data-comp-off]')) return;
-                  var picker = document.getElementById('regSalesPicker');
-                  if (picker) picker.hidden = true;
-                  window.regScrollToBlock(item.dataset.regNav);
-                });
-                document.addEventListener('scroll', function(e){
-                  if (e.target.id === 'regDetail') syncNav(e.target);
-                }, true);
-                // После выбора раздела указатель остаётся над мастером. Колесо там тоже прокручивает блоки.
-                document.addEventListener('wheel', function(e){
-                  if (e.ctrlKey || !e.deltaY || !e.target.closest('#screen-3 .master--data')) return;
-                  var detail = document.getElementById('regDetail');
-                  var unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? detail.clientHeight : 1;
-                  e.preventDefault();
-                  detail.scrollBy({ top: e.deltaY * unit, behavior: 'instant' });
-                }, { passive: false });
                 var scr = document.getElementById('screen-3');
                 if (window.ScrollShadow && scr && !window.regNavShadow) window.regNavShadow = window.ScrollShadow.mount(scr);
               })();
@@ -4064,10 +4036,6 @@ button.tpl-cat{ cursor: pointer; }
                   sales.setAttribute('aria-label', c.name);
                   sales.classList.toggle('sales-settings--no-price', !c.price);
                   if (c.pages) sales.dataset.compPages = c.pages.join('|'); else delete sales.dataset.compPages;
-                  sales.querySelector('.sales-settings__icon').src = '../assets/img/comp/' + on + '.svg';
-                  document.getElementById('regSalesTitle').textContent = c.name;
-                  // компонент сменился — свёрнутая плашка раскрывается (экспандер заголовка), как в ../app.js
-                  if (sales.dataset.comp !== on) sales.querySelector('.params-group-toggle').setAttribute('aria-expanded', 'true');
                   sales.dataset.comp = on;
                   document.getElementById('regSalesPoints').textContent = c.points;
                   if (window.QrCode) window.QrCode.sync(document.getElementById('regCompQr'), on); // табличка QR — по типу сайта (../qr.js)
@@ -4092,7 +4060,7 @@ button.tpl-cat{ cursor: pointer; }
                   askId = id;
                   document.getElementById('comp-switch').hidden = false;
                 }
-                // Отключение — крестик блока компонента и ✕ пункта в мастере: то же окно, как compRemoveAsk в ../app.js
+                // Отключение из мастера: то же окно, как compRemoveAsk в ../app.js
                 function offAsk(cur){
                   var pages = COMP[cur].pages.map(function(n){ return '«' + n + '»'; });
                   var list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages[pages.length - 1] : pages[0];
@@ -4113,7 +4081,7 @@ button.tpl-cat{ cursor: pointer; }
                   var add = e.target.closest('[data-comp-add]');
                   if (!off && !add) return;
                   sales = document.getElementById('regSales');
-                  var cur = sales.hidden ? null : sales.querySelector('.sales-settings__remove').dataset.compOff;
+                  var cur = sales.hidden ? null : document.querySelector('#regMasterComp [data-comp-off]').dataset.compOff;
                   if (add && cur && cur !== add.dataset.compAdd){ switchAsk(cur, add.dataset.compAdd); return; }
                   if (off){ if (cur) offAsk(cur); return; }
                   connect(add.dataset.compAdd);
@@ -4149,8 +4117,8 @@ button.tpl-cat{ cursor: pointer; }
                   render();
                   // группа на «Страницах» — страницы подключённого компонента (скрипт модели сайта ниже, reg:comp)
                   document.dispatchEvent(new CustomEvent('reg:comp', { detail: { id: on, name: on ? COMP[on].name : '', pages: on ? COMP[on].pages.slice() : [] } }));
-                  // подключили чипсой — мастер сразу на пункте компонента, деталь прокручивается к его блоку (как клик по пункту)
-                  window.regScrollToBlock(on ? 'comp' : 'general');
+                  // подключили чипсой — мастер сразу на пункте компонента, в детали открыты его настройки
+                  window.regNavSelect(on ? 'comp' : 'general');
                 }
               })();
               </script>
@@ -4161,13 +4129,6 @@ button.tpl-cat{ cursor: pointer; }
               (function(){
                 if (window.regSalesDeleteBound) return;
                 window.regSalesDeleteBound = true;
-                // Экспандеры «Сайт» и «Электронное меню» (вся группа) — как в «Параметрах сайта» конструктора (../app.js)
-                document.addEventListener('click', function(e){
-                  var t = e.target.closest('.sales-settings__toggle');
-                  if (!t) return;
-                  var open = t.getAttribute('aria-expanded') === 'false';
-                  t.setAttribute('aria-expanded', String(open));
-                });
                 // Точек не осталось: в мастере группа скрыта, в блоке — «Добавьте ваши точки продаж…» (как salesRenderRows в ../app.js)
                 window.regSalesEmpty = function(){
                   var rows = document.querySelector('#regSales .sales-rows');
@@ -6031,16 +5992,20 @@ button.tpl-cat{ cursor: pointer; }
   /* --- разметка экранов ------------------------------------------------------ */
   var OPTIONS = document.getElementById('tpl-master-options').innerHTML;
 
-  /* Группы компонентов — как в списке страниц конструктора: сначала страницы сайта, потом группы в порядке компонентов;
-     заголовок группы — иконка компонента и название, без ховера и клика */
+  /* Сначала страницы сайта, затем группы в порядке компонентов. */
   var PAGE_GROUPS = { restaurant: 'Электронное меню', delivery: 'Доставка', services: 'Услуги', hotel: 'Отель' };
+  function masterGroupHead(name){
+    return '<li class="master__comp"><span class="ml__caption">' + esc(name) + '</span>' +
+      '<button class="master__expander ml__arrow ml__arrow--down" type="button" aria-expanded="true" aria-label="' +
+      esc('Страницы компонента «' + name + '»') + '"></button></li>';
+  }
   function masterList(m){
     function row(p){ return '<li class="master__item' + (p.group ? ' master__item--grouped' : '') + '"><span class="master__name">' + esc(p.name) + '</span><span class="master__count">' + fmt(p.users) + '</span>' + OPTIONS + '</li>'; }
     return '<li class="master__item master__item--selected"><span class="master__name">Всего</span><span class="master__count">' + fmt(m.U) + '</span>' + OPTIONS + '</li>' +
       m.pages.filter(function(p){ return !p.group; }).map(row).join('') +
       Object.keys(PAGE_GROUPS).map(function(id){
         var g = m.pages.filter(function(p){ return p.group === id; });
-        return g.length ? '<li class="master__comp" aria-hidden="true"><span>' + PAGE_GROUPS[id] + '</span></li>' + g.map(row).join('') : '';
+        return g.length ? masterGroupHead(PAGE_GROUPS[id]) + g.map(row).join('') : '';
       }).join('');
   }
 
@@ -6287,7 +6252,7 @@ button.tpl-cat{ cursor: pointer; }
       var list = $('#' + id + ' .master:not([data-no-options]) .master__list');
       if (!list) return;
       var items = $$('.master__item', list), last = items[items.length - 1];
-      list.insertAdjacentHTML('beforeend', '<li class="master__comp" aria-hidden="true"><span>' + esc(c.name) + '</span></li>');
+      list.insertAdjacentHTML('beforeend', masterGroupHead(c.name));
       c.pages.forEach(function(name){
         var li = last.cloneNode(true);
         li.classList.toggle('master__item--selected', false);
@@ -6309,6 +6274,148 @@ button.tpl-cat{ cursor: pointer; }
     var rows = $('#screen-4 .grid__rows');
     if (rows) rows.insertAdjacentHTML('beforeend', c.pages.map(function(name){ return gridRow(name, zero); }).join(''));
   }
+
+  var propertyEdits = new Map();
+  var parameterPages = [];
+  var selectedProperties;
+  function renderParameterList(model){
+    var folder = $('#regMasterComp');
+    var list = folder.parentNode;
+    $$('[data-page-index]', list).forEach(function(item){ item.remove(); });
+    var pages = model ? model.pages : $$('#screen-2 .pagecard').map(function(card){
+      return { name: $('.pagecard__title', card).firstChild.textContent.trim(), link: $('.pagecard__link', card).textContent };
+    });
+    var comp = COMP_OF[current];
+    var expander = $('.master__expander', folder);
+    expander.setAttribute('aria-expanded', 'true');
+    expander.classList.add('ml__arrow--down');
+    expander.hidden = true;
+    parameterPages = pages.map(function(page, i){
+      var group = model ? page.group : comp && comp.pages.includes(page.name) && comp.id;
+      var source = (PAGE_LIST[current] || []).find(function(p){ return p.name === page.name && (p.group || null) === (group || null); });
+      var key = JSON.stringify([current, group, source && source.id != null ? source.id : page.name]);
+      if (!propertyEdits.has(key)) propertyEdits.set(key, {});
+      var row = document.createElement('li');
+      row.className = 'master__item';
+      row.tabIndex = 0;
+      row.setAttribute('role', 'button');
+      row.dataset.regNav = 'page-' + i;
+      row.dataset.pageIndex = i;
+      if (group){
+        row.dataset.componentPage = '';
+        expander.hidden = false;
+      }
+      var label = document.createElement('span');
+      label.className = 'master__name';
+      label.textContent = page.name;
+      row.appendChild(label);
+      list.insertBefore(row, group ? null : folder);
+      return { values: Object.assign({ addr: page.link.slice(current.length).replace(/^\//, ''), access: 'public', mode: 'page' }, source, propertyEdits.get(key)),
+        edits: propertyEdits.get(key), name: page.name, placeholder: source ? slug(page.name).replace(/-/g, '_') : '' };
+    });
+  }
+  var editorRoot, editor;
+  function showSeo(open){
+    $('#regPage [data-pe-chip]').hidden = open;
+    $('#regPage [data-pe-row]').hidden = !open;
+  }
+  function descriptionVisible(show){
+    $('#lsSeoDescriptionAdd').hidden = show;
+    $('#lsSeoDescriptionAdd').setAttribute('aria-expanded', show);
+    $('#lsSeoDescriptionField').hidden = !show;
+  }
+  window.regNavSelect = function(key){
+    var rows = $$('#screen-3 [data-reg-nav]');
+    var row = rows.find(function(item){ return item.dataset.regNav === key; });
+    if (!row || row.hidden) return;
+    rows.forEach(function(item){
+      item.classList.toggle('master__item--selected', item === row);
+      item.setAttribute('aria-pressed', item === row);
+    });
+    selectedProperties = parameterPages[row.dataset.pageIndex];
+    $('#regSite').hidden = key !== 'general';
+    $('#regDetail .reg-nav-component').hidden = key !== 'comp';
+    $('#regPage').hidden = !selectedProperties;
+    $('#regDetail').scrollTop = 0;
+    if (editor) { editor.lsOpenMode.close(); editor.lsAccessClose(); }
+    if (!selectedProperties) return;
+    var root = $('#regPage');
+    if (root !== editorRoot){
+      editorRoot = root;
+      editor = PageEditor.mount(root, setProperty);
+      var chip = $('[data-pe-chip]', root);
+      chip.className = 'chips chips--size-m';
+      chip.parentNode.className = 'rs-site__chips';
+    }
+    var values = selectedProperties.values;
+    $('#lsNewAddr').placeholder = selectedProperties.placeholder;
+    $('#lsNewAddr').value = values.addr ?? '';
+    editor.lsOpenMode.set(values.mode ?? 'page');
+    editor.lsAccessSelect($('[data-access="' + (values.access === 'authorized' ? 'authorized' : 'public') + '"]', root));
+    $('#lsNewIndex').setAttribute('aria-checked', !!values.noindex);
+    $('#lsNewIndex .rp-switch').classList.toggle('is-on', !!values.noindex);
+    $('#lsNewSeoTitle').value = values.seo ?? '';
+    $('#lsNewSeoDescription').value = values.seoDescription ?? '';
+    descriptionVisible(values.seoDescription != null);
+    showSeo(selectedProperties.values.seo != null);
+  };
+  function setProperty(key, value){
+    selectedProperties.values[key] = selectedProperties.edits[key] = value;
+  }
+  document.addEventListener('input', function(e){
+    var key = { lsNewAddr: 'addr', lsNewSeoTitle: 'seo', lsNewSeoDescription: 'seoDescription' }[e.target.id];
+    if (key && e.target.closest('#regPage') && selectedProperties) setProperty(key, e.target.value);
+  });
+  document.addEventListener('click', function(e){
+    var row = e.target.closest('[data-reg-nav]');
+    var expander = e.target.closest('.master__expander');
+    if (expander){
+      var expand = expander.getAttribute('aria-expanded') === 'false';
+      expander.setAttribute('aria-expanded', String(expand));
+      expander.classList.toggle('ml__arrow--down', expand);
+      if (row){
+        $$('[data-component-page]', row.parentNode).forEach(function(page){
+          if (!expand && page.classList.contains('master__item--selected')) window.regNavSelect('comp');
+          page.hidden = !expand;
+        });
+      } else {
+        for (var page = expander.parentNode.nextElementSibling; page && page.classList.contains('master__item--grouped'); page = page.nextElementSibling){
+          page.hidden = !expand;
+        }
+      }
+    } else if (row && !e.target.closest('[data-comp-off]')) window.regNavSelect(row.dataset.regNav);
+    if (e.target.closest('#regPage [data-pe-chip]')){
+      setProperty('seo', selectedProperties.name);
+      $('#lsNewSeoTitle').value = selectedProperties.name;
+      showSeo(true);
+      $('#lsNewSeoTitle').focus();
+    }
+    if (e.target.closest('#lsSeoDescriptionAdd')){
+      descriptionVisible(true);
+      setProperty('seoDescription', '');
+      $('#lsNewSeoDescription').focus();
+    }
+    if (e.target.closest('#regPage [data-pe-clear]')){
+      descriptionVisible(false);
+      setProperty('seo', null);
+      setProperty('seoDescription', null);
+      $('#lsNewSeoDescription').value = '';
+      showSeo(false);
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && editor && editorRoot.contains(document.activeElement)){
+      if (editor.lsOpenMode.isOpen) { editor.lsOpenMode.close(); editor.lsOpenMode.button.focus(); }
+      if (!editor.lsAccessMenu.hidden) { editor.lsAccessClose(); editor.lsAccess.focus(); }
+    }
+    if (e.target.matches('[data-reg-nav]') && (e.key === 'Enter' || e.key === ' ')){
+      e.preventDefault();
+      e.target.click();
+    }
+  });
+  window.addEventListener('hashchange', function(){
+    if (location.hash === '#/screen-3') window.regNavSelect('general');
+  });
 
   // keepParams — смена компонента в «Параметрах»: их разметку не трогаем (там уже новый компонент), остальные вкладки — заново
   function apply(keepParams){
@@ -6343,7 +6450,10 @@ button.tpl-cat{ cursor: pointer; }
       if (list) list.innerHTML = masterList(m);
       if ($('.chart', s)) chart(s, m);
     });
-    if (!m){ if (current === BILLING) billingComp(); return; }
+    if (!m && current === BILLING) billingComp();
+    renderParameterList(m);
+    window.regNavSelect('general');
+    if (!m) return;
     // у сайта из шаблона — точки, настроенные в конструкторе (в разметке — точки «Мили»)
     if (!keepParams && SITE_SALES[current] && window.regSalesApply) window.regSalesApply(SITE_SALES[current]);
 
