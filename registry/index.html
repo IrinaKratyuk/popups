@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.css">
 <link rel="stylesheet" href="../page-editor.css">
 <link rel="stylesheet" href="../component-list.css">
+<script src="../extra-components.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/input/input.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/button/button.css">
 <script src="../page-editor.js"></script>
@@ -1374,7 +1375,6 @@ html, body{
   margin: 0;
   padding: 0;
 }
-#screen-2 .master__comp,
 .master__item{
   display: flex;
   align-items: center;
@@ -1410,18 +1410,17 @@ html, body{
 .master__name{ flex: 1 0 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Заголовок группы страниц компонента с экспандером, как на вкладке «Параметры». */
 .master__comp{ display: flex; align-items: center; min-height: 31px; margin-top: var(--o-xs); padding: 0 var(--o-m) 0 var(--o-l); font-size: var(--fs-l); font-weight: 600; color: var(--c-text); }
-#screen-2 .master__comp{ margin-top: 0; }
 .master__comp > span{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .master__comp > .master__expander{ flex: none; }
-:is(#screen-2, #screen-3) .master__list{
+#screen-3 .master__list{
   --page-list-icon-size: 24px;
   --page-list-icon-gap: 6px;
 }
-:is(#screen-2, #screen-3) .master__list:has(> :is(.master__comp, #regMasterComp):not([hidden])) > .master__item:not(#regMasterComp){
+#screen-3 .master__list:has(> :is(#regMasterComp:not([hidden]), .extra-component-row)) > .master__item:not(#regMasterComp, .extra-component-row){
   padding-inline-start: calc(var(--o-l) + var(--page-list-icon-size) + var(--page-list-icon-gap));
 }
 .master__comp-icon{ display: none; }
-:is(#screen-2, #screen-3) .master__comp-icon{
+#screen-3 .master__comp-icon{
   display: block;
   flex: none;
   width: var(--page-list-icon-size);
@@ -1652,6 +1651,7 @@ html, body{
 .master__item[hidden]{ display: none; }
 #regMasterComp{ gap: 0; font-weight: 600; }
 #regMasterComp .master__name{ flex: 0 1 auto; }
+#screen-3 .master__list > .extra-component-row{ gap: 0; font-weight: 600; cursor: default; }
 .master__expander{ padding: 0; border: 0; background: transparent; cursor: pointer; }
 .master__expander[hidden]{ display: none; }
 /* Верхнее поле сохраняет тень карточки без зазора под вкладками. */
@@ -4085,7 +4085,15 @@ button.tpl-cat{ cursor: pointer; }
                 // Замена компонента — с подтверждением, как в конструкторе (compSwitchAsk в ../app.js): что отключится и какие страницы удалятся
                 // окно стоит в разметке ниже этого скрипта — ищем его в момент клика
                 var askId = null;
+                var extraRemove = null;
+                window.regExtraOffAsk = function(name, remove){
+                  document.getElementById('comp-switch-msg').textContent = 'Отключить компонент «' + name + '»?';
+                  document.getElementById('comp-switch-details').textContent = '';
+                  extraRemove = remove;
+                  document.getElementById('comp-switch').hidden = false;
+                };
                 function switchAsk(cur, id){
+                  extraRemove = null;
                   var pages = COMP[cur].pages.map(function(n){ return '«' + n + '»'; });
                   var list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages[pages.length - 1] : pages[0];
                   document.getElementById('comp-switch-msg').textContent = 'Сменить тип сайта на «' + COMP[id].name + '»?';
@@ -4095,6 +4103,7 @@ button.tpl-cat{ cursor: pointer; }
                 }
                 // Отключение из мастера: то же окно, как compRemoveAsk в ../app.js
                 function offAsk(cur){
+                  extraRemove = null;
                   var pages = COMP[cur].pages.map(function(n){ return '«' + n + '»'; });
                   var list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages[pages.length - 1] : pages[0];
                   document.getElementById('comp-switch-msg').textContent = 'Отключить компонент «' + COMP[cur].name + '»?';
@@ -4106,7 +4115,11 @@ button.tpl-cat{ cursor: pointer; }
                   var b = e.target.closest('[data-comp-switch-answer]');
                   if (!b) return;
                   document.getElementById('comp-switch').hidden = true;
-                  if (b.dataset.compSwitchAnswer === 'yes') connect(askId);
+                  if (b.dataset.compSwitchAnswer === 'yes'){
+                    if (extraRemove) extraRemove();
+                    else connect(askId);
+                  }
+                  extraRemove = null;
                 });
                 document.addEventListener('keydown', function(e){ if (e.key === 'Escape') document.getElementById('comp-switch').hidden = true; });
                 document.addEventListener('click', function(e){
@@ -6033,9 +6046,11 @@ button.tpl-cat{ cursor: pointer; }
       '<button class="master__expander ml__arrow ml__arrow--down" type="button" aria-expanded="true" aria-label="' +
       esc('Страницы компонента «' + name + '»') + '"></button></li>';
   }
-  function masterList(m){
-    function row(p){ return '<li class="master__item' + (p.group ? ' master__item--grouped' : '') + '"><span class="master__name">' + esc(p.name) + '</span><span class="master__count">' + fmt(p.users) + '</span>' + OPTIONS + '</li>'; }
-    return '<li class="master__item master__item--selected"><span class="master__name">Сайт</span><span class="master__count">' + fmt(m.U) + '</span>' + OPTIONS + '</li>' +
+  function masterList(m, showGroups){
+    function row(p){ return '<li class="master__item' + (showGroups && p.group ? ' master__item--grouped' : '') + '"><span class="master__name">' + esc(p.name) + '</span><span class="master__count">' + fmt(p.users) + '</span>' + OPTIONS + '</li>'; }
+    var site = '<li class="master__item master__item--selected"><span class="master__name">Сайт</span><span class="master__count">' + fmt(m.U) + '</span>' + OPTIONS + '</li>';
+    if (!showGroups) return site + m.pages.map(row).join('');
+    return site +
       m.pages.filter(function(p){ return !p.group; }).map(row).join('') +
       Object.keys(PAGE_GROUPS).map(function(id){
         var g = m.pages.filter(function(p){ return p.group === id; });
@@ -6276,8 +6291,8 @@ button.tpl-cat{ cursor: pointer; }
     var g = m && m.pages.filter(function(p){ return p.group; })[0];
     return g ? g.group : null;
   }
-  /* Биллинг свёрстан вручную (макет Axure): страницы подключённого компонента дописываются его группой в список страниц
-     каждой вкладки, карточками на «Страницах» и строками «Статистики» — с нулями, страницы новые */
+  /* Биллинг свёрстан вручную (макет Axure): страницы подключённого компонента дописываются в списки,
+     карточками на «Страницах» и строками «Статистики» — с нулевыми показателями. Группа есть в «Статистике». */
   function billingComp(){
     var c = COMP_OF[BILLING];
     if (!c) return;
@@ -6286,11 +6301,12 @@ button.tpl-cat{ cursor: pointer; }
       var list = $('#' + id + ' .master:not([data-no-options]) .master__list');
       if (!list) return;
       var items = $$('.master__item', list), last = items[items.length - 1];
-      list.insertAdjacentHTML('beforeend', masterGroupHead(c.id, c.name));
+      var showGroups = id === 'screen-4';
+      if (showGroups) list.insertAdjacentHTML('beforeend', masterGroupHead(c.id, c.name));
       c.pages.forEach(function(name){
         var li = last.cloneNode(true);
         li.classList.toggle('master__item--selected', false);
-        li.classList.add('master__item--grouped');
+        li.classList.toggle('master__item--grouped', showGroups);
         $('.master__name', li).textContent = name;
         var n = $('.master__count', li); if (n) n.textContent = '0';
         list.appendChild(li);
@@ -6312,6 +6328,17 @@ button.tpl-cat{ cursor: pointer; }
   var propertyEdits = new Map();
   var parameterPages = [];
   var selectedProperties;
+  function renderExtraComponents(){
+    var site = current;
+    ExtraComponents.renderRows($('#regMasterComp').parentNode, site, {
+      tag: 'li', rowClass: 'master__item', iconClass: 'master__comp-icon',
+      nameClass: 'master__name ml__caption', remove: function(id, name){
+        window.regExtraOffAsk(name, function(){ ExtraComponents.set(site, id, false); });
+      }
+    });
+    ExtraComponents.renderChips($('#regAddable .addable__list'), site);
+  }
+  window.addEventListener('extra-components-change', renderExtraComponents);
   function renderParameterList(model){
     var folder = $('#regMasterComp');
     var list = folder.parentNode;
@@ -6523,11 +6550,12 @@ button.tpl-cat{ cursor: pointer; }
       var ttl = $('.sitehead__title', s); ttl.textContent = m.title; ttl.title = m.title;
       $$('.summary__num', s).forEach(function(n, i){ n.textContent = fmt(i ? m.back : m.fresh); });
       var list = $('.master:not([data-no-options]) .master__list', s);
-      if (list) list.innerHTML = masterList(m);
+      if (list) list.innerHTML = masterList(m, id === 'screen-4');
       if ($('.chart', s)) chart(s, m);
     });
     if (!m && current === BILLING) billingComp();
     renderParameterList(m);
+    renderExtraComponents();
     window.regNavSelect('general');
     if (!m) return;
     // у сайта из шаблона — точки, настроенные в конструкторе (в разметке — точки «Мили»)

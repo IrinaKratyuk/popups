@@ -159,6 +159,7 @@
       salesSaved = (tplSites[e.data.site] || []).map((row) => ({ ...row }));
       salesRender();
       tplSite = e.data.site;
+      renderExtraComponents();
     } else if (e.data?.type === 'reg:open-constructor') frame.select('catalog-setup');
     else if (e.data?.type === 'reg:open-template') tplOpen(e.data.tpl, e.data.name, e.data.kind);
   });
@@ -387,12 +388,58 @@
       return chip;
     });
     // Подключённый компонент один — его настройки в общем блоке #salesSettings (заполняет и скрывает salesRender)
-    $('#compGroups').replaceChildren($('#salesSettings'));
     $('#compChips').replaceChildren(...chips);
-    $('#compChipsBlock').hidden = !chips.length;
     $('#lsComponentChips').replaceChildren(...chips.map((chip) => chip.cloneNode(true)));
-    $('#lsComponents').hidden = !chips.length;
+    renderExtraComponentChips();
+    renderExtraComponentGroups();
   }
+  const extraComponentSite = () => tplSite || (stage.classList.contains('is-tpl') ? 'draft:' + stage.dataset.tpl : 'mili-yar.saby.ws');
+  function removeExtraComponent(id, name) {
+    const site = extraComponentSite();
+    confirmAsk({ message: `Отключить компонент «${name}»?`, answers: [['yes', 'Да', true], ['cancel', 'Отмена']] },
+      (answer) => { if (answer === 'yes') ExtraComponents.set(site, id, false); });
+  }
+  function renderExtraComponentChips() {
+    const site = extraComponentSite();
+    ExtraComponents.renderChips($('#compChips'), site);
+    ExtraComponents.renderChips($('#lsComponentChips'), site);
+    $('#compChipsBlock').hidden = !$('#compChips').childElementCount;
+    $('#lsComponents').hidden = !$('#lsComponentChips').childElementCount;
+  }
+  function renderExtraComponentGroups() {
+    const groups = $('#compGroups');
+    const extraGroups = ExtraComponents.active(extraComponentSite()).map(({ id, name, icon }) => {
+      const group = el('section', 'sales-settings comp-group extra-component-group',
+        '<div class="sales-settings__head"><div>' +
+        '<img class="sales-settings__icon" width="24" height="24" alt="">' +
+        '<span class="sales-settings__comp"></span>' +
+        '<button class="sales-settings__remove" type="button"><span class="ico" aria-hidden="true">&#xE66C;</span></button>' +
+        '</div></div>');
+      group.setAttribute('aria-label', name);
+      group.querySelector('img').src = icon;
+      group.querySelector('.sales-settings__comp').textContent = name;
+      const remove = group.querySelector('button');
+      remove.setAttribute('aria-label', `Отключить компонент «${name}»`);
+      remove.addEventListener('click', () => removeExtraComponent(id, name));
+      return group;
+    });
+    const sales = $('#salesSettings');
+    if (sales.parentNode !== groups) groups.prepend(sales);
+    groups.querySelectorAll(':scope > .extra-component-group').forEach((group) => group.remove());
+    groups.append(...extraGroups);
+  }
+  function renderExtraComponentRows() {
+    ExtraComponents.renderRows($('#lsList'), extraComponentSite(), {
+      tag: 'div', rowClass: 'lsb__group', iconClass: 'lsb__group-icon',
+      nameClass: 'lsb__group-name ml__caption', remove: removeExtraComponent
+    });
+  }
+  function renderExtraComponents() {
+    renderExtraComponentChips();
+    renderExtraComponentGroups();
+    renderExtraComponentRows();
+  }
+  window.addEventListener('extra-components-change', renderExtraComponents);
   const salesCopy = (rows) => rows.map((row) => ({ ...row, prices: row.prices?.slice() }));
   const salesCurrent = () => salesDraft || salesSaved;
 
@@ -2755,6 +2802,7 @@
     const [own, ...groups] = lsGroups();
     const shown = groups.filter((g) => g.length);
     lsList.replaceChildren(...own.map(lsRow), ...shown.flatMap((g) => [lsGroupHead(lsGroupOf(g[0])), ...g.map(lsRow)]));
+    renderExtraComponentRows();
     lsRenderLines();
     siteShowPage(lsPage(lsActive));
     siteProductSyncShop();
@@ -3439,6 +3487,7 @@
     const dom = $('.rs-site [data-domain]');
     const name = $('.dom__text', dom).value.trim() || pubRand();
     const link = dom.classList.contains('dom--saby') ? name + $('.dom__zone', dom).textContent : name;
+    ExtraComponents.copy(extraComponentSite(), link);
     const params = regParams(publish);
     if (params.domain) params.domain.value = name;
     // точки продаж — те, что настроены в «Параметрах сайта» конструктора (в шаблоне их нет)
