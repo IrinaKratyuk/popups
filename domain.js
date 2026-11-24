@@ -135,6 +135,10 @@
   }
   // состояние редактора для передачи в реестр (../app.js: выход из конструктора на карточку сайта)
   window.domainState = function(el){ var s = st(el); return { type: s.type, value: s.value, state: s.state }; };
+  window.domainSetState = function(el, value){
+    Object.assign(st(el), value, { auto: false });
+    render(el);
+  };
   function suggest(){
     document.querySelectorAll('[data-domain][data-site-address]').forEach(function(el){
       if (!states.has(el)) connected(el);

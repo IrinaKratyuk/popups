@@ -257,15 +257,43 @@
   // «Настройки» открывают окно поверх контента: вписанная панель скрыта, но её место остаётся за ней, поэтому контент не прыгает. Закрытие окна возвращает панель.
   // «Структура», «Стиль», «Шрифт» пока только с ховером: их панелей в макете нет.
   const rsParams = $('#rsParams');
+  const rsParamsFrame = $('#rsParamsFrame');
+  function sendConstructorParams() {
+    rsParamsFrame.contentWindow.postMessage({
+      type: 'reg:embed-params',
+      site: extraComponentSite(),
+      params: regParams(false),
+    }, '*');
+  }
+  rsParamsFrame.addEventListener('load', () => {
+    if (rsParamsOpen && rsParamsFrame.hasAttribute('src')) sendConstructorParams();
+  });
+  window.addEventListener('message', (e) => {
+    if (e.source !== rsParamsFrame.contentWindow || e.data?.site !== extraComponentSite()) return;
+    if (e.data.type === 'reg:embed-close') rsCloseParams();
+    if (e.data.type !== 'reg:embed-change') return;
+    const { domain, components, pages } = e.data;
+    if (domain) window.domainSetState($('.rs-site [data-domain]'), domain);
+    if (components) restoreComponents(components);
+    for (const { id, name, group, edits } of pages ?? []) {
+      const page = lsPage(id) ?? lsPages.find((item) => item.name === name && (lsGroupOf(item) ?? null) === (group ?? null));
+      if (page) Object.assign(page, edits);
+    }
+    if (pages?.length) lsRender();
+  });
   let rsPanel = 'shop';    // открытая панель или null
   let rsParamsOpen = false;
 
   function rsRender() {
     stage.classList.toggle('is-rs-closed', !rsPanel);
     for (const name of ['shop', 'data']) $('#rs-' + name).hidden = name !== rsPanel || rsParamsOpen;
+    const wasOpen = !rsParams.hidden;
     rsParams.hidden = !rsParamsOpen;
-    if (rsParamsOpen) pagePickRender(); // при старте окно закрыто: до объявления pagePick* не доходим
-    else { // меню выбора страницы закрывается вместе с окном; через DOM — rsRender зовётся и до объявления pagePick*
+    if (rsParamsOpen && !wasOpen) {
+      if (rsParamsFrame.hasAttribute('src')) sendConstructorParams();
+      else rsParamsFrame.src = rsParamsFrame.dataset.src;
+    }
+    if (!rsParamsOpen) { // меню выбора страницы закрывается вместе с окном; через DOM — rsRender зовётся и до объявления pagePick*
       $('#pagePickMenu').hidden = true;
       for (const b of document.querySelectorAll('[data-page-pick]')) b.setAttribute('aria-expanded', 'false');
     }

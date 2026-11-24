@@ -1,0 +1,271 @@
+diff --git a/index.html b/index.html
+--- a/index.html
++++ b/index.html
+@@ -405,8 +405,7 @@
+           <span class="rs-params__title">Параметры</span>
+           <button class="btn btn--ghost btn--style-label btn--icon" type="button" id="rsParamsClose" aria-label="Закрыть"><img src="assets/img/close-tool.svg" width="28" height="28" alt=""></button>
+         </div>
+-        <iframe class="rs-params__frame" id="rsParamsFrame" title="Настройки сайта" data-src="registry/index.html?embed=params#/screen-3"></iframe>
+-        <div class="rs-params__body" hidden>
++        <div class="rs-params__body">
+           <!-- Блок «Сайт»: Figma 2854:63032. Сначала свойства, за ними SEO-чипсы. Редакторы — в одной колонке, в 8px от самой длинной метки -->
+           <section class="rs-site" aria-label="Сайт">
+             <div class="rs-site__title"><img class="sales-settings__icon" src="assets/img/comp/site.svg" width="24" height="24" alt=""><button class="sales-settings__toggle params-group-toggle" type="button" aria-expanded="true">Сайт<span class="ico sales-settings__toggle-arrow" aria-hidden="true">&#xE9AA;</span></button></div>
+diff --git a/styles.css b/styles.css
+--- a/styles.css
++++ b/styles.css
+@@ -615,8 +615,7 @@
+ 
+ /* окно «Параметры сайта» */
+ .rs-params { position: absolute; z-index: 15; left: 946px; top: 44px; bottom: 8px; width: 600px; display: flex; flex-direction: column; background: #f8f8f8; border-radius: 8px; box-shadow: var(--win-shadow); }
+-.rs-params[hidden], .rs-params__body[hidden] { display: none; }
+-.rs-params__frame { flex: 1; min-height: 0; width: 100%; border: 0; }
++.rs-params[hidden] { display: none; }
+ .rs-params__head { flex: none; height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 16px; }
+ .rs-params__title { font-size: 18px; font-weight: 600; letter-spacing: -.2538px; }
+ .rs-params__body { flex: 1; min-height: 0; padding: 0 4px; overflow: hidden auto; }
+diff --git a/app.js b/app.js
+--- a/app.js
++++ b/app.js
+@@ -257,43 +257,15 @@
+   // «Настройки» открывают окно поверх контента: вписанная панель скрыта, но её место остаётся за ней, поэтому контент не прыгает. Закрытие окна возвращает панель.
+   // «Структура», «Стиль», «Шрифт» пока только с ховером: их панелей в макете нет.
+   const rsParams = $('#rsParams');
+-  const rsParamsFrame = $('#rsParamsFrame');
+-  function sendConstructorParams() {
+-    rsParamsFrame.contentWindow.postMessage({
+-      type: 'reg:embed-params',
+-      site: extraComponentSite(),
+-      params: regParams(false),
+-    }, '*');
+-  }
+-  rsParamsFrame.addEventListener('load', () => {
+-    if (rsParamsOpen && rsParamsFrame.hasAttribute('src')) sendConstructorParams();
+-  });
+-  window.addEventListener('message', (e) => {
+-    if (e.source !== rsParamsFrame.contentWindow || e.data?.site !== extraComponentSite()) return;
+-    if (e.data.type === 'reg:embed-close') rsCloseParams();
+-    if (e.data.type !== 'reg:embed-change') return;
+-    const { domain, components, pages } = e.data;
+-    if (domain) window.domainSetState($('.rs-site [data-domain]'), domain);
+-    if (components) restoreComponents(components);
+-    for (const { id, name, group, edits } of pages ?? []) {
+-      const page = lsPage(id) ?? lsPages.find((item) => item.name === name && (lsGroupOf(item) ?? null) === (group ?? null));
+-      if (page) Object.assign(page, edits);
+-    }
+-    if (pages?.length) lsRender();
+-  });
+   let rsPanel = 'shop';    // открытая панель или null
+   let rsParamsOpen = false;
+ 
+   function rsRender() {
+     stage.classList.toggle('is-rs-closed', !rsPanel);
+     for (const name of ['shop', 'data']) $('#rs-' + name).hidden = name !== rsPanel || rsParamsOpen;
+-    const wasOpen = !rsParams.hidden;
+     rsParams.hidden = !rsParamsOpen;
+-    if (rsParamsOpen && !wasOpen) {
+-      if (rsParamsFrame.hasAttribute('src')) sendConstructorParams();
+-      else rsParamsFrame.src = rsParamsFrame.dataset.src;
+-    }
+-    if (!rsParamsOpen) { // меню выбора страницы закрывается вместе с окном; через DOM — rsRender зовётся и до объявления pagePick*
++    if (rsParamsOpen) pagePickRender(); // при старте окно закрыто: до объявления pagePick* не доходим
++    else { // меню выбора страницы закрывается вместе с окном; через DOM — rsRender зовётся и до объявления pagePick*
+       $('#pagePickMenu').hidden = true;
+       for (const b of document.querySelectorAll('[data-page-pick]')) b.setAttribute('aria-expanded', 'false');
+     }
+diff --git a/registry/index.html b/registry/index.html
+--- a/registry/index.html
++++ b/registry/index.html
+@@ -17,11 +17,6 @@
+ <link rel="stylesheet" href="../page-editor.css">
+ <link rel="stylesheet" href="../component-list.css">
+ <script src="../extra-components.js"></script>
+-<script>
+-  if (new URLSearchParams(location.search).get('embed') === 'params') {
+-    document.documentElement.classList.add('is-params-embed');
+-  }
+-</script>
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/input/input.css">
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/button/button.css">
+ <script src="../page-editor.js"></script>
+@@ -1694,26 +1689,6 @@
+ /* Верхнее поле сохраняет тень карточки без зазора под вкладками. */
+ #screen-3 .tabs{ position: relative; z-index: 1; }
+ .reg-nav-detail{ overflow-y: auto; scrollbar-width: none; }
+-.is-params-embed #canvas{ width: 100%; height: 100%; border-radius: 0; }
+-.is-params-embed :is(.accordion, .rail),
+-.is-params-embed #screen-3 > .workspace > :not(.content){ display: none; }
+-.is-params-embed #screen-3{ display: flex; }
+-.is-params-embed:not(.is-params-ready) #screen-3{ visibility: hidden; }
+-.is-params-embed #screen-3 .content{ gap: var(--o-s); padding: var(--o-s); }
+-.is-params-embed .master--data{ width: 180px; max-height: 100%; }
+-.is-params-embed #regDetail{ margin-top: 0; padding-top: 0; overflow-wrap: anywhere; }
+-.is-params-embed :is(.rs-site__props, .comp-props){ white-space: normal; grid-auto-rows: minmax(24px, auto); }
+-.is-params-embed .dom__form, .is-params-embed .dom__btns{ flex-wrap: wrap; max-width: 100%; }
+-.is-params-embed .dom__input{ flex: 1 1 132px; }
+-.is-params-embed .reg-cat__tiles{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+-.is-params-embed .reg-cat__tile{ width: 100%; height: auto; aspect-ratio: 1; }
+-.is-params-embed .reg-cat__cards{ flex-wrap: wrap; }
+-.is-params-embed .reg-card{ flex-basis: 108px; }
+-.is-params-embed .sales-picker{ max-width: 100%; }
+-.is-params-embed #regPageTitle{ max-width: 100%; }
+-.is-params-embed #regPage .ls-new__main > .pe__rows{ grid-auto-rows: minmax(24px, auto); }
+-.is-params-embed #regPage .ls-new__main :is(.pe__label, .ls-new__access){ white-space: normal; }
+-.is-params-embed :is(.reg-news__calendar-body, .reg-delivery-hours__times){ min-width: 0; max-width: 100%; }
+ #regDetail [hidden]{ display: none; }
+ .reg-nav-detail > *{ flex: none; }
+ #screen-3 .master__list > .extra-component-row[data-reg-nav="news"]{ cursor: pointer; }
+@@ -6448,20 +6423,8 @@
+   /* Компонент подключили или отключили в «Параметрах» (скрипт компонентов, reg:comp) —
+      группа на «Страницах» и строки страниц на остальных вкладках следуют за ним */
+   document.addEventListener('reg:comp', function(e){
+-    if (!paramsEmbedded && current !== BILLING && !MODELS[current]) return;
++    if (current !== BILLING && !MODELS[current]) return;
+     COMP_OF[current] = e.detail;
+-    if (paramsEmbedded){
+-      var list = PAGE_LIST[current] || [];
+-      var connected = new Set(e.detail.map(function(c){ return c.id; }));
+-      list = list.filter(function(page){ return !page.group || connected.has(page.group); });
+-      e.detail.forEach(function(c){
+-        if (list.some(function(page){ return page.group === c.id; })) return;
+-        c.pages.forEach(function(name){ list.push({ name: name, group: c.id }); });
+-      });
+-      PAGE_LIST[current] = list;
+-      renderParameterList();
+-      return;
+-    }
+     rebuild(current);
+     apply(true);
+   });
+@@ -6482,9 +6445,6 @@
+   }
+ 
+   var current = BILLING, origin = 'screen-1';
+-  var paramsEmbedded = document.documentElement.classList.contains('is-params-embed');
+-  var embedImported = false;
+-  var embedSnapshot = {};
+   window.regCatalogSite = function(){ return current; };
+   function catalogPriceRender(){
+     if (!window.CompCatalog) return;
+@@ -6609,14 +6569,12 @@
+   function renderParameterList(model){
+     var list = $('#regSitePages');
+     list.replaceChildren();
+-    var pages = paramsEmbedded && PAGE_LIST[current] ? PAGE_LIST[current].map(function(page){
+-      return Object.assign({ link: current + '/' }, page);
+-    }) : model ? model.pages : $$('#screen-2 .pagecard').map(function(card){
++    var pages = model ? model.pages : $$('#screen-2 .pagecard').map(function(card){
+       return { name: $('.pagecard__title', card).firstChild.textContent.trim(), link: $('.pagecard__link', card).textContent };
+     });
+     var components = COMP_OF[current] || [];
+     parameterPages = pages.map(function(page, i){
+-      var group = paramsEmbedded || model ? page.group : components.find(function(c){ return c.pages.includes(page.name); })?.id;
++      var group = model ? page.group : components.find(function(c){ return c.pages.includes(page.name); })?.id;
+       var source = (PAGE_LIST[current] || []).find(function(p){ return p.name === page.name && (p.group || null) === (group || null); });
+       var key = JSON.stringify([current, group, source && source.id != null ? source.id : page.name]);
+       if (!propertyEdits.has(key)) propertyEdits.set(key, {});
+@@ -6636,8 +6594,8 @@
+       var address = (source ? source.addr : path) || PageEditor.defaultAddress(page.name);
+       var values = Object.assign({ addr: address, access: 'public', mode: 'page' }, source);
+       values.addr = address;
+-      return { id: source?.id, sourceName: page.name, group: group, values: Object.assign(values, edits), edits: edits, label: label,
+-        name: label.textContent, usesDefaultAddress: !('addr' in edits) && !source?.addr, placeholder: source ? slug(page.name).replace(/-/g, '_') : '' };
++      return { values: Object.assign(values, edits), edits: edits, label: label,
++        name: label.textContent, placeholder: source ? slug(page.name).replace(/-/g, '_') : '' };
+     });
+   }
+   var editorRoot, editor;
+@@ -6691,8 +6649,8 @@
+       chip.parentNode.className = 'rs-site__chips';
+     }
+     var values = selectedProperties.values;
+-    $('#lsNewAddr').placeholder = paramsEmbedded ? PageEditor.defaultAddress(selectedProperties.name) : selectedProperties.placeholder;
+-    $('#lsNewAddr').value = paramsEmbedded && selectedProperties.usesDefaultAddress ? '' : (values.addr ?? '');
++    $('#lsNewAddr').placeholder = selectedProperties.placeholder;
++    $('#lsNewAddr').value = values.addr ?? '';
+     editor.lsAccessSelect($('[data-access="' + (values.access === 'authorized' ? 'authorized' : 'public') + '"]', root));
+     $('#lsNewIndex').setAttribute('aria-checked', !!values.noindex);
+     $('#lsNewIndex .rp-switch').classList.toggle('is-on', !!values.noindex);
+@@ -6703,7 +6661,6 @@
+   };
+   function setProperty(key, value){
+     selectedProperties.values[key] = selectedProperties.edits[key] = value;
+-    if (key === 'addr') selectedProperties.usesDefaultAddress = false;
+   }
+   function finishPageName(input, save){
+     if (input.readOnly) return;
+@@ -6898,60 +6855,6 @@
+     apply(false, true);
+     location.hash = '#/' + (/^screen-\d+$/.test(e.data.screen) ? e.data.screen : 'screen-2');
+   });
+-
+-  if (paramsEmbedded){
+-    function embeddedSettings(){
+-      return {
+-        domain: window.domainState($('#regSite [data-domain]')),
+-        components: window.regCompSave(),
+-        pages: parameterPages.filter(function(page){
+-          return Object.keys(page.edits).length;
+-        }).map(function(page){
+-          return { id: page.id, name: page.sourceName, group: page.group, edits: page.edits };
+-        })
+-      };
+-    }
+-    window.addEventListener('message', function(e){
+-      if (e.source !== window.parent || e.data?.type !== 'reg:embed-params') return;
+-      current = e.data.site;
+-      var params = e.data.params;
+-      DOMAIN[current] = params.domain;
+-      UNPUBLISHED[current] = params.domain && params.domain.state !== 'Connected';
+-      PAGE_LIST[current] = params.list;
+-      propertyEdits.clear();
+-      importComponents(current, params);
+-      apply(false, true);
+-      embedImported = true;
+-      document.documentElement.classList.add('is-params-ready');
+-      embedSnapshot = Object.fromEntries(Object.entries(embeddedSettings()).map(function([key, value]){
+-        return [key, JSON.stringify(value)];
+-      }));
+-    });
+-    function sendEmbeddedChanges(){
+-      if (!embedImported) return;
+-      var changes = {};
+-      Object.entries(embeddedSettings()).forEach(function([key, value]){
+-        var serialized = JSON.stringify(value);
+-        if (serialized === embedSnapshot[key]) return;
+-        embedSnapshot[key] = serialized;
+-        changes[key] = value;
+-      });
+-      if (Object.keys(changes).length) {
+-        window.parent.postMessage(Object.assign({ type: 'reg:embed-change', site: current }, changes), '*');
+-      }
+-    }
+-    ['input', 'change', 'click', 'focusout', 'pointerup', 'keydown'].forEach(function(type){
+-      document.addEventListener(type, function(){ queueMicrotask(sendEmbeddedChanges); });
+-    });
+-    document.addEventListener('keydown', function(e){
+-      if (e.key !== 'Escape' || e.target.closest('input:not([readonly]), textarea, [role="menu"]')) return;
+-      if (document.querySelector('#regSalesPicker:not([hidden]), #regPagePickMenu:not([hidden]), #comp-switch:not([hidden]), #qrDlg:not([hidden]), #qrPrint:not([hidden]), #qrAlert:not([hidden]), #regPage .ls-access:not([hidden])')) return;
+-      window.parent.postMessage({ type: 'reg:embed-close', site: current }, '*');
+-    }, true);
+-    new MutationObserver(sendEmbeddedChanges).observe($('#screen-3'), {
+-      subtree: true, childList: true, attributes: true, attributeFilter: ['data-state']
+-    });
+-  }
+ 
+   /* «Опубликовать» в окне шаблона (конструктор, ../app.js): сайт появляется в реестре первой плиткой
+      (сайт «Электронного меню» — и в реестре «Меню»), открывается его карточка на вкладке «Параметры»
+diff --git a/domain.js b/domain.js
+--- a/domain.js
++++ b/domain.js
+@@ -135,10 +135,6 @@
+   }
+   // состояние редактора для передачи в реестр (../app.js: выход из конструктора на карточку сайта)
+   window.domainState = function(el){ var s = st(el); return { type: s.type, value: s.value, state: s.state }; };
+-  window.domainSetState = function(el, value){
+-    Object.assign(st(el), value, { auto: false });
+-    render(el);
+-  };
+   function suggest(){
+     document.querySelectorAll('[data-domain][data-site-address]').forEach(function(el){
+       if (!states.has(el)) connected(el);
