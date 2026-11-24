@@ -1416,7 +1416,7 @@ html, body{
   --page-list-icon-size: 24px;
   --page-list-icon-gap: 6px;
 }
-:is(#screen-2, #screen-3) .master__list > .master__item:not(#regMasterComp){
+:is(#screen-2, #screen-3) .master__list:has(> :is(.master__comp, #regMasterComp):not([hidden])) > .master__item:not(#regMasterComp){
   padding-inline-start: calc(var(--o-l) + var(--page-list-icon-size) + var(--page-list-icon-gap));
 }
 .master__comp-icon{ display: none; }
