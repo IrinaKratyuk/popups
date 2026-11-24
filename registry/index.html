@@ -1646,6 +1646,36 @@ html, body{
 .master__item[hidden]{ display: none; }
 #regMasterComp{ gap: 0; font-weight: 600; }
 #regMasterComp .master__name{ flex: 0 1 auto; }
+.reg-component-pages[hidden], #regDeliverySettings[hidden], #regDeliveryHours[hidden]{ display: none; }
+.master--data .site-tree .reg-component-pages .site-tree__page:not([data-reg-nav]){ cursor: default; }
+#regDeliveryNav .switch{ pointer-events: none; }
+#regDeliverySettings{ display: grid; gap: 8px; }
+.reg-nav-component--delivery-overview > #regSales{ display: none; }
+#regSalesTitle[hidden]{ display: none; }
+.reg-delivery-card{ gap: 8px; padding: 10px 20px; font-size: var(--fs-l); }
+.reg-delivery-card__row{ display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 24px; }
+.reg-delivery-card__link{ color: var(--c-text-link); }
+.reg-delivery-card__muted{ color: var(--c-text-label); }
+.reg-delivery-card__amount{ width: 50px; border-bottom: 1px solid var(--border-unaccented_border-color); }
+.reg-delivery-hours__times{
+  display: grid;
+  grid-template-columns: max-content 65px minmax(65px, max-content) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 12px;
+  width: 100%;
+}
+.reg-delivery-hours__column{ color: var(--c-text-secondary); font-weight: 600; }
+.reg-delivery-hours__times .reg-delivery-card__amount{ width: 65px; min-height: 20px; }
+.reg-delivery-hours__hint{ font-size: var(--fs-m); }
+.reg-delivery-hours__heading{ margin-top: 12px; }
+.reg-delivery-hours__days .btn{ width: 32px; height: 32px; padding: 0; pointer-events: none; }
+.reg-delivery-hours__days .reg-delivery-hours__weekend{ color: var(--text-danger_text-color); }
+.reg-delivery-hours__exception{
+  width: 100%;
+  border-top: 1px solid var(--border-unaccented_border-color);
+  padding-top: 8px;
+  margin-bottom: 12px;
+}
 #screen-3 .master__list > .extra-component-row{ gap: 0; font-weight: 600; cursor: default; }
 .master__expander{ padding: 0; border: 0; background: transparent; cursor: pointer; }
 .master__expander[hidden]{ display: none; }
@@ -3808,6 +3838,25 @@ button.tpl-cat{ cursor: pointer; }
                   <!-- Команда по ховеру — как у точки продаж в мастере; ✕ работает как крестик блока компонента: окно подтверждения -->
                   <button class="component-group__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"></button>
                 </li>
+                <li class="reg-component-pages" id="regRestaurantNav" hidden>
+                  <ul class="site-tree__pages" aria-label="Настройки электронного меню">
+                    <li class="master__item site-tree__page" data-reg-nav="catalog" tabindex="0" role="button"><span class="master__name">Каталог</span></li>
+                  </ul>
+                </li>
+                <li class="reg-component-pages" id="regDeliveryNav" hidden>
+                  <ul class="site-tree__pages" aria-label="Настройки доставки">
+                    <li class="master__item site-tree__page" data-reg-nav="delivery-hours" tabindex="0" role="button"><span class="master__name">Режим работы</span></li>
+                    <li class="master__item site-tree__page"><span class="master__name">Районы обслуживания</span></li>
+                    <li class="master__item site-tree__page" data-reg-nav="delivery-site" tabindex="0" role="button">
+                      <span class="master__name">Сайт</span>
+                      <span class="switch" role="switch" aria-label="Сайт" aria-checked="true" aria-readonly="true"><input class="switch__input" type="checkbox" checked inert><span class="switch__button"></span></span>
+                    </li>
+                    <li class="master__item site-tree__page">
+                      <span class="master__name">Виджет</span>
+                      <span class="switch" role="switch" aria-label="Виджет" aria-checked="false" aria-readonly="true"><input class="switch__input" type="checkbox" inert><span class="switch__button"></span></span>
+                    </li>
+                  </ul>
+                </li>
               </ul>
               <!-- «Компоненты»: все компоненты чипсами, как #compChipsBlock конструктора.
                    Клик подключает компонент тем же скриптом (data-comp-add); чипса подключённого скрыта, пока компонент подключён — заголовка нет -->
@@ -3908,49 +3957,101 @@ button.tpl-cat{ cursor: pointer; }
                   </div>
                 </div>
               </section>
+              <div id="regDeliverySettings" hidden>
+                <section class="params reg-delivery-card" aria-label="Способы получения и оплаты">
+                  <div class="reg-delivery-card__row">
+                    <label class="switch switch--size-s" inert><input class="switch__input" type="checkbox" checked><span class="switch__button"></span><span class="switch__caption">Самовывоз</span></label>
+                  </div>
+                  <div class="reg-delivery-card__row">
+                    <label class="switch switch--size-s" inert><input class="switch__input" type="checkbox" checked><span class="switch__button"></span><span class="switch__caption">Курьером</span></label>
+                    <span class="reg-delivery-card__muted">с оплатой</span>
+                    <label class="checkbox checkbox--outlined" inert><input class="checkbox__input" type="checkbox" checked><span class="checkbox__box"></span><span class="checkbox__caption">Наличными</span></label>
+                    <label class="checkbox checkbox--outlined" inert><input class="checkbox__input" type="checkbox"><span class="checkbox__box"></span><span class="checkbox__caption">Картой</span></label>
+                  </div>
+                </section>
+                <section class="params reg-delivery-card" aria-label="Каталог и предоплата">
+                  <div class="reg-delivery-card__row">Выбор товаров из <span class="reg-delivery-card__link">Каталога</span></div>
+                  <div class="reg-delivery-card__row">Предоплата <span class="reg-delivery-card__amount">0</span><span class="reg-delivery-card__muted">%</span><span class="reg-delivery-card__muted">＋ Порог</span></div>
+                  <div class="reg-delivery-card__row">Тип чека при онлайн-оплате <span class="reg-delivery-card__link">предоплата</span></div>
+                </section>
+                <section class="params reg-delivery-card" aria-label="Стоимость доставки">
+                  <div class="reg-delivery-card__row"><strong>Стоимость доставки</strong></div>
+                  <div class="reg-delivery-card__row">Номенклатура в чеке <span class="reg-delivery-card__link">Доставка</span></div>
+                  <div class="reg-delivery-card__row"><span class="reg-delivery-card__link">без учета скидки на заказ</span></div>
+                </section>
+                <section class="params reg-delivery-card" aria-label="Шаблон номера заказа">
+                  <div class="reg-delivery-card__row"><span class="ml__arrow ml__arrow--down" aria-hidden="true"></span><span>Шаблон номера заказа</span><span class="reg-delivery-card__link">{№ п/п}</span><span class="reg-delivery-card__muted" aria-hidden="true">→</span>123</div>
+                </section>
               </div>
+              </div>
+              <section class="params reg-delivery-card" id="regDeliveryHours" aria-label="Режим работы доставки" hidden>
+                <div class="reg-delivery-card__row"><span><strong>Время выполнения заказа</strong>, мин.</span></div>
+                <div class="reg-delivery-hours__times">
+                  <span></span>
+                  <span class="reg-delivery-hours__column">Обычный</span>
+                  <span class="reg-delivery-hours__column">Нагруженный день</span>
+                  <span></span>
+                  <span>Сборка</span>
+                  <span class="reg-delivery-card__amount">15</span>
+                  <span class="reg-delivery-card__amount reg-delivery-card__muted">+</span>
+                  <span class="reg-delivery-card__muted reg-delivery-hours__hint">Задается вручную</span>
+                  <span>Доставка</span>
+                  <span class="reg-delivery-card__amount"></span>
+                  <span class="reg-delivery-card__amount reg-delivery-card__muted">+</span>
+                  <span class="reg-delivery-card__muted reg-delivery-hours__hint">Если не указано, рассчитаем до адреса клиента</span>
+                </div>
+                <div class="reg-delivery-card__row reg-delivery-hours__heading"><strong>Режим работы</strong><span class="ml__arrow ml__arrow--down" aria-hidden="true"></span></div>
+                <div class="reg-delivery-card__row reg-delivery-hours__days">
+                  <span class="btn btn--outlined btn--style-default btn--size-xl"><span class="btn__caption">ПН</span></span>
+                  <span class="btn btn--outlined btn--style-default btn--size-xl"><span class="btn__caption">ВТ</span></span>
+                  <span class="btn btn--outlined btn--style-default btn--size-xl"><span class="btn__caption">СР</span></span>
+                  <span class="btn btn--outlined btn--style-default btn--size-xl"><span class="btn__caption">ЧТ</span></span>
+                  <span class="btn btn--outlined btn--style-default btn--size-xl"><span class="btn__caption">ПТ</span></span>
+                  <span class="btn btn--filled btn--style-pale btn--size-xl"><span class="reg-delivery-hours__weekend">СБ</span></span>
+                  <span class="btn btn--filled btn--style-pale btn--size-xl"><span class="reg-delivery-hours__weekend">ВС</span></span>
+                </div>
+                <div class="reg-delivery-card__row">
+                  <span>Рабочий</span>
+                  <span><time class="reg-delivery-card__amount">10:00</time> - <time class="reg-delivery-card__amount">18:00</time></span>
+                  <span class="reg-delivery-card__link">Обычный</span>
+                  <span class="reg-delivery-card__muted reg-delivery-hours__hint">+Интервал</span>
+                </div>
+                <div class="reg-delivery-card__muted reg-delivery-hours__hint reg-delivery-hours__exception">+Исключение</div>
+                <div class="reg-delivery-card__row">Первая доставка <span class="reg-delivery-card__link">с учетом времени выполнения заказа</span></div>
+                <div class="reg-delivery-card__row">Завершить прием заказов <span class="reg-delivery-card__link">по времени доставки</span></div>
+              </section>
               <!-- Остальные подключённые компоненты: иконка, название, крестик (строит скрипт ниже) -->
               <div id="regCompGroups"></div>
               <!-- Подключение через блок «Компоненты» в мастере (#regAddable), в конструкторе — #compChipsBlock -->
-              <!-- Каталог точки продаж (Figma 2829:79707): показывается вместо настроек по клику на точку в мастере.
-                   Прайс — тот, что у точки в блоке «Электронное меню»; категории — как на странице «Меню» сайта -->
-              <section class="reg-cat" id="regSalesCatalog" aria-label="Каталог точки продаж" hidden>
-                <div class="reg-cat__price"><span class="reg-cat__label">Прайс</span><button class="reg-cat__link" type="button">Меню A la carte</button></div>
+              <section class="reg-cat" id="regSalesCatalog" aria-label="Каталог сайта" hidden>
+                <div class="reg-cat__price"><span class="reg-cat__label">Прайс</span><button class="reg-cat__link" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"></button></div>
                 <!-- Плашки категорий и разделы с блюдами — по прайсу точки (CATALOGS в скрипте ниже), вид — как каталог на сайте в конструкторе (#siteCatalog в ../index.html) -->
                 <div class="reg-cat__body" id="regCatBody"></div>
               </section>
               <script>
-              /* Мастер «Параметров» — навигация по блокам детали (обработчики внизу); каталог точки (show, renderCatalog)
-                 из мастера больше не открывается — точек в мастере нет. Разметку перевставляет apply(), поэтому слушаем document. */
+              /* «Каталог» электронного меню показывает каталог основной точки, которая стоит первой в настройках компонента. */
               (function(){
-                if (window.regSalesSelectBound) return;
-                window.regSalesSelectBound = true;
-                var down = null, moved = false, current = null;
                 // тень прокрутки: scroll не всплывает, ловим на погружении
                 document.addEventListener('scroll', function(e){
                   if (e.target.id === 'regSalesCatalog') e.target.parentNode.classList.toggle('is-scrolled', e.target.scrollTop > 0);
                 }, true);
-                document.addEventListener('pointerdown', function(e){ down = { x: e.clientX, y: e.clientY }; moved = false; });
-                document.addEventListener('pointermove', function(e){
-                  if (down && Math.abs(e.clientY - down.y) + Math.abs(e.clientX - down.x) > 3) moved = true;
-                });
-                function show(point){
-                  var master = document.querySelector('#screen-3 .master--data');
+                window.regCatalogSelect = function(open){
                   var cat = document.getElementById('regSalesCatalog');
-                  if (!master || !cat) return;
-                  master.querySelectorAll('.master__item').forEach(function(el){
-                    el.classList.toggle('master__item--selected', point ? el.dataset.salesPoint === point : el.hasAttribute('data-reg-general'));
-                  });
-                  cat.hidden = !point;
-                  cat.closest('.detail').classList.toggle('is-sales-catalog', !!point);
-                  if (point){
-                    var row = Array.prototype.find.call(document.querySelectorAll('#regSales .sales-row[data-sales-point]'), function(r){ return r.dataset.salesPoint === point; });
-                    var price = row ? row.querySelector('.sales-price').textContent : 'Меню A la carte';
-                    cat.querySelector('.reg-cat__link').textContent = price;
-                    // перерисовка только при смене прайса: иначе каждый клик сбрасывал бы прокрутку каталога
-                    if (cat.dataset.price !== price){ cat.dataset.price = price; renderCatalog(price); cat.scrollTop = 0; cat.parentNode.classList.remove('is-scrolled'); }
-                  }
-                }
+                  var detail = cat.parentNode;
+                  cat.hidden = !open;
+                  detail.classList.toggle('is-sales-catalog', open);
+                  if (!open) return;
+                  var row = document.querySelector('#regSales .sales-row[data-sales-point]');
+                  var price = row ? row.querySelector('.sales-price').textContent.trim() : '';
+                  var button = cat.querySelector('.reg-cat__link');
+                  button.textContent = price || 'Выбрать прайс';
+                  button.disabled = !row;
+                  if (cat.dataset.price === price) return;
+                  cat.dataset.price = price;
+                  renderCatalog(price);
+                  cat.scrollTop = 0;
+                  detail.classList.remove('is-scrolled');
+                };
                 /* Каталоги прайсов — демо. У точки свой прайс, у прайса свой каталог: категории (плашки) и разделы с блюдами.
                    Картинка категории — [файл, стиль кадрирования]; у блюда — слои [файл, cover|tall], как .site-card в конструкторе.
                    Несколько прайсов у точки — их каталоги подряд; у прайса без своего каталога — один из трёх по названию. */
@@ -4008,7 +4109,10 @@ button.tpl-cat{ cursor: pointer; }
                 function renderCatalog(price){
                   var body = document.getElementById('regCatBody');
                   var prices = price.split(', ').filter(function(p){ return p && p !== 'Выбрать прайс'; });
-                  if (!prices.length){ body.innerHTML = '<p class="reg-cat__empty">Выберите прайс, чтобы увидеть каталог точки</p>'; return; }
+                  if (!prices.length){
+                    body.innerHTML = '<p class="reg-cat__empty">' + (price ? 'Выберите прайс, чтобы увидеть каталог' : 'Добавьте точку продаж в настройках электронного меню') + '</p>';
+                    return;
+                  }
                   var cats = [], sections = [];
                   prices.forEach(function(p){
                     var c = catalogOf(p);
@@ -4052,6 +4156,8 @@ button.tpl-cat{ cursor: pointer; }
                 var sales, on;
                 function render(){
                   sales.hidden = !on;
+                  document.getElementById('regRestaurantNav').hidden = on !== 'restaurant';
+                  document.getElementById('regDeliveryNav').hidden = on !== 'delivery';
                   var mc = document.getElementById('regMasterComp');
                   if (mc){
                     mc.hidden = !on;
@@ -5315,10 +5421,10 @@ button.tpl-cat{ cursor: pointer; }
           // прайс в строке точки — панель «Прайсы» этой точки, как в конструкторе
           var priceRow = e.target.closest('#regSales .sales-price') && e.target.closest('.sales-row[data-sales-point]');
           if (priceRow) open(priceRow.dataset.salesPoint);
-          // прайс в каталоге точки — панель «Прайсы» выбранной в мастере точки
+          // В каталоге сайта открываем прайсы основной точки.
           if (e.target.closest('#regSalesCatalog .reg-cat__link')){
-            var sel = document.querySelector('#regMasterSales .master__item--selected');
-            if (sel) open(sel.dataset.salesPoint);
+            var primary = document.querySelector('#regSales .sales-row[data-sales-point]');
+            if (primary) open(primary.dataset.salesPoint);
           }
         });
         document.getElementById('regSalesPickerDone').addEventListener('click', function(){
@@ -5329,6 +5435,11 @@ button.tpl-cat{ cursor: pointer; }
               if (row.dataset.salesPoint === mode) row.querySelector('.sales-price').textContent = picked.join(', ') || 'Выбрать прайс';
             });
             panel.hidden = true;
+            var catalog = document.getElementById('regSalesCatalog');
+            if (!catalog.hidden){
+              window.regCatalogSelect(true);
+              catalog.querySelector('.reg-cat__link').focus();
+            }
             return;
           }
           var points = current().filter(function(p){ return selected.has(p.name); });
@@ -6383,7 +6494,7 @@ button.tpl-cat{ cursor: pointer; }
   window.regNavSelect = function(key){
     var rows = $$('#screen-3 [data-reg-nav]');
     var row = rows.find(function(item){ return item.dataset.regNav === key; });
-    if (!row || row.hidden) return;
+    if (!row || row.closest('[hidden]')) return;
     var nameInput = $('#regPageNameInput');
     if (selectedProperties && nameInput) finishPageName(nameInput, true);
     rows.forEach(function(item){
@@ -6392,13 +6503,23 @@ button.tpl-cat{ cursor: pointer; }
     });
     selectedProperties = parameterPages[row.dataset.pageIndex];
     $('#regSite').hidden = key !== 'general';
-    $('#regDetail .reg-nav-component').hidden = key !== 'comp';
+    var component = $('#regDetail .reg-nav-component');
+    var deliveryOverview = key === 'comp' && !$('#regDeliveryNav').hidden;
+    component.hidden = key !== 'comp' && key !== 'delivery-site';
+    component.classList.toggle('reg-nav-component--delivery-overview', deliveryOverview);
+    $('#regDeliverySettings').hidden = !deliveryOverview;
+    $('#regSalesTitle').hidden = key === 'delivery-site';
+    $('#regDeliveryHours').hidden = key !== 'delivery-hours';
+    $('#regSalesPicker').hidden = true;
     $('#regPage').hidden = !selectedProperties;
+    window.regCatalogSelect(key === 'catalog');
     if (selectedProperties){
       nameInput.value = selectedProperties.name;
       $('#regPageTitle').setAttribute('aria-label', selectedProperties.name);
-    } else {
-      $(key === 'comp' ? '#regSalesTitle > span' : '#regSiteTitle > span').textContent = $('.master__name', row).textContent;
+    } else if (key === 'general') {
+      $('#regSiteTitle > span').textContent = $('.master__name', row).textContent;
+    } else if (key === 'comp' || key === 'delivery-site') {
+      $('#regSalesTitle > span').textContent = $('#regMasterComp .master__name').textContent;
     }
     $('#regDetail').scrollTop = 0;
     if (editor) editor.lsAccessClose();
