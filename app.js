@@ -392,7 +392,6 @@
     });
     // Подключённый компонент один — его настройки в общем блоке #salesSettings (заполняет и скрывает salesRender)
     $('#compChips').replaceChildren(...chips);
-    $('#lsComponentChips').replaceChildren(...chips.map((chip) => chip.cloneNode(true)));
     renderExtraComponentChips();
     renderExtraComponentGroups();
   }
@@ -405,9 +404,7 @@
   function renderExtraComponentChips() {
     const site = extraComponentSite();
     ExtraComponents.renderChips($('#compChips'), site);
-    ExtraComponents.renderChips($('#lsComponentChips'), site);
     $('#compChipsBlock').hidden = !$('#compChips').childElementCount;
-    $('#lsComponents').hidden = !$('#lsComponentChips').childElementCount;
   }
   function renderExtraComponentGroups() {
     const groups = $('#compGroups');
@@ -431,16 +428,9 @@
     groups.querySelectorAll(':scope > .extra-component-group').forEach((group) => group.remove());
     groups.append(...extraGroups);
   }
-  function renderExtraComponentRows() {
-    ExtraComponents.renderRows($('#lsList'), extraComponentSite(), {
-      tag: 'div', rowClass: 'lsb__group', iconClass: 'lsb__group-icon',
-      nameClass: 'lsb__group-name ml__caption', remove: removeExtraComponent
-    });
-  }
   function renderExtraComponents() {
     renderExtraComponentChips();
     renderExtraComponentGroups();
-    renderExtraComponentRows();
   }
   window.addEventListener('extra-components-change', renderExtraComponents);
   const salesCopy = (rows) => rows.map((row) => ({ ...row, prices: row.prices?.slice() }));
@@ -1233,7 +1223,7 @@
       if (compOn.has(id)) { compRemoveAsk(id); return; }
       // подключён другой компонент — замена с подтверждением: он отключается со своими страницами, новый подключается
       if (toggle.dataset.compAdd && compOn.size) {
-        compSwitchAsk(id, Boolean(toggle.closest('#lsComponents')));
+        compSwitchAsk(id);
         return;
       }
       compConnect(id, true);
@@ -2753,28 +2743,8 @@
     row.querySelector('.lsb__page-name').textContent = p.name;
     return row;
   }
-  function lsGroupHead(id) {
-    const head = el('div', 'lsb__group');
-    const icon = el('img', 'lsb__group-icon');
-    icon.src = `assets/img/comp/${id}.svg`;
-    icon.alt = '';
-    const name = el('span', 'lsb__group-name ml__caption');
-    name.textContent = COMP[id].name;
-    head.append(icon, name);
-    if (compOn.has(id)) {
-      const remove = el('button', 'component-group__remove');
-      remove.type = 'button';
-      remove.dataset.compToggle = id;
-      remove.setAttribute('aria-label', `Отключить компонент «${COMP[id].name}»`);
-      head.classList.add('component-group');
-      head.append(remove);
-    }
-    return head;
-  }
   function lsRender() {
-    const groups = Object.keys(COMP).filter((id) => compOn.has(id) || lsPages.some((p) => lsGroupOf(p) === id));
-    lsList.replaceChildren(...lsOrdered().map(lsRow), ...groups.map(lsGroupHead));
-    renderExtraComponentRows();
+    lsList.replaceChildren(...lsOrdered().map(lsRow));
     lsRenderLines();
     siteShowPage(lsPage(lsActive));
     siteProductSyncShop();
@@ -3183,7 +3153,7 @@
   }
   // Тип сайта по клику на название компонента не меняется (решение пользователя): название — просто заголовок, меню #compMenu по нему не открывается
   // Смена на другой компонент — с подтверждением, как у крестика (compRemoveAsk): что отключится и какие страницы удалятся
-  function compSwitchAsk(id, goHome = false) {
+  function compSwitchAsk(id) {
     const cur = compActive();
     if (!cur || cur === id) { compSwitch(id); return; }
     const names = [COMP[cur].widgetHome, ...COMP[cur].pages].filter(Boolean);
@@ -3201,7 +3171,6 @@
     }, (answer) => {
       if (answer !== 'yes') return;
       compSwitch(id);
-      if (goHome) lsSelect((lsPages.find((page) => page.home) ?? lsPages[0]).id);
     });
   }
   compMenu.addEventListener('click', (e) => {

@@ -516,7 +516,7 @@ html, body{
   padding-right: var(--o-2xs);
 }
 
-.btn{
+.btn:not(:where(.btn--translucent)){
   appearance: none;
   font: inherit;
   letter-spacing: inherit;
@@ -1659,15 +1659,6 @@ html, body{
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: var(--btn-h);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  padding-inline: var(--components-button-padding-horizontal_5xl_button, 24px);
-  border-radius: 23px;
-  background-color: var(--components-button-translucent_background-color_button, #00000033);
-  color: var(--text-contrast_text-color, #fff);
   pointer-events: none;
 }
 #regSalesTitle[hidden]{ display: none; }
@@ -3866,14 +3857,17 @@ button.tpl-cat{ cursor: pointer; }
                   <ul class="site-tree__pages" aria-label="Настройки доставки">
                     <li class="master__item site-tree__page" data-reg-nav="delivery-hours" tabindex="0" role="button"><span class="master__name">Режим работы</span></li>
                     <li class="master__item site-tree__page" data-reg-nav="delivery-areas" tabindex="0" role="button"><span class="master__name">Районы обслуживания</span></li>
-                    <li class="master__item site-tree__page" data-reg-nav="delivery-site" tabindex="0" role="button">
-                      <span class="master__name">Сайт</span>
-                      <span class="switch" role="switch" aria-label="Сайт" aria-checked="true" aria-readonly="true"><input class="switch__input" type="checkbox" checked inert><span class="switch__button"></span></span>
-                    </li>
+                    <li class="master__item site-tree__page" data-reg-nav="delivery-site" tabindex="0" role="button"><span class="master__name">Сайт</span></li>
                     <li class="master__item site-tree__page">
                       <span class="master__name">Виджет</span>
                       <span class="switch" role="switch" aria-label="Виджет" aria-checked="false" aria-readonly="true"><input class="switch__input" type="checkbox" inert><span class="switch__button"></span></span>
                     </li>
+                  </ul>
+                </li>
+                <li class="reg-component-pages" id="regGalleryNav" hidden>
+                  <ul class="site-tree__pages" aria-label="Страницы галереи">
+                    <li class="master__item ml__item site-tree__page"><span class="master__name ml__caption">Товары</span></li>
+                    <li class="master__item ml__item site-tree__page"><span class="master__name ml__caption">Фотографии заведения</span></li>
                   </ul>
                 </li>
               </ul>
@@ -6463,12 +6457,17 @@ button.tpl-cat{ cursor: pointer; }
   var selectedProperties;
   function renderExtraComponents(){
     var site = current;
-    ExtraComponents.renderRows($('#regMasterComp').parentNode, site, {
+    var list = $('#regMasterComp').parentNode;
+    ExtraComponents.renderRows(list, site, {
       tag: 'li', rowClass: 'master__item', iconClass: 'master__comp-icon',
       nameClass: 'master__name ml__caption', remove: function(id, name){
         window.regExtraOffAsk(name, function(){ ExtraComponents.set(site, id, false); });
       }
     });
+    var gallery = $(':scope > .extra-component-row:has(> img[src$="/gallery.svg"])', list);
+    var galleryNav = $('#regGalleryNav');
+    galleryNav.hidden = !gallery;
+    if (gallery) gallery.after(galleryNav);
     ExtraComponents.renderChips($('#regAddable .addable__list'), site);
   }
   window.addEventListener('extra-components-change', renderExtraComponents);
