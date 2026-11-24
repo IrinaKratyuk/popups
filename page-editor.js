@@ -30,17 +30,19 @@ const PageEditor = (() => {
             <button class="ls-new__index" type="button" id="lsNewIndex" role="switch" aria-checked="false"><span>Запретить поисковую индексацию</span><span class="rp-switch"></span></button>
           </div>
           <div class="pe__card">
-            <div class="pe__rows">
-              <div data-open-mode></div>
-            </div>
-          </div>
-          <div class="pe__card">
             <div class="ls-new__seo" data-pe-row="seo" hidden>
-              <div class="pe__title">SEO<button type="button" class="pe__x" data-pe-clear aria-label="Убрать SEO">&#xe66c;</button></div>
+              <div class="pe__title"><span>SEO</span><button type="button" class="pe__x" data-pe-clear aria-label="Убрать SEO">&#xe66c;</button></div>
               <div class="ls-new__seo-fields">
-                <label class="input ls-new__seo-title"><span class="input__body"><span class="input__field"><input class="input__control" id="lsNewSeoTitle"></span></span><span class="pe__label">Заголовок</span></label>
+                <label class="input ls-new__seo-title"><span class="pe__label">Заголовок</span><span class="input__body"><span class="input__field"><input class="input__control" id="lsNewSeoTitle"></span></span></label>
                 <button class="chips chips--size-m" id="lsSeoDescriptionAdd" type="button" aria-expanded="false" aria-controls="lsSeoDescriptionField"><span class="chips__caption">Описание</span></button>
-                <label class="input input--label-top ls-new__description" id="lsSeoDescriptionField" hidden><span class="input__label">Описание</span><span class="input__body"><span class="input__field"><textarea class="input__control" id="lsNewSeoDescription" aria-label="SEO-описание" rows="3"></textarea></span></span></label>
+                <div class="ls-new__description" id="lsSeoDescriptionField" hidden>
+                  <div class="ls-new__description-head"><label class="pe__label" for="lsNewSeoDescription">Описание</label><button class="pe__x" type="button" data-pe-clear-description aria-label="Убрать описание">&#xe66c;</button></div>
+                  <div class="input input--textarea">
+                    <span class="input__body"><span class="input__field">
+                      <textarea class="input__control" id="lsNewSeoDescription" rows="1" placeholder="Кратко опишите содержание страницы"></textarea>
+                    </span></span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -135,7 +137,6 @@ const PageEditor = (() => {
   function mount(lsNew, onChange = () => {}) {
     lsNew.append(fields.content.cloneNode(true));
     const lsNewIndex = $('#lsNewIndex', lsNew);
-    const lsOpenMode = openModeFill(lsNew, ['page', 'window', 'both'], { onOpen: () => lsAccessClose(), onChange: value => onChange('mode', value) });
 
     // Доступ — настройка прототипа; здесь задаётся состояние страницы, серверной авторизации нет.
     const lsAccess = $('#lsAccess', lsNew);
@@ -154,7 +155,6 @@ const PageEditor = (() => {
     }
     lsAccess.addEventListener('click', () => {
       if (!lsAccessMenu.hidden) { lsAccessClose(); return; }
-      lsOpenMode.close();
       const r = rect(lsAccess, lsNew);
       const box = rect(lsNew);
       lsAccessMenu.style.left = Math.round(r.left - box.left - 30) + 'px';
@@ -173,7 +173,21 @@ const PageEditor = (() => {
       lsNewIndex.setAttribute('aria-checked', on);
       onChange('noindex', on);
     });
-    return { lsOpenMode, lsAccess, lsAccessMenu, lsAccessSelect, lsAccessClose };
+    return { lsAccess, lsAccessMenu, lsAccessSelect, lsAccessClose };
   }
-  return { openModeFill, mount };
+  const pageAddresses = new Map([
+    ['Главная', 'home'], ['О нас', 'about'], ['Профиль', 'profile'], ['Меню', 'menu'],
+    ['Карточка товара', 'product'], ['Карточка блюда', 'product'],
+    ['Каталог', 'catalog'], ['Корзина', 'cart'], ['Заказы', 'orders'], ['Карточка заказа', 'order'],
+    ['Каталог услуг', 'services'], ['Карточка услуги', 'service'], ['Специалисты', 'specialists'],
+    ['Карточка специалиста', 'specialist'], ['Выбор времени записи', 'booking'],
+    ['Номера', 'rooms'], ['Карточка номера', 'room'],
+  ]);
+  const translit = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya' };
+  function defaultAddress(name) {
+    return pageAddresses.get(name) ?? [...name.trim().toLowerCase()]
+      .map((letter) => translit[letter] ?? letter).join('')
+      .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  }
+  return { openModeFill, mount, defaultAddress };
 })();

@@ -391,6 +391,9 @@
     $('#compChips').replaceChildren(...chips);
     $('#compChipsBlock').hidden = !chips.length;
     $('#compChipsBlock .rs-comps__title').hidden = compOn.size > 0; // компонент подключён — заголовка «Добавить компонент» нет, чипсы заменяют его
+    $('#lsComponentChips').replaceChildren(...chips.map((chip) => chip.cloneNode(true)));
+    $('#lsComponents').hidden = !chips.length;
+    $('#lsComponents .lsb__components-title').hidden = compOn.size > 0;
   }
   const salesCopy = (rows) => rows.map((row) => ({ ...row, prices: row.prices?.slice() }));
   const salesCurrent = () => salesDraft || salesSaved;
@@ -1181,7 +1184,10 @@
       const id = toggle.dataset.compToggle || toggle.dataset.compAdd;
       if (compOn.has(id)) { compRemoveAsk(id); return; }
       // подключён другой компонент — замена с подтверждением: он отключается со своими страницами, новый подключается
-      if (toggle.dataset.compAdd && compOn.size) { compSwitchAsk(id); return; }
+      if (toggle.dataset.compAdd && compOn.size) {
+        compSwitchAsk(id, Boolean(toggle.closest('#lsComponents')));
+        return;
+      }
       compConnect(id, true);
       compAddWidgetHome(id);
       pagePickDefaults(id);
@@ -2921,7 +2927,7 @@
   // «Сохранить» и Enter в названии добавляют страницу и открывают её, крестик и Esc закрывают без добавления. Клик мимо окно не закрывает.
   // Это же окно — настройки страницы: открывается из меню «⋮» с её значениями, «Сохранить» применяет их к ней.
   const lsNew = $('#lsNew');
-  const { lsOpenMode, lsAccess, lsAccessMenu, lsAccessSelect, lsAccessClose } = PageEditor.mount(lsNew);
+  const { lsAccess, lsAccessMenu, lsAccessSelect, lsAccessClose } = PageEditor.mount(lsNew);
   peDraggable(lsNew);
   const lsNewName = $('#lsNewName');
   const lsNewAddr = $('#lsNewAddr');
@@ -2931,14 +2937,12 @@
   const lsSeoDescriptionField = $('#lsSeoDescriptionField');
   const lsNewIndex = $('#lsNewIndex');
   const LS_NEW_NAME = 'Новая страница';
-  const TRANSLIT = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya' };
-  const lsSlug = (name) => [...name.trim().toLowerCase()].map((c) => TRANSLIT[c] ?? c).join('').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
   let lsNewSeoEdited = false;
   let lsNewPage = null; // настраиваемая страница, null — новая
 
   function lsNewSync() {
     const name = lsNewName.value.trim() || LS_NEW_NAME;
-    lsNewAddr.placeholder = lsSlug(name);
+    lsNewAddr.placeholder = PageEditor.defaultAddress(name);
     if (!lsNewSeoEdited) lsNewSeoTitle.value = name;
   }
 
@@ -2949,9 +2953,7 @@
     lsNewSeoEdited = page?.seo != null;
     lsNewIndex.querySelector('.rp-switch').classList.toggle('is-on', !!page?.noindex);
     lsNewIndex.setAttribute('aria-checked', !!page?.noindex);
-    lsOpenMode.close();
     lsAccessClose();
-    lsOpenMode.set(page?.mode ?? 'page');
     lsAccessSelect(lsAccessMenu.querySelector(`[data-access="${page?.access ?? 'public'}"]`));
     lsNewSeoDescription.value = page?.seoDescription ?? '';
     lsDescriptionShow(page?.seoDescription != null);
@@ -2990,7 +2992,6 @@
 
   function lsNewClose() {
     if (lsNew.hidden) return;
-    lsOpenMode.close();
     lsAccessClose();
     lsNew.hidden = true;
     lsCollapseIfLeft();
@@ -3004,12 +3005,11 @@
       seo: lsNew.querySelector('[data-pe-row="seo"]').hidden ? null : lsNewSeoTitle.value,
       seoDescription: lsNew.querySelector('[data-pe-row="seo"]').hidden || lsSeoDescriptionField.hidden ? null : lsNewSeoDescription.value,
       access: lsAccessMenu.querySelector('.is-selected').dataset.access,
-      mode: lsOpenMode.mode,
     };
     if (lsNewPage) {
       Object.assign(lsNewPage, fields);
     } else {
-      const page = { id: lsNextId++, off: false, blank: true, ...fields };
+      const page = { id: lsNextId++, off: false, blank: true, mode: 'page', ...fields };
       lsPages.push(page);
       lsActive = page.id;
     }
@@ -3027,6 +3027,11 @@
     lsNewSeoDescription.focus();
   });
   lsNew.addEventListener('click', (e) => {
+    if (e.target.closest('[data-pe-clear-description]')) {
+      lsNewSeoDescription.value = '';
+      lsDescriptionShow(false);
+      lsSeoDescriptionAdd.focus();
+    }
     if (e.target.closest('[data-pe-clear], .pe__reset')) {
       lsNewSeoDescription.value = '';
       lsDescriptionShow(false);
@@ -3049,13 +3054,12 @@
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (!lsAccessMenu.hidden) { lsAccessClose(); lsAccess.focus(); }
-    else if (lsOpenMode.isOpen) { lsOpenMode.close(); lsOpenMode.button.focus(); }
     else lsNewClose();
   });
 
   // Клик мимо окна настроек страницы закрывает его без сохранения, как крестик. «+» и меню «⋮» окно открывают сами
   document.addEventListener('mousedown', (e) => {
-    if (!lsNew.hidden && !e.target.closest('#lsNew, .open-mode__menu, #lsAdd, #lsMenu, #confirm')) lsNewClose();
+    if (!lsNew.hidden && !e.target.closest('#lsNew, #lsAdd, #lsMenu, #confirm')) lsNewClose();
   });
 
   // Клик мимо закрывает меню и сохраняет название.
@@ -3155,10 +3159,13 @@
   }
   // Тип сайта по клику на название компонента не меняется (решение пользователя): название — просто заголовок, меню #compMenu по нему не открывается
   // Смена на другой компонент — с подтверждением, как у крестика (compRemoveAsk): что отключится и какие страницы удалятся
-  function compSwitchAsk(id) {
+  function compSwitchAsk(id, goHome = false) {
     const cur = compActive();
     if (!cur || cur === id) { compSwitch(id); return; }
-    const pages = [COMP[cur].widgetHome, ...COMP[cur].pages].filter(Boolean).map((n) => `«${n}»`);
+    const names = [COMP[cur].widgetHome, ...COMP[cur].pages].filter(Boolean);
+    const pages = lsPages.filter((page) => !page.home &&
+      (page.comp === cur || names.includes(page.name) || (cur === 'restaurant' && page.product))
+    ).map((page) => `«${page.name}»`);
     const list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages.at(-1) : pages[0];
     const lines = [`Компонент «${COMP[cur].name}» отключится.`];
     if (pages.length) lines.push(pages.length > 1 ? `Удалятся страницы ${list}.` : `Удалится страница ${list}.`);
@@ -3167,7 +3174,11 @@
       message: `Сменить тип сайта на «${COMP[id].name}»?`,
       details: lines.join(' '),
       answers: [['yes', 'Да', true], ['cancel', 'Отмена']],
-    }, (answer) => { if (answer === 'yes') compSwitch(id); });
+    }, (answer) => {
+      if (answer !== 'yes') return;
+      compSwitch(id);
+      if (goHome) lsSelect((lsPages.find((page) => page.home) ?? lsPages[0]).id);
+    });
   }
   compMenu.addEventListener('click', (e) => {
     const item = e.target.closest('[data-comp-pick]');

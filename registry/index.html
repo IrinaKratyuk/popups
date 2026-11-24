@@ -1661,13 +1661,19 @@ html, body{
 .reg-nav-component{ width: 100%; }
 .reg-nav-component > .params.sales-settings{ margin-top: 0; }
 /* Встроенная форма использует редакторы окна внутри одной карточки. */
-.reg-page{ position: relative; }
+.reg-page{ position: relative; --reg-page-field-width: 200px; }
 .reg-page .pe__body{ display: grid; gap: 8px; padding: 0; }
 .reg-page .pe__card, .reg-page .pe__rows{ display: grid; gap: 8px; }
 .reg-page .pe__card{ padding: 0; background: transparent; box-shadow: none; }
 .reg-page .ls-new__main > .pe__rows{ grid-auto-rows: 24px; }
 .reg-page .pe__row:has(> .ls-new__addr) > *{ align-self: baseline; }
 .reg-page .ls-new__addr{ align-items: baseline; }
+.reg-page :is(.ls-new__addr > .input, .ls-new__seo-title > .input__body){
+  width: var(--reg-page-field-width);
+  max-width: 100%;
+  min-width: 0;
+}
+.reg-page .ls-new__addr > .input{ flex: 0 1 auto; }
 .reg-page .ls-new__addr :is(.input, .input__body, .input__field){
   display: flex;
   align-items: baseline;
@@ -1683,9 +1689,9 @@ html, body{
 .reg-page .ls-new__main :is(.pe__label, .ls-new__addr){ line-height: var(--lh-m); }
 .reg-page .pe__label{ color: var(--c-label, #8991a9); }
 .reg-page .ls-access{ width: 280px; }
-.reg-page .ls-new__index,
-.reg-page .pe__card:has(.open-mode, .ls-new__seo),
-.reg-page .rs-site__chips{ display: none; }
+.reg-page .pe__card:has(> .ls-new__seo[hidden]),
+.reg-page .rs-site__chips:has(> [data-pe-chip][hidden]){ display: none; }
+.reg-page .rs-site__chips{ margin-top: 0; }
 /* тень кита — sticky ::before; в колонке с align-items: flex-start растягиваем её на ширину, поля детали — в --scroll-shadow-inset */
 .reg-nav-detail{ --scroll-shadow-inset: var(--o-s); }
 /* Компенсацию высоты тени задаёт scroll-shadow. */
@@ -1742,7 +1748,8 @@ html, body{
 .reg-card__buy{ display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 12px; background: rgba(51,51,51,.05); border-radius: 39px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; color: #cc3d00; }
 .reg-card__cart{ font-family: var(--font-icon-m); font-size: 24px; line-height: 1; padding-bottom: 4px; color: #f47843; }
 .reg-cat__title{ position: absolute; z-index: 1; left: 0; top: 0; width: 100%; padding: 12px; font-size: 20px; font-weight: 600; line-height: normal; letter-spacing: -.282px; color: #fff; }
-.master--data{ overflow-y: auto; padding-top: 4px; } /* текст пункта — по базовой с заголовком «Сайт»: 8 (поле блока) = 4 (поле мастера) + 4 (поле пункта), строки по 24 px */
+.master--data{ overflow-y: auto; padding-top: 4px; }
+.master--data [data-reg-nav="general"] .master__name{ line-height: 24px; }
 
 
 /* Блок «Сайт» — как .rs-site в styles.css конструктора (Figma 2854:63032).
@@ -1750,8 +1757,10 @@ html, body{
 /* У карточек сайта и страницы одинаковые вертикальные поля. */
 .rs-site{ padding: var(--o-s) var(--o-m); }
 /* Заголовки плашек «Сайт» и компонентов («Электронное меню» и др.) — 16 полужирный, токены ui-kit tokens.css */
-.rs-site__title{ display: flex; align-items: center; gap: 8px; height: 24px; font-size: var(--font-font-size-font-size_xl); font-weight: var(--font-font-weight-bold); letter-spacing: -.2256px; color: var(--components-heading-default_text-color_heading); }
-.rs-site__title + .rs-site__props{ margin-top: 4px; } /* от заголовка «Сайт» до первого свойства 4 — как у шапок компонентов */
+.rs-site__title{ margin: 0 0 8px; font-size: var(--fs-l); font-weight: 600; line-height: 24px; color: var(--components-heading-default_text-color_heading); }
+/* Строка задаёт ту же базовую линию, что и пункт «Сайт» в мастере. */
+.rs-site__title > span{ font-size: var(--font-font-size-font-size_xl); line-height: 0; letter-spacing: -.2256px; }
+#regSales > .rs-site__title{ margin-inline: 12px; }
 .rs-site__props{ display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px; align-items: center; justify-items: start; grid-auto-rows: minmax(24px, auto); /* строка свойства 24, между свойствами 8 */ font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
 /* Иконка сайта (Figma DBmmGUNJ5Pwg8BsFOI5Kuv 7113:110857): круг 28 с рамкой #eaeaea; 28 в строке 24 — выступает на 2 сверху и снизу.
    Ховер (Variant3): рамка #d0d0d0, белая вуаль 75% и иконка 16 #656c87 — как у миниатюры QR (../qr.css). Клик пока без действия */
@@ -3667,7 +3676,7 @@ button.tpl-cat{ cursor: pointer; }
 
               <ul class="master__list">
                 <li class="master__item master__item--selected">
-                  <span class="master__name">Всего</span><span class="master__count">1 667 626</span>
+                  <span class="master__name">Сайт</span><span class="master__count">1 667 626</span>
                 </li>
                 <li class="master__item">
                   <span class="master__name">Главная s-billing.saby.ws</span><span class="master__count">851 546</span>
@@ -3816,7 +3825,8 @@ button.tpl-cat{ cursor: pointer; }
             <div class="detail detail--scroll reg-nav-detail scroll-shadow scroll-shadow--top" id="regDetail">
               <!-- Блок «Сайт» — 1:1 из окна «Параметры сайта» конструктора (Figma 2854:63032):
                    свойства, за ними чипсы ui-kit. Разметка та же, что в ../index.html (.rs-site). -->
-              <section class="params rs-site" id="regSite" aria-label="Сайт">
+              <section class="params rs-site" id="regSite" aria-labelledby="regSiteTitle">
+                <h2 class="rs-site__title" id="regSiteTitle"><span>Сайт</span></h2>
                 <div class="rs-site__props">
                   <span class="rs-site__label">Адрес сайта</span>
                   <!-- Редактор домена (Figma DRIJUUCPNarHomYAJ5eMqn, 14:1683). Состояние Default; дальше — скрипт «Редактор домена» -->
@@ -3843,13 +3853,15 @@ button.tpl-cat{ cursor: pointer; }
                 </div>
               </section>
 
-              <section class="params rs-site reg-page" id="regPage" aria-label="Настройки страницы" hidden>
+              <section class="params rs-site reg-page" id="regPage" aria-labelledby="regPageTitle" hidden>
+                <h2 class="rs-site__title" id="regPageTitle"><span></span></h2>
               </section>
               <!-- Точки продаж компонента «Электронное меню» — 1:1 из «Параметров сайта» конструктора
                    (Figma 2547:71389, .sales-settings в ../styles.css). Точки — первые две из ROOT_SALES
                    в ../app.js; первая — основная (корона). На ховере строки — команды. -->
               <div class="reg-nav-component">
-              <section class="params sales-settings" id="regSales" aria-label="Точки продаж сайта">
+              <section class="params sales-settings" id="regSales" aria-labelledby="regSalesTitle">
+                <h2 class="rs-site__title" id="regSalesTitle"><span>Электронное меню</span></h2>
                 <!-- Страница каталога и страница товара — как в «Параметрах сайта» конструктора (../index.html, .comp-props):
                      ссылка со страницей, клик открывает меню #regPagePickMenu. Выбраны «Меню» и «Карточка товара», как в сценарии «В конструкторе» -->
                 <div class="rs-site__props comp-props">
@@ -4423,7 +4435,7 @@ button.tpl-cat{ cursor: pointer; }
 
               <ul class="master__list">
                 <li class="master__item master__item--selected">
-                  <span class="master__name">Всего</span><span class="master__count">1 667 626</span>
+                  <span class="master__name">Сайт</span><span class="master__count">1 667 626</span>
                 </li>
                 <li class="master__item">
                   <span class="master__name">Главная</span><span class="master__count">851 546</span>
@@ -4631,7 +4643,7 @@ button.tpl-cat{ cursor: pointer; }
 
               <ul class="master__list">
                 <li class="master__item master__item--selected">
-                  <span class="master__name">Всего</span><span class="master__count">1 667 626</span>
+                  <span class="master__name">Сайт</span><span class="master__count">1 667 626</span>
                 </li>
                 <li class="master__item">
                   <span class="master__name">Главная</span><span class="master__count">851 546</span>
@@ -4920,7 +4932,7 @@ button.tpl-cat{ cursor: pointer; }
 
               <ul class="master__list">
                 <li class="master__item master__item--selected">
-                  <span class="master__name">Всего</span><span class="master__count">1 667 626</span>
+                  <span class="master__name">Сайт</span><span class="master__count">1 667 626</span>
                 </li>
                 <li class="master__item">
                   <span class="master__name">Главная</span><span class="master__count">851 546</span>
@@ -5885,7 +5897,7 @@ button.tpl-cat{ cursor: pointer; }
     return list.map(function(it, i){
       var p = x.pages.filter(function(q){ return q.name === it.name; })[0];
       if (p) return P(p.name, p.path, p.w, p.cr, p.t, it.group || undefined);
-      return P(it.name, i ? '/' + slug(it.name) : '', 8, .6, 60 + 23 * ((i * 5 + it.name.length) % 7), it.group || undefined);
+      return P(it.name, i ? '/' + PageEditor.defaultAddress(it.name) : '', 8, .6, 60 + 23 * ((i * 5 + it.name.length) % 7), it.group || undefined);
     });
   }
   /* порядок показа на всех вкладках — как в конструкторе: свои страницы сайта, потом группы в порядке компонентов */
@@ -5908,7 +5920,7 @@ button.tpl-cat{ cursor: pointer; }
     var was = x.pages.filter(function(p){ return p.group; });
     var total = was.length ? was.reduce(function(s, p){ return s + p.w; }, 0) : 15 * c.pages.length;
     return own.concat(c.pages.map(function(name, i){
-      return P(name, '/' + slug(name), total / c.pages.length, i ? 1.2 : 1.8, 120 + 37 * ((i * 7 + name.length) % 5), c.id);
+      return P(name, '/' + PageEditor.defaultAddress(name), total / c.pages.length, i ? 1.2 : 1.8, 120 + 37 * ((i * 7 + name.length) % 5), c.id);
     }));
   }
 
@@ -6021,7 +6033,7 @@ button.tpl-cat{ cursor: pointer; }
   }
   function masterList(m){
     function row(p){ return '<li class="master__item' + (p.group ? ' master__item--grouped' : '') + '"><span class="master__name">' + esc(p.name) + '</span><span class="master__count">' + fmt(p.users) + '</span>' + OPTIONS + '</li>'; }
-    return '<li class="master__item master__item--selected"><span class="master__name">Всего</span><span class="master__count">' + fmt(m.U) + '</span>' + OPTIONS + '</li>' +
+    return '<li class="master__item master__item--selected"><span class="master__name">Сайт</span><span class="master__count">' + fmt(m.U) + '</span>' + OPTIONS + '</li>' +
       m.pages.filter(function(p){ return !p.group; }).map(row).join('') +
       Object.keys(PAGE_GROUPS).map(function(id){
         var g = m.pages.filter(function(p){ return p.group === id; });
@@ -6330,7 +6342,11 @@ button.tpl-cat{ cursor: pointer; }
       label.textContent = page.name;
       row.appendChild(label);
       list.insertBefore(row, group ? null : folder);
-      return { values: Object.assign({ addr: page.link.slice(current.length).replace(/^\//, ''), access: 'public', mode: 'page' }, source, propertyEdits.get(key)),
+      var path = page.link.slice(current.length).replace(/^\//, '');
+      var address = (source ? source.addr : path) || PageEditor.defaultAddress(page.name);
+      var values = Object.assign({ addr: address, access: 'public', mode: 'page' }, source);
+      values.addr = address;
+      return { values: Object.assign(values, propertyEdits.get(key)),
         edits: propertyEdits.get(key), name: page.name, placeholder: source ? slug(page.name).replace(/-/g, '_') : '' };
     });
   }
@@ -6356,8 +6372,10 @@ button.tpl-cat{ cursor: pointer; }
     $('#regSite').hidden = key !== 'general';
     $('#regDetail .reg-nav-component').hidden = key !== 'comp';
     $('#regPage').hidden = !selectedProperties;
+    var title = selectedProperties ? '#regPageTitle' : key === 'comp' ? '#regSalesTitle' : '#regSiteTitle';
+    $(title + ' > span').textContent = $('.master__name', row).textContent;
     $('#regDetail').scrollTop = 0;
-    if (editor) { editor.lsOpenMode.close(); editor.lsAccessClose(); }
+    if (editor) editor.lsAccessClose();
     if (!selectedProperties) return;
     var root = $('#regPage');
     if (root !== editorRoot){
@@ -6370,7 +6388,6 @@ button.tpl-cat{ cursor: pointer; }
     var values = selectedProperties.values;
     $('#lsNewAddr').placeholder = selectedProperties.placeholder;
     $('#lsNewAddr').value = values.addr ?? '';
-    editor.lsOpenMode.set(values.mode ?? 'page');
     editor.lsAccessSelect($('[data-access="' + (values.access === 'authorized' ? 'authorized' : 'public') + '"]', root));
     $('#lsNewIndex').setAttribute('aria-checked', !!values.noindex);
     $('#lsNewIndex .rp-switch').classList.toggle('is-on', !!values.noindex);
@@ -6415,6 +6432,12 @@ button.tpl-cat{ cursor: pointer; }
       setProperty('seoDescription', '');
       $('#lsNewSeoDescription').focus();
     }
+    if (e.target.closest('#regPage [data-pe-clear-description]')){
+      setProperty('seoDescription', null);
+      $('#lsNewSeoDescription').value = '';
+      descriptionVisible(false);
+      $('#lsSeoDescriptionAdd').focus();
+    }
     if (e.target.closest('#regPage [data-pe-clear]')){
       descriptionVisible(false);
       setProperty('seo', null);
@@ -6425,7 +6448,6 @@ button.tpl-cat{ cursor: pointer; }
   });
   document.addEventListener('keydown', function(e){
     if (e.key === 'Escape' && editor && editorRoot.contains(document.activeElement)){
-      if (editor.lsOpenMode.isOpen) { editor.lsOpenMode.close(); editor.lsOpenMode.button.focus(); }
       if (!editor.lsAccessMenu.hidden) { editor.lsAccessClose(); editor.lsAccess.focus(); }
     }
     if (e.target.matches('[data-reg-nav]') && (e.key === 'Enter' || e.key === ' ')){
