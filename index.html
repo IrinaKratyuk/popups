@@ -450,9 +450,9 @@
             <div class="sales-settings__sub sales-settings__sub--points"><div><span id="salesSettingsPoints">Точки продаж</span><button class="btn btn--filled btn--style-pale btn--size-m rs-plus" type="button" data-sales-add aria-label="Добавить точку продаж" title="Добавить точку продаж"><span class="btn__icon">&#xEADD;</span></button></div><span class="sales-settings__price">Прайс</span></div>
             <div class="sales-rows" id="salesSettingsRows"></div>
           </section>
-          <!-- Группы остальных подключённых компонентов (у «Ресторана» — блок выше): иконка, название, крестик «отключить». Строит compChipsRender -->
+          <!-- Подключённые компоненты в порядке чипсов -->
           <div class="comp-groups" id="compGroups"></div>
-          <!-- Неподключённые компоненты чипсами ui-kit с иконкой: клик подключает компонент (с зависимостями). Чипсы строит compChipsRender -->
+          <!-- Неподключённые компоненты чипсами ui-kit с иконкой: клик подключает компонент. Чипсы строит compChipsRender -->
           <section class="component-list rs-comps" id="compChipsBlock" aria-label="Компоненты">
             <div class="rs-comps__title">Компоненты</div>
             <div class="rs-comps__chips" id="compChips"></div>
@@ -463,14 +463,6 @@
         <div class="mw-menu ls-mode page-pick-menu" id="pagePickMenu" role="menu" aria-label="Выбор страницы" hidden>
           <div class="mw-menu__list"></div>
           <button class="mw-menu__close" type="button" id="pagePickClose" aria-label="Закрыть меню страниц"><img src="assets/img/close-menu.svg" width="12" height="12" alt=""></button>
-        </div>
-        <!-- «Тип сайта» по клику на название компонента (Figma j0TcGAxRru4vkoaXdGwmWO 560:28184): заголовок с крестиком, радиопункты компонентов.
-             Пункты строит compMenu* в app.js из COMP; выбор меняет компонент сайта. Та же разметка — на вкладке «Параметры» реестра (#regCompMenu) -->
-        <div class="mw-menu ls-mode comp-menu" id="compMenu" role="menu" aria-label="Тип сайта" hidden>
-          <div class="mw-menu__list">
-            <div class="comp-menu__top"><div class="ls-mode__head comp-menu__head">Тип сайта</div><button class="comp-menu__close" type="button" id="compMenuClose" aria-label="Закрыть"><img src="assets/img/close-link.svg" width="32" height="32" alt=""></button></div>
-            <div class="comp-menu__items"></div>
-          </div>
         </div>
       </section>
 
@@ -521,7 +513,7 @@
         <div class="pe__body">
           <div class="pe__card catset__main">
             <div class="catset__lookup">
-              <button type="button" class="catset__value">[Из текущей точки продаж]</button>
+              <button type="button" class="catset__value" data-catalog-price="restaurant">Меню A la carte</button>
               <button type="button" class="catset__clear" aria-label="Очистить">&#xe66c;</button>
               <span class="pe__spacer"></span>
               <button type="button" class="btnset__list" aria-label="Выбрать из списка"><img src="assets/img/lookup-list.svg" width="12" height="9" alt=""></button>

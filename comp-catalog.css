@@ -9,6 +9,6 @@
 .comp-cat__checks { justify-self: stretch; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px; min-width: 0; }
 .comp-cat__check { max-width: 100%; font-size: 14px; letter-spacing: inherit; }
 
-/* «Выбор товара из» — строка свойств после QR-кода (.comp-props), прайс ссылкой: ховер — подчёркивание, клика пока нет */
-.comp-cat__price { max-width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #2562aa; cursor: pointer; }
+/* «Выбор товара из» — строка свойств после QR-кода (.comp-props), прайс ссылкой: ховер — подчёркивание */
+.comp-cat__price { justify-self: start; padding: 0; border: 0; background: none; font: inherit; max-width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #2562aa; cursor: pointer; }
 .comp-cat__price:hover { text-decoration: underline; }

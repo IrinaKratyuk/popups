@@ -1644,13 +1644,11 @@ html, body{
 .master--data .master__list > .master__item{ cursor: pointer; }
 .master--data .site-tree :is(.site-tree__page, .site-tree__site){ cursor: pointer; }
 .master__item[hidden]{ display: none; }
-#regMasterComp{ gap: 0; font-weight: 600; }
-#regMasterComp .master__name{ flex: 0 1 auto; }
+[data-component-row]{ gap: 0; font-weight: 600; }
+[data-component-row] .master__name{ flex: 0 1 auto; }
 .reg-component-pages[hidden], #regDeliverySettings[hidden], #regDeliveryHours[hidden], #regDeliveryAreas[hidden]{ display: none; }
 .master--data .site-tree .reg-component-pages .site-tree__page:not([data-reg-nav]){ cursor: default; }
-#regDeliveryNav .switch{ pointer-events: none; }
-#regDeliverySettings{ display: grid; gap: 8px; }
-.reg-nav-component--delivery-overview > #regSales{ display: none; }
+#regDeliverySettings{ display: grid; gap: 8px; margin-top: 8px; }
 #regDetail:has(> #regDeliveryAreas:not([hidden])){ padding-bottom: 0; }
 #regDeliveryAreas{ position: relative; flex: 1 1 0; min-height: 0; margin: 0; overflow: hidden; }
 #regDeliveryAreas img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -1661,7 +1659,6 @@ html, body{
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
-#regSalesTitle[hidden]{ display: none; }
 .reg-delivery-card{ gap: 8px; padding: 10px var(--o-m); font-size: var(--fs-l); }
 .reg-delivery-card__row{ display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 24px; }
 .reg-delivery-card__link{ color: var(--c-text-link); }
@@ -1694,6 +1691,24 @@ html, body{
 .reg-nav-detail{ overflow-y: auto; scrollbar-width: none; }
 #regDetail [hidden]{ display: none; }
 .reg-nav-detail > *{ flex: none; }
+#screen-3 .master__list > .extra-component-row[data-reg-nav="news"]{ cursor: pointer; }
+.reg-nav-detail:has(> .reg-news:not([hidden])){ overflow: clip; }
+.reg-nav-detail:has(> .reg-news:not([hidden]))::before,
+.reg-nav-detail:has(> .reg-news:not([hidden]))::after{ display: none; }
+.reg-news{ display: grid; gap: var(--o-s); width: 100%; }
+.reg-news__card{ position: relative; gap: 6px; margin: 0; padding: var(--o-m); }
+.reg-news__meta{ display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; width: 100%; font-size: 12px; color: #626d89; }
+.reg-news__title{ margin: 0; font-size: 18px; font-weight: 600; }
+.reg-news__text{ margin: 0; line-height: 1.35; }
+.reg-news__footer{ display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; width: 100%; margin-top: 2px; font-size: 14px; }
+.reg-news__reactions, .reg-news__stat, .reg-news__stats{ display: inline-flex; align-items: center; gap: 4px; }
+.reg-news__stats{ margin-left: auto; gap: 8px; }
+.reg-news__stat .icon{ font-size: 16px; color: #757575; }
+.reg-news__card.reg-news__card--calendar{ background: linear-gradient(110deg, #efedff 48%, #bcaffb); }
+.reg-news__calendar-body{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 30%); align-items: center; gap: var(--o-m); width: 100%; }
+.reg-news__calendar-body .reg-news__text{ margin-top: 6px; }
+.reg-news__calendar{ display: grid; place-items: center; justify-self: center; width: min(100%, 104px); aspect-ratio: 1.2; border-top: 20px solid #6251d6; border-radius: 12px; background: #f5f2ff; box-shadow: 0 8px 18px #5745ae44; color: #6251d6; font-size: clamp(24px, 4vw, 48px); line-height: 1; }
+.reg-news__card.reg-news__card--outing{ background: linear-gradient(110deg, #e5f2ec, #c4e4da); }
 .reg-nav-component{ width: 100%; }
 .reg-nav-component > .params.sales-settings{ margin-top: 0; }
 /* Встроенная форма использует редакторы окна внутри одной карточки. */
@@ -1853,15 +1868,7 @@ html, body{
 .mw-menu__close{ position: absolute; right: -14px; top: 8px; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(205,205,205,.8); cursor: pointer; transition: background-color .12s; }
 .mw-menu__close:hover{ background: rgba(170,170,170,.85); }
 .mw-menu__close img{ display: block; }
-/* Меню «Тип сайта» — как .comp-menu в ../styles.css */
 .ls-mode__head{ height: 28px; display: flex; align-items: center; padding-left: 22px; font-size: 14px; letter-spacing: 1.25px; text-transform: uppercase; color: #8991a9; }
-.mw-menu.comp-menu{ width: 210px; }
-.comp-menu .mw-menu__list{ padding: 8px; }
-.comp-menu__top{ display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.comp-menu__head{ flex: 1; min-width: 0; }
-.comp-menu__close{ flex: none; width: 28px; height: 28px; padding: 0; border: 0; background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.comp-menu__close img{ flex: none; display: block; }
-.comp-menu__items{ display: flex; flex-direction: column; gap: 6px; }
 .ls-mode__toggle{ flex: none; width: 14px; height: 32px; display: flex; align-items: center; justify-content: center; padding-right: 2px; }
 .ls-mode__toggle::before{ content: ""; width: 7px; height: 7px; border-radius: 50%; visibility: hidden; }
 .ls-mode__item:hover .ls-mode__toggle::before{ visibility: visible; border: 1px solid var(--border-border-color, #ccc); background: var(--background-background-color, #fff); }
@@ -1875,7 +1882,7 @@ html, body{
 .sales-empty{ margin: 0; padding: 0 12px; font-size: 14px; line-height: 1.4; letter-spacing: -.1974px; color: #8991a9; }
 .sales-empty__link{ padding: 0; border: 0; background: none; font: inherit; letter-spacing: inherit; color: #2562aa; cursor: pointer; }
 .sales-empty__link:hover{ text-decoration: underline; }
-.sales-row{ position: relative; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 10px; min-height: 32px; padding: 0 66px 0 12px; font-size: 14px; letter-spacing: -.1974px; color: var(--c-text); cursor: pointer; }
+.sales-row{ position: relative; display: grid; grid-template-columns: minmax(0,1fr); align-items: center; gap: 10px; min-height: 32px; padding: 0 66px 0 12px; font-size: 14px; letter-spacing: -.1974px; color: var(--c-text); cursor: pointer; }
 .sales-row:hover{ background: #f3f4f8; }
 .sales-row__name{ display: flex; align-items: center; gap: 4px; min-width: 0; }
 .sales-row__name > span:first-child{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1884,8 +1891,7 @@ html, body{
 /* прайс — кнопка-ссылка ui-kit в стиле default (.btn--link.btn--style-default): при наведении темнее и подчёркнуто, как в ../styles.css */
 .sales-price:hover{ color: var(--text-hover_text-color); text-decoration: underline; }
 /* Компонент без прайса («Услуги», «Отель»): у точек только название — колонки «Прайс» нет, как в ../styles.css */
-.sales-settings--no-price .sales-settings__price, .sales-settings--no-price .sales-price{ display: none; }
-.sales-settings--no-price .sales-row{ grid-template-columns: minmax(0,1fr); } /* прайс открывает выбор — рука, как в мастере */
+.sales-settings__price, .sales-price{ display: none; }
 .sales-row__actions{ position: absolute; top: 0; right: 0; bottom: 0; display: none; align-items: center; gap: 6px; padding: 4px 8px 3px 6px; background: #f3f4f8; }
 .sales-row:hover .sales-row__actions{ display: flex; }
 .sales-row__actions button{ display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 100px; background: transparent; cursor: pointer; }
@@ -3857,11 +3863,6 @@ button.tpl-cat{ cursor: pointer; }
                   <ul class="site-tree__pages" aria-label="Настройки доставки">
                     <li class="master__item site-tree__page" data-reg-nav="delivery-hours" tabindex="0" role="button"><span class="master__name">Режим работы</span></li>
                     <li class="master__item site-tree__page" data-reg-nav="delivery-areas" tabindex="0" role="button"><span class="master__name">Районы обслуживания</span></li>
-                    <li class="master__item site-tree__page" data-reg-nav="delivery-site" tabindex="0" role="button"><span class="master__name">Сайт</span></li>
-                    <li class="master__item site-tree__page">
-                      <span class="master__name">Виджет</span>
-                      <span class="switch" role="switch" aria-label="Виджет" aria-checked="false" aria-readonly="true"><input class="switch__input" type="checkbox" inert><span class="switch__button"></span></span>
-                    </li>
                   </ul>
                 </li>
                 <li class="reg-component-pages" id="regGalleryNav" hidden>
@@ -3872,7 +3873,7 @@ button.tpl-cat{ cursor: pointer; }
                 </li>
               </ul>
               <!-- «Компоненты»: все компоненты чипсами, как #compChipsBlock конструктора.
-                   Клик подключает компонент тем же скриптом (data-comp-add); чипса подключённого скрыта, пока компонент подключён — заголовка нет -->
+                   Клик подключает компонент и скрывает его чипсу -->
               <section class="component-list addable" id="regAddable" aria-label="Компоненты">
                 <h3 class="addable__caption">Компоненты</h3>
                 <div class="addable__list">
@@ -3923,6 +3924,77 @@ button.tpl-cat{ cursor: pointer; }
               <!-- Точки продаж компонента «Электронное меню» — 1:1 из «Параметров сайта» конструктора
                    (Figma 2547:71389, .sales-settings в ../styles.css). Точки — первые две из ROOT_SALES
                    в ../app.js; первая — основная (корона). На ховере строки — команды. -->
+              <section class="reg-news" id="regNews" aria-label="Лента новостей" hidden>
+                <article class="params reg-news__card">
+                  <header class="reg-news__meta"><span>Новость группы</span><time datetime="2024-04-08T10:33">8 апр 10:33</time></header>
+                  <h2 class="reg-news__title">Опрос по подключению сетевых устройств к локальной сети</h2>
+                  <p class="reg-news__text">Коллеги, добрый день!<br>Просим разработчиков и тестировщиков Ярославля пройти опрос о подключении сетевых устройств к локальной сети.</p>
+                  <footer class="reg-news__footer">
+                    <span class="reg-news__reactions" role="img" aria-label="12 реакций"><span aria-hidden="true">👍 ❤️ 😀 ... 12</span></span>
+                    <span class="reg-news__stats">
+                      <span class="reg-news__stat" role="img" aria-label="346 просмотров"><i class="icon" aria-hidden="true">&#xEAB9;</i><span aria-hidden="true">346</span></span>
+                      <span class="reg-news__stat" role="img" aria-label="10 комментариев"><i class="icon" aria-hidden="true">&#xE65D;</i><span aria-hidden="true">10</span></span>
+                    </span>
+                  </footer>
+                </article>
+                <article class="params reg-news__card reg-news__card--calendar">
+                  <header class="reg-news__meta"><span>Организация разработки</span><time datetime="2024-04-05T15:00">5 апр 15:00</time></header>
+                  <div class="reg-news__calendar-body">
+                    <div>
+                      <h2 class="reg-news__title">Обновленный календарь сотрудника</h2>
+                      <p class="reg-news__text">В версии 24.2100 мы обновили дизайн календаря сотрудника в режиме «Дни». Изменения касаются интерфейса и не затрагивают рабочие процессы.</p>
+                    </div>
+                    <span class="reg-news__calendar" aria-hidden="true">▦</span>
+                  </div>
+                  <footer class="reg-news__footer"><span class="reg-news__stats"><span class="reg-news__stat" role="img" aria-label="572 просмотра"><i class="icon" aria-hidden="true">&#xEAB9;</i><span aria-hidden="true">572</span></span></span></footer>
+                </article>
+                <article class="params reg-news__card">
+                  <header class="reg-news__meta"><span>Организация разработки · Абакова София</span><time datetime="2024-04-08T09:21">8 апр 09:21</time></header>
+                  <h2 class="reg-news__title">Планы на неделю 08.04 – 14.04</h2>
+                  <p class="reg-news__text">08.04 — Работы на бою выполняются в штатном режиме.<br>09.04 — ХФ 24.2104.<br>10.04 — Работы на бою выполняются в штатном режиме.</p>
+                </article>
+                <article class="params reg-news__card reg-news__card--outing">
+                  <header class="reg-news__meta"><span>Полный вперёд! · Наша компания</span><time>09:00</time></header>
+                  <h2 class="reg-news__title">Готовимся к весеннему походу</h2>
+                  <p class="reg-news__text">В субботу идём на прогулку по лесному маршруту. Сбор в 10:00 у входа в парк. Возьмите воду и одежду по погоде.</p>
+                </article>
+                <article class="params reg-news__card">
+                  <header class="reg-news__meta"><span>Наша компания</span><time>08:45</time></header>
+                  <h2 class="reg-news__title">Открыли запись на экскурсию по офису</h2>
+                  <p class="reg-news__text">В четверг покажем, как устроены команды поддержки и разработки. Экскурсия начнётся в 16:00 у стойки регистрации.</p>
+                  <footer class="reg-news__footer"><span class="reg-news__stats"><span class="reg-news__stat" role="img" aria-label="128 просмотров"><i class="icon" aria-hidden="true">&#xEAB9;</i><span aria-hidden="true">128</span></span></span></footer>
+                </article>
+                <article class="params reg-news__card">
+                  <header class="reg-news__meta"><span>Организация разработки</span><time>08:30</time></header>
+                  <h2 class="reg-news__title">Обновили памятку по тестовым стендам</h2>
+                  <p class="reg-news__text">В памятке собрали адреса стендов и контакты дежурных. Добавили раздел о том, как проверить доступ перед началом работы.</p>
+                  <footer class="reg-news__footer"><span class="reg-news__stats"><span class="reg-news__stat" role="img" aria-label="216 просмотров"><i class="icon" aria-hidden="true">&#xEAB9;</i><span aria-hidden="true">216</span></span></span></footer>
+                </article>
+                <article class="params reg-news__card">
+                  <header class="reg-news__meta"><span>Новость группы</span><time>08:15</time></header>
+                  <h2 class="reg-news__title">Встреча по итогам спринта</h2>
+                  <p class="reg-news__text">В пятницу обсудим результаты спринта и разберём задачи, которые переносим на следующую неделю.</p>
+                  <footer class="reg-news__footer"><span class="reg-news__stats"><span class="reg-news__stat" role="img" aria-label="94 просмотра"><i class="icon" aria-hidden="true">&#xEAB9;</i><span aria-hidden="true">94</span></span></span></footer>
+                </article>
+                <article class="params reg-news__card">
+                  <header class="reg-news__meta"><span>Наша компания</span><time>08:00</time></header>
+                  <h2 class="reg-news__title">Открыт сбор книг для обмена</h2>
+                  <p class="reg-news__text">До пятницы приносите книги на полку у переговорной. На обложке можно оставить записку для следующего читателя.</p>
+                  <footer class="reg-news__footer"><span class="reg-news__stats"><span class="reg-news__stat" role="img" aria-label="72 просмотра"><i class="icon" aria-hidden="true">&#xEAB9;</i><span aria-hidden="true">72</span></span></span></footer>
+                </article>
+                <article class="params reg-news__card">
+                  <header class="reg-news__meta"><span>Организация разработки</span><time>07:45</time></header>
+                  <h2 class="reg-news__title">Опубликовали запись встречи по интерфейсам</h2>
+                  <p class="reg-news__text">В записи показали, как проверить состояния формы и передать замечания в команду дизайна.</p>
+                  <footer class="reg-news__footer"><span class="reg-news__stats"><span class="reg-news__stat" role="img" aria-label="183 просмотра"><i class="icon" aria-hidden="true">&#xEAB9;</i><span aria-hidden="true">183</span></span></span></footer>
+                </article>
+                <article class="params reg-news__card">
+                  <header class="reg-news__meta"><span>Новость группы</span><time>07:30</time></header>
+                  <h2 class="reg-news__title">Обновили расписание дежурств</h2>
+                  <p class="reg-news__text">Проверьте смены на следующую неделю. Если нужно поменяться, отметьте это в общем календаре.</p>
+                  <footer class="reg-news__footer"><span class="reg-news__stats"><span class="reg-news__stat" role="img" aria-label="105 просмотров"><i class="icon" aria-hidden="true">&#xEAB9;</i><span aria-hidden="true">105</span></span></span></footer>
+                </article>
+              </section>
               <div class="reg-nav-component">
               <section class="params sales-settings" id="regSales" aria-labelledby="regSalesTitle">
                 <h2 class="rs-site__title" id="regSalesTitle"><span>Электронное меню</span></h2>
@@ -3960,14 +4032,6 @@ button.tpl-cat{ cursor: pointer; }
                 <div class="mw-menu ls-mode page-pick-menu" id="regPagePickMenu" role="menu" aria-label="Выбор страницы" hidden>
                   <div class="mw-menu__list"></div>
                   <button class="mw-menu__close" type="button" data-page-pick-close aria-label="Закрыть меню страниц"><img src="../assets/img/close-menu.svg" width="12" height="12" alt=""></button>
-                </div>
-                <!-- «Тип сайта» по клику на название компонента — как #compMenu в конструкторе (Figma j0TcGAxRru4vkoaXdGwmWO 560:28184).
-                     Пункты строит скрипт ниже; пункт другого компонента несёт data-comp-add — его подключает скрипт компонентов -->
-                <div class="mw-menu ls-mode comp-menu" id="regCompMenu" role="menu" aria-label="Тип сайта" hidden>
-                  <div class="mw-menu__list">
-                    <div class="comp-menu__top"><div class="ls-mode__head comp-menu__head">Тип сайта</div><button class="comp-menu__close" type="button" data-comp-menu-close aria-label="Закрыть"><img src="../assets/img/close-link.svg" width="32" height="32" alt=""></button></div>
-                    <div class="comp-menu__items"></div>
-                  </div>
                 </div>
               </section>
               <div id="regDeliverySettings" hidden>
@@ -4041,12 +4105,12 @@ button.tpl-cat{ cursor: pointer; }
               <div id="regCompGroups"></div>
               <!-- Подключение через блок «Компоненты» в мастере (#regAddable), в конструкторе — #compChipsBlock -->
               <section class="reg-cat" id="regSalesCatalog" aria-label="Каталог сайта" hidden>
-                <div class="reg-cat__price"><span class="reg-cat__label">Прайс</span><button class="reg-cat__link" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"></button></div>
-                <!-- Плашки категорий и разделы с блюдами — по прайсу точки (CATALOGS в скрипте ниже), вид — как каталог на сайте в конструкторе (#siteCatalog в ../index.html) -->
+                <div class="reg-cat__price"><span class="reg-cat__label">Прайс</span><button class="reg-cat__link" data-catalog-price="restaurant" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"></button></div>
+                <!-- Плашки категорий и разделы с блюдами — по прайсу компонента (CATALOGS в скрипте ниже), вид — как каталог на сайте в конструкторе (#siteCatalog в ../index.html) -->
                 <div class="reg-cat__body" id="regCatBody"></div>
               </section>
               <script>
-              /* «Каталог» электронного меню показывает каталог основной точки, которая стоит первой в настройках компонента. */
+              /* «Каталог» электронного меню показывает выбранный прайс компонента. */
               (function(){
                 // тень прокрутки: scroll не всплывает, ловим на погружении
                 document.addEventListener('scroll', function(e){
@@ -4058,20 +4122,18 @@ button.tpl-cat{ cursor: pointer; }
                   cat.hidden = !open;
                   detail.classList.toggle('is-sales-catalog', open);
                   if (!open) return;
-                  var row = document.querySelector('#regSales .sales-row[data-sales-point]');
-                  var price = row ? row.querySelector('.sales-price').textContent.trim() : '';
+                  var price = window.CompCatalog?.getPrice(window.regCatalogSite(), 'restaurant') || '';
                   var button = cat.querySelector('.reg-cat__link');
                   button.textContent = price || 'Выбрать прайс';
-                  button.disabled = !row;
                   if (cat.dataset.price === price) return;
                   cat.dataset.price = price;
                   renderCatalog(price);
                   cat.scrollTop = 0;
                   detail.classList.remove('is-scrolled');
                 };
-                /* Каталоги прайсов — демо. У точки свой прайс, у прайса свой каталог: категории (плашки) и разделы с блюдами.
+                /* Каталоги прайсов — демо. У прайса свой каталог: категории (плашки) и разделы с блюдами.
                    Картинка категории — [файл, стиль кадрирования]; у блюда — слои [файл, cover|tall], как .site-card в конструкторе.
-                   Несколько прайсов у точки — их каталоги подряд; у прайса без своего каталога — один из трёх по названию. */
+                   У прайса без своего каталога — один из трёх по названию. */
                 var IMG = '../assets/img/site/';
                 var COVER = 'left:0;top:0;width:100%;object-fit:cover';
                 var CATALOGS = {
@@ -4125,20 +4187,14 @@ button.tpl-cat{ cursor: pointer; }
                 function esc(s){ var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
                 function renderCatalog(price){
                   var body = document.getElementById('regCatBody');
-                  var prices = price.split(', ').filter(function(p){ return p && p !== 'Выбрать прайс'; });
-                  if (!prices.length){
-                    body.innerHTML = '<p class="reg-cat__empty">' + (price ? 'Выберите прайс, чтобы увидеть каталог' : 'Добавьте точку продаж в настройках электронного меню') + '</p>';
+                  if (!price){
+                    body.innerHTML = '<p class="reg-cat__empty">Выберите прайс, чтобы увидеть каталог</p>';
                     return;
                   }
-                  var cats = [], sections = [];
-                  prices.forEach(function(p){
-                    var c = catalogOf(p);
-                    c.cats.forEach(function(x){ if (!cats.some(function(y){ return y[0] === x[0]; })) cats.push(x); });
-                    sections = sections.concat(c.sections);
-                  });
-                  body.innerHTML = '<div class="reg-cat__tiles">' + cats.map(function(c){
+                  var catalog = catalogOf(price);
+                  body.innerHTML = '<div class="reg-cat__tiles">' + catalog.cats.map(function(c){
                     return '<div class="reg-cat__tile"><img src="' + IMG + c[1] + '" alt="" style="' + c[2] + '"><span class="reg-cat__title">' + esc(c[0]) + '</span></div>';
-                  }).join('') + '</div>' + sections.map(function(s, i){
+                  }).join('') + '</div>' + catalog.sections.map(function(s, i){
                     return '<div class="reg-cat__h' + (i ? ' reg-cat__h--next' : '') + '">' + esc(s[0]) + '</div><div class="reg-cat__cards">' + s[1].map(function(d){
                       return '<div class="reg-card"><div class="reg-card__img">' + d[3].map(function(l){ return '<img class="reg-card__' + l[1] + '" src="' + IMG + l[0] + '" alt="">'; }).join('') + '</div>' +
                         '<div class="reg-card__name">' + esc(d[0]) + '</div><div class="reg-card__desc' + (d[4] ? ' reg-card__desc--lead' : '') + '">' + esc(d[1]) + '</div>' +
@@ -4151,143 +4207,164 @@ button.tpl-cat{ cursor: pointer; }
               })();
               </script>
               <script>
-              /* Компоненты как в «Параметрах сайта» конструктора: подключён один, крестик отключает, чипс подключает.
-                 Настройки у всех одинаковые — блок #regSales: страницы каталога и товара (по умолчанию — страницы компонента)
-                 и точки (у каждого компонента свои; прайс — только у «Электронного меню» и «Доставки»), как COMP в ../app.js.
-                 Разметку экрана при выборе сайта заново вставляет apply() (innerHTML), поэтому слушаем document
-                 и элементы ищем в момент клика; после смены сайта снова подключено «Электронное меню». */
               (function(){
                 if (window.regCompsBound) return;
                 window.regCompsBound = true;
                 var COMP = {
-                  restaurant: { name: 'Электронное меню', pages: ['Меню', 'Карточка товара'], catalog: 'Меню', product: 'Карточка товара', points: 'Точки продаж', point: 'точку продаж', price: true },
-                  delivery: { name: 'Доставка', pages: ['Каталог', 'Корзина', 'Заказы', 'Карточка заказа'], catalog: 'Каталог', product: 'Карточка заказа', points: 'Точки продаж', point: 'точку продаж', price: true },
-                  services: { name: 'Услуги', pages: ['Каталог услуг', 'Карточка услуги', 'Специалисты', 'Карточка специалиста', 'Выбор времени записи'], catalog: 'Каталог услуг', product: 'Карточка услуги', points: 'Филиалы', point: 'филиал', price: false },
-                  hotel: { name: 'Отель', pages: ['Номера', 'Карточка номера'], catalog: 'Номера', product: 'Карточка номера', points: 'Объекты размещения', point: 'объект размещения', price: false }
+                  restaurant: { name: 'Электронное меню', pages: ['Меню', 'Карточка блюда'], catalog: 'Меню', product: 'Карточка блюда', points: 'Точки продаж', point: 'точку продаж' },
+                  delivery: { name: 'Доставка', pages: ['Каталог', 'Корзина', 'Заказы', 'Карточка заказа'], catalog: 'Каталог', product: 'Карточка заказа', points: 'Точки продаж', point: 'точку продаж' },
+                  services: { name: 'Услуги', pages: ['Каталог услуг', 'Карточка услуги', 'Специалисты', 'Карточка специалиста', 'Выбор времени записи'], catalog: 'Каталог услуг', product: 'Карточка услуги', points: 'Филиалы', point: 'филиал' },
+                  hotel: { name: 'Отель', pages: ['Номера', 'Карточка номера'], catalog: 'Номера', product: 'Карточка номера', points: 'Объекты размещения', point: 'объект размещения' }
                 };
-                // название точек подключённого компонента — из разметки блока (после смены сайта она снова «Электронного меню»)
-                window.regPointsName = function(){
-                  var el = document.getElementById('regSalesPoints');
-                  return el ? el.textContent : 'Точки продаж';
-                };
-                var sales, on;
-                function render(){
-                  sales.hidden = !on;
-                  document.getElementById('regRestaurantNav').hidden = on !== 'restaurant';
-                  document.getElementById('regDeliveryNav').hidden = on !== 'delivery';
-                  var mc = document.getElementById('regMasterComp');
-                  if (mc){
-                    mc.hidden = !on;
-                    if (on){
-                      mc.querySelector('.master__name').textContent = COMP[on].name;
-                      mc.querySelector('.master__comp-icon').src = '../assets/img/comp/' + on + '.svg';
-                    }
-                    if (!on && mc.classList.contains('master__item--selected')) window.regNavSelect && window.regNavSelect('general');
-                  }
-                  // чипсы остаются: скрыта только чипса подключённого компонента, чипса другого заменяет его (после подтверждения #comp-switch)
-                  document.querySelectorAll('#regAddable [data-comp-add]').forEach(function(b){ b.hidden = b.dataset.compAdd === on; });
-                  if (!on) return;
-                  var c = COMP[on];
+                var connected = new Set();
+                var states = new Map();
+                var active = null;
+                var renderedSite;
+                var confirmedAction;
+                var get = function(id){ return document.getElementById(id); };
+                var ordered = function(){ return Object.keys(COMP).filter(function(id){ return connected.has(id); }); };
+                window.regPointsName = function(){ return active ? COMP[active].points : COMP.restaurant.points; };
+
+                function remember(){
+                  if (!active) return;
+                  var sales = get('regSales');
+                  states.set(active, {
+                    points: Array.from(sales.querySelectorAll('.sales-rows [data-sales-point]'), function(row){
+                      return { name: row.dataset.salesPoint, price: row.querySelector('.sales-price')?.textContent ?? '' };
+                    }),
+                    pages: Object.fromEntries(Array.from(sales.querySelectorAll('[data-page-pick]'), function(b){
+                      return [b.dataset.pagePick, b.textContent];
+                    }))
+                  });
+                }
+                window.regCompShow = function(id){
+                  if (!connected.has(id) || active === id) return;
+                  remember();
+                  active = id;
+                  var sales = get('regSales');
+                  var c = COMP[id], state = states.get(id);
+                  sales.dataset.comp = id;
+                  sales.dataset.compPages = c.pages.join('|');
                   sales.setAttribute('aria-label', c.name);
-                  sales.classList.toggle('sales-settings--no-price', !c.price);
-                  if (c.pages) sales.dataset.compPages = c.pages.join('|'); else delete sales.dataset.compPages;
-                  sales.dataset.comp = on;
-                  document.getElementById('regSalesPoints').textContent = c.points;
-                  if (window.QrCode) window.QrCode.sync(document.getElementById('regCompQr'), on); // табличка QR — по типу сайта (../qr.js)
-                  if (window.CompCatalog) window.CompCatalog.sync(document.getElementById('regCompCatalog'), on); // настройки каталога — только у меню и услуг (../comp-catalog.js)
+                  sales.hidden = false;
+                  get('regSalesPoints').textContent = c.points;
+                  get('regSalesTitle').querySelector('span').textContent = c.name;
+                  window.QrCode?.sync(get('regCompQr'), id);
+                  window.CompCatalog?.sync(get('regCompCatalog'), id);
                   var add = sales.querySelector('.sales-add');
                   add.title = 'Добавить ' + c.point;
-                  add.setAttribute('aria-label', 'Добавить ' + c.point);
-                  document.querySelectorAll('#screen-3 [data-comp-off]').forEach(function(off){
-                    off.dataset.compOff = on;
-                    off.setAttribute('aria-label', 'Отключить компонент «' + c.name + '»');
+                  add.setAttribute('aria-label', add.title);
+                  sales.querySelectorAll('[data-page-pick]').forEach(function(b){
+                    b.textContent = (state?.pages ?? c)[b.dataset.pagePick] ?? 'Выберите';
                   });
-
-                }
-                // Замена компонента — с подтверждением, как в конструкторе (compSwitchAsk в ../app.js): что отключится и какие страницы удалятся
-                // окно стоит в разметке ниже этого скрипта — ищем его в момент клика
-                var askId = null;
-                var extraRemove = null;
-                window.regExtraOffAsk = function(name, remove){
-                  document.getElementById('comp-switch-msg').textContent = 'Отключить компонент «' + name + '»?';
-                  document.getElementById('comp-switch-details').textContent = '';
-                  extraRemove = remove;
-                  document.getElementById('comp-switch').hidden = false;
-                };
-                function switchAsk(cur, id){
-                  extraRemove = null;
-                  var pages = COMP[cur].pages.map(function(n){ return '«' + n + '»'; });
-                  var list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages[pages.length - 1] : pages[0];
-                  document.getElementById('comp-switch-msg').textContent = 'Сменить тип сайта на «' + COMP[id].name + '»?';
-                  document.getElementById('comp-switch-details').textContent = 'Компонент «' + COMP[cur].name + '» отключится. ' + (pages.length > 1 ? 'Удалятся страницы ' : 'Удалится страница ') + list + '.';
-                  askId = id;
-                  document.getElementById('comp-switch').hidden = false;
-                }
-                // Отключение из мастера: то же окно, как compRemoveAsk в ../app.js
-                function offAsk(cur){
-                  extraRemove = null;
-                  var pages = COMP[cur].pages.map(function(n){ return '«' + n + '»'; });
-                  var list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages[pages.length - 1] : pages[0];
-                  document.getElementById('comp-switch-msg').textContent = 'Отключить компонент «' + COMP[cur].name + '»?';
-                  document.getElementById('comp-switch-details').textContent = (pages.length > 1 ? 'Удалятся страницы ' : 'Удалится страница ') + list + '.';
-                  askId = null;
-                  document.getElementById('comp-switch').hidden = false;
-                }
-                document.addEventListener('click', function(e){
-                  var b = e.target.closest('[data-comp-switch-answer]');
-                  if (!b) return;
-                  document.getElementById('comp-switch').hidden = true;
-                  if (b.dataset.compSwitchAnswer === 'yes'){
-                    if (extraRemove) extraRemove();
-                    else connect(askId);
-                  }
-                  extraRemove = null;
-                });
-                document.addEventListener('keydown', function(e){ if (e.key === 'Escape') document.getElementById('comp-switch').hidden = true; });
-                document.addEventListener('click', function(e){
-                  var off = e.target.closest('[data-comp-off]');
-                  var add = e.target.closest('[data-comp-add]');
-                  if (!off && !add) return;
-                  sales = document.getElementById('regSales');
-                  var cur = sales.hidden ? null : document.querySelector('#regMasterComp [data-comp-off]').dataset.compOff;
-                  if (add && cur && cur !== add.dataset.compAdd){ switchAsk(cur, add.dataset.compAdd); return; }
-                  if (off){ if (cur) offAsk(cur); return; }
-                  connect(add.dataset.compAdd);
-                });
-                /* Компонент сайта при открытии карточки (apply() скрипта модели ниже): «Параметры» показывают тот компонент,
-                   чья группа стоит в списке страниц, без сайта-компонента — ни одного. Без окон и reg:comp — страницы уже его.
-                   Точки в разметке — «Электронного меню»: у другого компонента их нет */
-                window.regCompSet = function(id){
-                  sales = document.getElementById('regSales');
-                  if (!sales) return;
-                  on = id || null;
-                  render();
-                  if (!on) return;
-                  sales.querySelectorAll('[data-page-pick]').forEach(function(b){ b.textContent = COMP[on][b.dataset.pagePick === 'catalog' ? 'catalog' : 'product']; });
-                  if (on !== 'restaurant'){
-                    document.querySelectorAll('#screen-3 [data-sales-point]').forEach(function(el){ el.remove(); });
-                    sales.querySelectorAll('.sales-rows .sales-empty').forEach(function(el){ el.remove(); });
+                  if (state?.points) window.regSalesApply(state.points);
+                  else {
+                    sales.querySelector('.sales-rows').innerHTML = state?.rows ?? '';
                     window.regSalesEmpty();
                   }
+                  window.dispatchEvent(new Event('catalog-price-change'));
                 };
-                function connect(id){
-                  on = id;
-                  // подключённый компонент приходит без точек, как в конструкторе (compRemove в ../app.js): ни в блоке, ни в мастере;
-                  // страницы каталога и товара — по умолчанию, привязанные в компоненте
-                  if (on){
-                    render();
-                    sales.querySelectorAll('[data-page-pick]').forEach(function(b){ b.textContent = COMP[on][b.dataset.pagePick === 'catalog' ? 'catalog' : 'product']; });
-                    document.querySelectorAll('#screen-3 [data-sales-point]').forEach(function(el){ el.remove(); });
-                    var rows = sales.querySelector('.sales-rows');
-                    rows.querySelectorAll('.sales-empty').forEach(function(el){ el.remove(); }); // подпись — с названием точек нового компонента
-                    window.regSalesEmpty();
-                  }
-                  render();
-                  // группа на «Страницах» — страницы подключённого компонента (скрипт модели сайта ниже, reg:comp)
-                  document.dispatchEvent(new CustomEvent('reg:comp', { detail: { id: on, name: on ? COMP[on].name : '', pages: on ? COMP[on].pages.slice() : [] } }));
-                  // подключили чипсой — мастер сразу на пункте компонента, в детали открыты его настройки
-                  window.regNavSelect(on ? 'comp' : 'general');
+                function render(){
+                  var template = get('regMasterComp');
+                  var list = template.parentNode;
+                  var restaurant = get('regRestaurantNav'), delivery = get('regDeliveryNav');
+                  list.querySelectorAll('[data-component-row]').forEach(function(row){ row.remove(); });
+                  template.hidden = true;
+                  restaurant.hidden = !connected.has('restaurant');
+                  delivery.hidden = !connected.has('delivery');
+                  var anchor = template;
+                  ordered().forEach(function(id){
+                    var row = template.cloneNode(true);
+                    row.removeAttribute('id');
+                    row.hidden = false;
+                    row.dataset.componentRow = id;
+                    row.dataset.regNav = 'comp-' + id;
+                    row.querySelector('.master__name').textContent = COMP[id].name;
+                    row.querySelector('img').src = '../assets/img/comp/' + id + '.svg';
+                    var off = row.querySelector('[data-comp-off]');
+                    off.dataset.compOff = id;
+                    off.setAttribute('aria-label', 'Отключить компонент «' + COMP[id].name + '»');
+                    anchor.after(row);
+                    anchor = row;
+                    var sub = id === 'restaurant' ? restaurant : id === 'delivery' ? delivery : null;
+                    if (sub){ anchor.after(sub); anchor = sub; }
+                  });
+                  document.querySelectorAll('#regAddable [data-comp-add]').forEach(function(b){
+                    b.hidden = connected.has(b.dataset.compAdd);
+                  });
+                  get('regAddable').hidden = !get('regAddable').querySelector('button:not([hidden])');
                 }
+                function ask(name, details, action){
+                  get('comp-switch-msg').textContent = 'Отключить компонент «' + name + '»?';
+                  get('comp-switch-details').textContent = details;
+                  confirmedAction = action;
+                  get('comp-switch').hidden = false;
+                }
+                window.regExtraOffAsk = function(name, remove){ ask(name, '', remove); };
+                document.addEventListener('click', function(e){
+                  var answer = e.target.closest('[data-comp-switch-answer]');
+                  if (answer){
+                    var action = confirmedAction;
+                    confirmedAction = null;
+                    get('comp-switch').hidden = true;
+                    if (answer.dataset.compSwitchAnswer === 'yes') action?.();
+                    return;
+                  }
+                  var off = e.target.closest('#screen-3 [data-comp-off]');
+                  var add = e.target.closest('#regAddable [data-comp-add]');
+                  if (off){
+                    var id = off.dataset.compOff;
+                    var pages = window.regComponentPages(id).map(function(name){ return '«' + name + '»'; });
+                    var list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages.at(-1) : pages[0];
+                    var details = pages.length ? (pages.length > 1 ? 'Удалятся страницы ' : 'Удалится страница ') + list + '.' : '';
+                    ask(COMP[id].name, details, function(){
+                      connected.delete(id);
+                      states.delete(id);
+                      if (active === id) active = null;
+                      update();
+                      window.regNavSelect('general');
+                    });
+                  } else if (add){
+                    var id = add.dataset.compAdd;
+                    connected.add(id);
+                    update();
+                    window.regNavSelect('comp-' + id);
+                  }
+                });
+                document.addEventListener('keydown', function(e){
+                  if (e.key !== 'Escape') return;
+                  confirmedAction = null;
+                  get('comp-switch').hidden = true;
+                });
+                function update(){
+                  render();
+                  document.dispatchEvent(new CustomEvent('reg:comp', { detail: ordered().map(function(id){
+                    return { id: id, name: COMP[id].name, pages: COMP[id].pages };
+                  }) }));
+                }
+                window.regCompSave = function(){
+                  if (!renderedSite) return [];
+                  remember();
+                  var settings = ordered().map(function(id){ return Object.assign({ id: id }, states.get(id)); });
+                  window.regStoreComponentSettings(renderedSite, settings);
+                  return settings;
+                };
+                window.regCompSet = function(ids, settings){
+                  renderedSite = window.regCatalogSite();
+                  var sales = get('regSales');
+                  connected = new Set(ids);
+                  states = new Map(settings.map(function(item){ return [item.id, item]; }));
+                  if (connected.has('restaurant') && !states.has('restaurant')){
+                    var pages = window.regComponentPages('restaurant');
+                    states.set('restaurant', {
+                      rows: sales.querySelector('.sales-rows').innerHTML,
+                      pages: { catalog: pages[0] ?? COMP.restaurant.catalog, product: pages[1] ?? COMP.restaurant.product }
+                    });
+                  }
+                  active = null;
+                  sales.hidden = true;
+                  render();
+                };
               })();
               </script>
               <script>
@@ -5318,7 +5395,8 @@ button.tpl-cat{ cursor: pointer; }
         ];
         var PRICES = [];
         (function walk(nodes){ nodes.forEach(function(g){ walk(g[1]); PRICES = PRICES.concat(g[2]); }); })(PRICE_TREE);
-        var mode = null; // null — точки продаж, иначе название точки, чьи прайсы выбираем
+        var priceTrigger;
+        var mode = null; // null — точки продаж, иначе идентификатор компонента
         var panel = document.getElementById('regSalesPicker');
         var list = document.getElementById('regSalesPickerList');
         var search = document.getElementById('regSalesSearch');
@@ -5337,6 +5415,7 @@ button.tpl-cat{ cursor: pointer; }
           count.hidden = empty;
           count.setAttribute('aria-pressed', onlySelected);
           document.getElementById('regSalesFilter').setAttribute('aria-pressed', onlySelected);
+          all.hidden = !!mode;
           all.classList.toggle('is-empty', empty);
           all.checked = ALL.every(function(n){ return selected.has(n); });
           all.indeterminate = selected.size > 0 && !all.checked;
@@ -5348,6 +5427,10 @@ button.tpl-cat{ cursor: pointer; }
           var input = label.firstChild;
           input.checked = selected.has(name);
           input.addEventListener('change', function(){
+            if (mode && input.checked){
+              selected.clear();
+              list.querySelectorAll('input:checked').forEach(function(other){ other.checked = other === input; });
+            }
             if (input.checked) selected.add(name); else selected.delete(name);
             header();
             if (onlySelected) render();
@@ -5398,14 +5481,13 @@ button.tpl-cat{ cursor: pointer; }
           ROOT.forEach(function(p){ if (fits(p[0])){ list.appendChild(option(p[0])); count++; } });
           if (!count) list.insertAdjacentHTML('beforeend', '<p class="sales-empty">Ничего не найдено</p>');
         }
-        // point — название точки: панель «Прайсы» этой точки (отмечены её прайсы), без него — выбор точек продаж
-        function open(point){
+        function open(component){
           var rows = current();
-          mode = point || null;
+          mode = component || null;
           ALL = mode ? PRICES : POINTS;
           if (mode){
-            var row = rows.filter(function(r){ return r.name === mode; })[0];
-            selected = new Set(row ? row.price.split(', ').filter(function(n){ return PRICES.indexOf(n) > -1; }) : []);
+            var price = CompCatalog.getPrice(window.regCatalogSite(), mode);
+            selected = new Set(price ? [price] : []);
             priceExpanded = new Set(['Мили']);
           } else selected = new Set(rows.length ? rows.map(function(r){ return r.name; }) : [ROOT[0][0], ROOT[1][0]]);
           document.getElementById('regSalesPickerTitle').textContent = mode ? 'Прайсы' : window.regPointsName();
@@ -5435,28 +5517,17 @@ button.tpl-cat{ cursor: pointer; }
         window.regSalesApply = apply; // точки сайта, опубликованного из шаблона (reg:publish-site)
         document.addEventListener('click', function(e){
           if (e.target.closest('#regSales .sales-add, #regSales .sales-empty__link')) open();
-          // прайс в строке точки — панель «Прайсы» этой точки, как в конструкторе
-          var priceRow = e.target.closest('#regSales .sales-price') && e.target.closest('.sales-row[data-sales-point]');
-          if (priceRow) open(priceRow.dataset.salesPoint);
-          // В каталоге сайта открываем прайсы основной точки.
-          if (e.target.closest('#regSalesCatalog .reg-cat__link')){
-            var primary = document.querySelector('#regSales .sales-row[data-sales-point]');
-            if (primary) open(primary.dataset.salesPoint);
+          var price = e.target.closest('#screen-3 [data-catalog-price]');
+          if (price){
+            priceTrigger = price;
+            open(price.dataset.catalogPrice);
           }
         });
         document.getElementById('regSalesPickerDone').addEventListener('click', function(){
           if (mode){
-            // прайсы точки — в её строку блока «Электронное меню» (каталог берёт прайс оттуда), порядок — как в дереве
-            var picked = PRICES.filter(function(n){ return selected.has(n); });
-            document.querySelectorAll('#regSales .sales-row[data-sales-point]').forEach(function(row){
-              if (row.dataset.salesPoint === mode) row.querySelector('.sales-price').textContent = picked.join(', ') || 'Выбрать прайс';
-            });
+            CompCatalog.setPrice(window.regCatalogSite(), mode, selected.values().next().value || '');
             panel.hidden = true;
-            var catalog = document.getElementById('regSalesCatalog');
-            if (!catalog.hidden){
-              window.regCatalogSelect(true);
-              catalog.querySelector('.reg-cat__link').focus();
-            }
+            priceTrigger?.focus();
             return;
           }
           var points = current().filter(function(p){ return selected.has(p.name); });
@@ -5497,7 +5568,7 @@ button.tpl-cat{ cursor: pointer; }
   </div>
 </div>
 
-<!-- Замена компонента чипсой на вкладке «Параметры» — подтверждение, как в конструкторе (compSwitchAsk). Текст ставит скрипт компонентов; «Да», «Отмена» и Esc закрывают окно -->
+<!-- Подтверждение отключения компонента -->
 <div class="dlg-layer" id="comp-switch" hidden>
   <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="comp-switch-msg" aria-describedby="comp-switch-details">
     <div class="dlg__head"><span class="dlg__marker"></span></div>
@@ -6023,10 +6094,10 @@ button.tpl-cat{ cursor: pointer; }
   /* group — компонент, в группе которого страница стоит в списке (как в списке страниц конструктора, ../app.js lsRender) */
   function P(name, path, w, cr, t, group){ return { name: name, path: path, w: w, cr: cr, t: t, group: group }; }
 
-  /* Компонент, подключённый в «Параметрах» (reg:comp): адрес сайта → { id, name, pages }; null — компонент отключён.
-     Нет записи — страницы как в EXTRA. Группа на «Страницах» — его название и его страницы: свои страницы сайта остаются,
-     страницы прежнего компонента уходят. Тот же компонент, что в EXTRA, — его страницы оттуда (с их путями и долями). */
+  // Подключённые в «Параметрах» компоненты по адресу сайта.
   var COMP_OF = {};
+  var COMPONENT_SETTINGS = {};
+  window.regStoreComponentSettings = function(site, settings){ COMPONENT_SETTINGS[site] = settings; };
   var LAT = { а:'a', б:'b', в:'v', г:'g', д:'d', е:'e', ё:'e', ж:'zh', з:'z', и:'i', й:'y', к:'k', л:'l', м:'m', н:'n', о:'o', п:'p', р:'r', с:'s', т:'t', у:'u', ф:'f', х:'h', ц:'c', ч:'ch', ш:'sh', щ:'sch', ъ:'', ы:'y', ь:'', э:'e', ю:'yu', я:'ya' };
   function slug(s){ return s.toLowerCase().split('').map(function(ch){ return ch in LAT ? LAT[ch] : (/[a-z0-9]/.test(ch) ? ch : '-'); }).join('').replace(/-+/g, '-').replace(/^-|-$/g, ''); }
   /* Список страниц из конструктора (../app.js regParams, list): адрес сайта → [{ name, group }] — набор и порядок
@@ -6053,16 +6124,13 @@ button.tpl-cat{ cursor: pointer; }
   }
   function compPages(link, x){
     if (!(link in COMP_OF)) return x.pages;
-    var c = COMP_OF[link];
     var own = x.pages.filter(function(p){ return !p.group; });
-    if (!c) return own;
-    var same = x.pages.filter(function(p){ return p.group === c.id; });
-    if (same.length) return own.concat(same);
-    // новый компонент: страницы — его, доля визитов — как у прежней группы (или по 15 на страницу), отклики чаще на первой
-    var was = x.pages.filter(function(p){ return p.group; });
-    var total = was.length ? was.reduce(function(s, p){ return s + p.w; }, 0) : 15 * c.pages.length;
-    return own.concat(c.pages.map(function(name, i){
-      return P(name, '/' + PageEditor.defaultAddress(name), total / c.pages.length, i ? 1.2 : 1.8, 120 + 37 * ((i * 7 + name.length) % 5), c.id);
+    return own.concat(COMP_OF[link].flatMap(function(c){
+      var same = x.pages.filter(function(p){ return p.group === c.id; });
+      if (same.length) return same;
+      return c.pages.map(function(name, i){
+        return P(name, '/' + PageEditor.defaultAddress(name), 15, i ? 1.2 : 1.8, 120 + 37 * ((i * 7 + name.length) % 5), c.id);
+      });
     }));
   }
 
@@ -6352,11 +6420,11 @@ button.tpl-cat{ cursor: pointer; }
     var m = MODELS[link];
     if (tile && m) MODELS[link] = build(tile, m.k);
   }
-  /* Компонент подключили, сменили или отключили в «Параметрах» (скрипт компонентов, reg:comp) —
+  /* Компонент подключили или отключили в «Параметрах» (скрипт компонентов, reg:comp) —
      группа на «Страницах» и строки страниц на остальных вкладках следуют за ним */
   document.addEventListener('reg:comp', function(e){
     if (current !== BILLING && !MODELS[current]) return;
-    COMP_OF[current] = e.detail.id ? e.detail : null;
+    COMP_OF[current] = e.detail;
     rebuild(current);
     apply(true);
   });
@@ -6377,8 +6445,23 @@ button.tpl-cat{ cursor: pointer; }
   }
 
   var current = BILLING, origin = 'screen-1';
+  window.regCatalogSite = function(){ return current; };
+  function catalogPriceRender(){
+    if (!window.CompCatalog) return;
+    var props = $('#regSales .comp-cat__price');
+    if (props) props.textContent = CompCatalog.getPrice(current, props.dataset.catalogPrice) || 'Выбрать прайс';
+    var catalog = $('#regSalesCatalog');
+    if (catalog && !catalog.hidden) window.regCatalogSelect(true);
+  }
+  window.addEventListener('catalog-price-change', catalogPriceRender);
   var UNPUBLISHED = {}; // сайты, снятые с публикации («Снять с публикации» → «Да»)
   var DOMAIN = {};      // адрес сайта → домен, как его оставили в «Параметрах сайта» конструктора ({ type, value, state }, reg:open-site)
+  function importComponents(link, params){
+    COMPONENT_SETTINGS[link] = params.components;
+    COMP_OF[link] = params.components.map(function(c){
+      return { id: c.id, name: PAGE_GROUPS[c.id], pages: params.list.filter(function(p){ return p.group === c.id; }).map(function(p){ return p.name; }) };
+    });
+  }
   var PAGES = {};       // адрес сайта → страницы каталога и товара из конструктора ({ catalog, product }, reg:open-site)
   // неопубликованные в разметке (серое название на плитке, как у Blanc Hill) — тоже сняты с публикации
   $$('.tile[data-site]').forEach(function(t){ if ($('.tile__title--muted', t)) UNPUBLISHED[t.dataset.site] = true; });
@@ -6411,18 +6494,18 @@ button.tpl-cat{ cursor: pointer; }
     });
   }
 
-  /* Компонент открытого сайта: подключённый в «Параметрах» (COMP_OF), иначе — тот, чья группа в его страницах; у биллинга — нет */
-  function siteComp(){
-    if (current in COMP_OF) return COMP_OF[current] ? COMP_OF[current].id : null;
+  function siteComponents(){
+    if (current in COMP_OF) return COMP_OF[current].map(function(c){ return c.id; });
     var m = MODELS[current];
-    var g = m && m.pages.filter(function(p){ return p.group; })[0];
-    return g ? g.group : null;
+    return m ? Array.from(new Set(m.pages.map(function(p){ return p.group; }).filter(Boolean))) : [];
   }
-  /* Биллинг свёрстан вручную (макет Axure): страницы подключённого компонента дописываются в списки,
-     карточками на «Страницах» и строками «Статистики» — с нулевыми показателями. Группа есть в «Статистике». */
-  function billingComp(){
-    var c = COMP_OF[BILLING];
-    if (!c) return;
+  window.regComponentPages = function(id){
+    var component = (COMP_OF[current] || []).find(function(c){ return c.id === id; });
+    var model = MODELS[current];
+    if (model) return model.pages.filter(function(p){ return p.group === id; }).map(function(p){ return p.name; });
+    return component?.pages ?? [];
+  };
+  function billingComp(c){
     var zero = { users: 0, replies: 0, sales: 0, sum: 0, time: 0 };
     IDS.forEach(function(id){
       var list = $('#' + id + ' .master:not([data-no-options]) .master__list');
@@ -6464,11 +6547,23 @@ button.tpl-cat{ cursor: pointer; }
         window.regExtraOffAsk(name, function(){ ExtraComponents.set(site, id, false); });
       }
     });
+    var news = $(':scope > .extra-component-row:has(> img[src$="/news.svg"])', list);
+    if (news){
+      news.dataset.regNav = 'news';
+      news.tabIndex = 0;
+      news.setAttribute('role', 'button');
+      news.setAttribute('aria-controls', 'regNews');
+      news.setAttribute('aria-label', 'Новости');
+      news.setAttribute('aria-pressed', 'false');
+    }
+    if (!$('#regNews').hidden) window.regNavSelect(news ? 'news' : 'general');
     var gallery = $(':scope > .extra-component-row:has(> img[src$="/gallery.svg"])', list);
     var galleryNav = $('#regGalleryNav');
     galleryNav.hidden = !gallery;
     if (gallery) gallery.after(galleryNav);
-    ExtraComponents.renderChips($('#regAddable .addable__list'), site);
+    var addable = $('#regAddable');
+    ExtraComponents.renderChips($('.addable__list', addable), site);
+    addable.hidden = !addable.querySelector('button:not([hidden])');
   }
   window.addEventListener('extra-components-change', renderExtraComponents);
   function renderParameterList(model){
@@ -6477,9 +6572,9 @@ button.tpl-cat{ cursor: pointer; }
     var pages = model ? model.pages : $$('#screen-2 .pagecard').map(function(card){
       return { name: $('.pagecard__title', card).firstChild.textContent.trim(), link: $('.pagecard__link', card).textContent };
     });
-    var comp = COMP_OF[current];
+    var components = COMP_OF[current] || [];
     parameterPages = pages.map(function(page, i){
-      var group = model ? page.group : comp && comp.pages.includes(page.name) && comp.id;
+      var group = model ? page.group : components.find(function(c){ return c.pages.includes(page.name); })?.id;
       var source = (PAGE_LIST[current] || []).find(function(p){ return p.name === page.name && (p.group || null) === (group || null); });
       var key = JSON.stringify([current, group, source && source.id != null ? source.id : page.name]);
       if (!propertyEdits.has(key)) propertyEdits.set(key, {});
@@ -6525,12 +6620,12 @@ button.tpl-cat{ cursor: pointer; }
     });
     selectedProperties = parameterPages[row.dataset.pageIndex];
     $('#regSite').hidden = key !== 'general';
+    $('#regNews').hidden = key !== 'news';
     var component = $('#regDetail .reg-nav-component');
-    var deliveryOverview = key === 'comp' && !$('#regDeliveryNav').hidden;
-    component.hidden = key !== 'comp' && key !== 'delivery-site';
-    component.classList.toggle('reg-nav-component--delivery-overview', deliveryOverview);
-    $('#regDeliverySettings').hidden = !deliveryOverview;
-    $('#regSalesTitle').hidden = key === 'delivery-site';
+    var componentId = row.dataset.componentRow;
+    if (componentId) window.regCompShow(componentId);
+    component.hidden = !componentId;
+    $('#regDeliverySettings').hidden = componentId !== 'delivery';
     $('#regDeliveryHours').hidden = key !== 'delivery-hours';
     $('#regDeliveryAreas').hidden = key !== 'delivery-areas';
     $('#regSalesPicker').hidden = true;
@@ -6541,8 +6636,6 @@ button.tpl-cat{ cursor: pointer; }
       $('#regPageTitle').setAttribute('aria-label', selectedProperties.name);
     } else if (key === 'general') {
       $('#regSiteTitle > span').textContent = $('.master__name', row).textContent;
-    } else if (key === 'comp' || key === 'delivery-site') {
-      $('#regSalesTitle > span').textContent = $('#regMasterComp .master__name').textContent;
     }
     $('#regDetail').scrollTop = 0;
     if (editor) editor.lsAccessClose();
@@ -6606,7 +6699,7 @@ button.tpl-cat{ cursor: pointer; }
       for (var page = expander.parentNode.nextElementSibling; page && page.classList.contains('master__item--grouped'); page = page.nextElementSibling){
         page.hidden = !expand;
       }
-    } else if (row && !e.target.closest('[data-comp-off]')) window.regNavSelect(row.dataset.regNav);
+    } else if (row && !e.target.closest('[data-comp-off], .component-group__remove')) window.regNavSelect(row.dataset.regNav);
     if (e.target.closest('#regPage [data-pe-chip]')){
       setProperty('seo', selectedProperties.name);
       $('#lsNewSeoTitle').value = selectedProperties.name;
@@ -6656,10 +6749,9 @@ button.tpl-cat{ cursor: pointer; }
   });
 
   // keepParams — смена компонента в «Параметрах»: их разметку не трогаем (там уже новый компонент), остальные вкладки — заново
-  function apply(keepParams){
+  function apply(keepParams, imported){
+    if (!keepParams && !imported) window.regCompSave?.();
     markTiles();
-    // «Параметры» перевставляются из исходной разметки — компонент снова «Электронное меню», страницы — как в EXTRA
-    if (!keepParams && current in COMP_OF){ delete COMP_OF[current]; rebuild(current); }
     var m = current === BILLING ? null : MODELS[current];
     IDS.forEach(function(id){
       if (keepParams && id === 'screen-3') return;
@@ -6667,7 +6759,8 @@ button.tpl-cat{ cursor: pointer; }
       markAcc(s);
       $('.workspace', s).innerHTML = ORIG[id];
       // «Параметры» — компонент сайта, тот же, чья группа в его списке страниц (правило: страницы бьются с компонентом)
-      if (id === 'screen-3' && window.regCompSet) window.regCompSet(siteComp());
+      if (id === 'screen-3' && window.regCompSet) window.regCompSet(siteComponents(),
+        COMPONENT_SETTINGS[current] || (SITE_SALES[current] ? [{ id: 'restaurant', points: SITE_SALES[current], pages: PAGES[current] }] : []));
       var back = $('.sitehead', s);
       back.setAttribute('href', '#/' + origin);
       back.dataset.goto = origin;
@@ -6678,8 +6771,7 @@ button.tpl-cat{ cursor: pointer; }
       var off = !!UNPUBLISHED[current];
       if (dom && off) dom.dataset.siteOff = '';
       if (dom && DOMAIN[current]) dom.dataset.siteState = JSON.stringify(DOMAIN[current]);
-      if (PAGES[current]) $$('[data-page-pick]', s).forEach(function(b){ b.textContent = PAGES[current][b.dataset.pagePick] || 'Выберите'; });
-      $$('.rail__btn[aria-label="Снять с публикации"]', s).forEach(function(b){ b.hidden = off; });
+        $$('.rail__btn[aria-label="Снять с публикации"]', s).forEach(function(b){ b.hidden = off; });
       if (off) $('.topbar__mid', s).insertAdjacentHTML('beforeend', '<button class="btn btn--outlined btn--publish" type="button" data-site-publish>Опубликовать<i class="icon icon--m" aria-hidden="true">&#xE631;</i></button>');
       if (!m) return;
       var ttl = $('.sitehead__title', s); ttl.textContent = m.title; ttl.title = m.title;
@@ -6688,13 +6780,12 @@ button.tpl-cat{ cursor: pointer; }
       if (list) list.innerHTML = masterList(m, id === 'screen-4');
       if ($('.chart', s)) chart(s, m);
     });
-    if (!m && current === BILLING) billingComp();
+    if (!m && current === BILLING) (COMP_OF[current] || []).forEach(billingComp);
     renderParameterList(m);
     renderExtraComponents();
     window.regNavSelect('general');
+    queueMicrotask(catalogPriceRender);
     if (!m) return;
-    // у сайта из шаблона — точки, настроенные в конструкторе (в разметке — точки «Мили»)
-    if (!keepParams && SITE_SALES[current] && window.regSalesApply) window.regSalesApply(SITE_SALES[current]);
 
     $('#screen-2 .pagecards').innerHTML = pagecards(m);
     fitPageShots();
@@ -6738,14 +6829,18 @@ button.tpl-cat{ cursor: pointer; }
   document.addEventListener('click', function(e){
     if (!e.target.closest('.topbar--site .topbar__mid .btn:not([data-site-publish])') || window.parent === window) return;
     var t = SITE_TPL[current];
-    if (t) window.parent.postMessage({ type: 'reg:open-constructor', site: current, tpl: t.tpl, kind: t.kind, title: t.title }, '*');
-    else if (current === CONSTRUCTOR_SITE) window.parent.postMessage({ type: 'reg:open-constructor' }, '*');
+    if (t || current === CONSTRUCTOR_SITE){
+      var message = { type: 'reg:open-constructor', components: window.regCompSave() };
+      if (t) Object.assign(message, { site: current, tpl: t.tpl, kind: t.kind, title: t.title });
+      window.parent.postMessage(message, '*');
+    }
   });
   /* Карточка этого сайта по команде снаружи фрейма: после загрузки страницы — вкладка «Параметры» (screen-3),
      выход из конструктора (галочка или крестик) — «Страницы» (screen-2);
      «назад» из карточки — в реестр «Сайты» */
   window.addEventListener('message', function(e){
     if (e.source !== window.parent || !e.data || e.data.type !== 'reg:open-site') return;
+    window.regCompSave?.();
     current = SITE_TPL[e.data.site] ? e.data.site : CONSTRUCTOR_SITE;
     origin = 'screen-1';
     // всё — как в «Параметрах сайта» конструктора (../app.js, regParams): домен (не подключён — сайт не опубликован:
@@ -6754,9 +6849,10 @@ button.tpl-cat{ cursor: pointer; }
     if (p && p.domain){ DOMAIN[current] = p.domain; UNPUBLISHED[current] = p.domain.state !== 'Connected'; }
     if (p && p.points) SITE_SALES[current] = p.points;
     if (p && p.pages) PAGES[current] = p.pages;
+    if (p && p.components) importComponents(current, p);
     if (p && p.list){ PAGE_LIST[current] = p.list; rebuild(current); } // страницы — как в списке конструктора
     try { sessionStorage.setItem('reg-site', JSON.stringify({ site: current, origin: origin })); } catch (err) {}
-    apply();
+    apply(false, true);
     location.hash = '#/' + (/^screen-\d+$/.test(e.data.screen) ? e.data.screen : 'screen-2');
   });
 
@@ -6766,10 +6862,12 @@ button.tpl-cat{ cursor: pointer; }
      (Главная, О нас, Профиль, Меню, Карточка товара). Превью на плитке — мини-копия шаблона, как на панели «Шаблоны». */
   window.addEventListener('message', function(e){
     if (e.source !== window.parent || !e.data || e.data.type !== 'reg:publish-site') return;
+    window.regCompSave?.();
     var d = e.data, link = d.link, mili = window.REG_MILI_LINK;
     var from = (location.hash || '').replace(/^#\/?/, '');
     origin = from === 'screen-delivery' ? from : 'screen-1'; // реестр, из которого открыли панель «Шаблоны»
     var comp = d.kind === 'hotel' ? 'hotel' : 'restaurant';
+    if (d.params && d.params.components) importComponents(link, d.params);
     if (d.params && d.params.list) PAGE_LIST[link] = d.params.list; // страницы — как в списке конструктора
     else delete PAGE_LIST[link];
     EXTRA[link] ={ avg: EXTRA[mili].avg, items: EXTRA[mili].items, pages: EXTRA[mili].pages };
@@ -6795,7 +6893,7 @@ button.tpl-cat{ cursor: pointer; }
     if (p && p.domain){ DOMAIN[link] = p.domain; UNPUBLISHED[link] = p.domain.state !== 'Connected'; }
     if (p && p.pages) PAGES[link] = p.pages;
     try { sessionStorage.setItem('reg-site', JSON.stringify({ site: current, origin: origin })); } catch (err) {}
-    apply();
+    apply(false, true);
     // галочка конструктора — карточка на «Страницах», как у «Мили»; «Опубликовать» — «Параметры» и окно про домен
     location.hash = d.save ? '#/screen-2' : '#/screen-3';
     domainInfo.hidden = !!d.save;
@@ -7142,5 +7240,6 @@ button.tpl-cat{ cursor: pointer; }
 <script src="../domain.js"></script>
 <script src="../qr.js"></script>
 <script src="../comp-catalog.js"></script>
+<script>window.dispatchEvent(new Event('catalog-price-change'));</script>
 </body>
 </html>

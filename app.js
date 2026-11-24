@@ -124,7 +124,6 @@
   let regState = null; // «Параметры сайта» конструктора при выходе на карточку (regParams): реестр показывает то же
   let regPublish = null; // «Опубликовать» в окне шаблона: { link, title, tpl, kind } — карточка нового сайта на «Параметрах»
   let tplSite = null; // адрес сайта из шаблона, открытого «Оформлением» его карточки: выход — на эту карточку
-  const tplSites = {}; // адрес опубликованного сайта → точки продаж конструктора на момент публикации (salesSaved)
   function regShow(on) {
     const reg = $('#reg');
     const card = regToCard;
@@ -159,11 +158,12 @@
       // сайт, опубликованный из шаблона: шаблон в работе («Использовать» уже нажато), точки — как при публикации
       tplOpen(e.data.tpl, e.data.title, e.data.kind);
       stage.classList.remove('is-tpl-view');
-      salesSaved = (tplSites[e.data.site] || []).map((row) => ({ ...row }));
-      salesRender();
       tplSite = e.data.site;
-      renderExtraComponents();
-    } else if (e.data?.type === 'reg:open-constructor') frame.select('catalog-setup');
+      restoreComponents(e.data.components);
+    } else if (e.data?.type === 'reg:open-constructor') {
+      frame.select('catalog-setup');
+      restoreComponents(e.data.components);
+    }
     else if (e.data?.type === 'reg:open-template') tplOpen(e.data.tpl, e.data.name, e.data.kind);
   });
   // Галочка и крестик в шапке конструктора — обратно в «Реестр сайтов».
@@ -187,12 +187,18 @@
     const dom = $('.rs-site [data-domain]'); // один редактор: в «Параметрах» или перенесён в окно «Опубликовать»
     const domain = dom && window.domainState ? window.domainState(dom) : null;
     if (domain && publish) domain.state = 'Connected';
-    const points = salesSaved.map((row) => ({ name: SALES.find((p) => p.id === row.id).name, price: row.price }));
+    const exportPoints = (id) => salesFor(id).map((row) => ({ name: SALES.find((p) => p.id === row.id).name, price: row.price }));
+    const points = exportPoints('restaurant');
     const pages = {};
     for (const kind of Object.keys(pagePicks)) pages[kind] = lsPage(pagePicks[kind])?.name ?? null;
     // список страниц — набор и порядок как в левой панели: свои страницы сайта, потом группы компонентов
     const list = lsOrdered().map((p) => ({ id: p.id, name: p.name, group: lsGroupOf(p) ?? null, addr: p.addr, access: p.access, noindex: p.noindex, mode: p.mode, seo: p.seo, seoDescription: p.seoDescription }));
-    return { domain, points, pages, list };
+    const components = Object.keys(COMP).filter((id) => compOn.has(id)).map((id) => ({
+      id,
+      points: exportPoints(id),
+      pages: Object.fromEntries(Object.entries(picksFor(id)).map(([kind, page]) => [kind, lsPage(page)?.name ?? null])),
+    }));
+    return { domain, points, pages, list, components };
   }
 
 
@@ -262,8 +268,6 @@
     else { // меню выбора страницы закрывается вместе с окном; через DOM — rsRender зовётся и до объявления pagePick*
       $('#pagePickMenu').hidden = true;
       for (const b of document.querySelectorAll('[data-page-pick]')) b.setAttribute('aria-expanded', 'false');
-      $('#compMenu').hidden = true; // и меню «Тип сайта»
-      $('#salesSettingsTitle').setAttribute('aria-expanded', 'false');
     }
     for (const b of document.querySelectorAll('.rp-btn[data-rp]')) {
       const on = rsParamsOpen ? b.dataset.rp === 'settings' : b.dataset.rp === rsPanel;
@@ -352,8 +356,6 @@
   let salesSelection = new Set();
   let salesPickerMode = null;
   let salesOnlySelected = false;
-  // Компоненты (простая версия): четыре компонента, они взаимоисключающие — подключён один. Чипсы остальных остаются: чипса другого компонента заменяет подключённый
-  // (после подтверждения compSwitchAsk — как отключить текущий и подключить новый).
   // Связей между компонентами нет: компонент приносит только свои страницы (и настройки — пока только точки продаж у «Электронного меню»).
   // Полная версия с зависимостями и группами страниц — тег components-2.0.
   // widget — виджет компонента в магазине, widgetPage — страница, которую виджет открывает. Страницы создаются под виджет: у каждой страницы компонента свой виджет
@@ -362,24 +364,28 @@
   // Порядок — порядок чипсов в «Параметрах сайта».
   // Настройки у всех компонентов одинаковые (блок #salesSettings): «Страницы» — каталог и товар (catalog/product — страницы компонента
   // по умолчанию; у «Электронного меню» — «Меню» или «Главная» с каталогом и карточка) и точки: points — как они называются у компонента,
-  // point — одна точка (для подсказок), price — есть ли у точки прайс. Список точек в демо общий
+  // point — одна точка (для подсказок). Список точек в демо общий
   const COMP = {
-    restaurant: { name: 'Электронное меню', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда', widgetHome: 'Меню', points: 'Точки продаж', point: 'точку продаж', price: true },
-    delivery: { name: 'Доставка', desc: 'Корзина, оформление и оплата заказа с доставкой, история заказов покупателя', pages: ['Каталог', 'Корзина', 'Заказы', 'Карточка заказа'], widgets: { 'Каталог': 'Каталог товаров', 'Корзина': 'Корзина', 'Заказы': 'История заказов', 'Карточка заказа': 'Карточка заказа' }, catalog: 'Каталог', product: 'Карточка заказа', points: 'Точки продаж', point: 'точку продаж', price: true },
-    services: { name: 'Услуги', desc: 'Каталог услуг и онлайн-запись к специалисту на свободное время', pages: ['Каталог услуг', 'Карточка услуги', 'Специалисты', 'Карточка специалиста', 'Выбор времени записи'], widgets: { 'Каталог услуг': 'Каталог услуг', 'Карточка услуги': 'Карточка услуги', 'Специалисты': 'Мастера', 'Карточка специалиста': 'Карточка специалиста', 'Выбор времени записи': 'Выбор специалиста и времени' }, catalog: 'Каталог услуг', product: 'Карточка услуги', points: 'Филиалы', point: 'филиал', price: false },
-    hotel: { name: 'Отель', desc: 'Номера и цены, бронирование на даты с оплатой онлайн', pages: ['Номера', 'Карточка номера'], widgets: { 'Номера': 'Каталог номеров', 'Карточка номера': 'Сведения о номере' }, catalog: 'Номера', product: 'Карточка номера', points: 'Объекты размещения', point: 'объект размещения', price: false },
+    restaurant: { name: 'Электронное меню', desc: 'Меню и карточки блюд на сайте, цены и наличие из точек продаж', pages: ['Карточка блюда'], widget: 'Меню ресторана', widgetPage: 'Карточка блюда', widgetHome: 'Меню', points: 'Точки продаж', point: 'точку продаж' },
+    delivery: { name: 'Доставка', desc: 'Корзина, оформление и оплата заказа с доставкой, история заказов покупателя', pages: ['Каталог', 'Корзина', 'Заказы', 'Карточка заказа'], widgets: { 'Каталог': 'Каталог товаров', 'Корзина': 'Корзина', 'Заказы': 'История заказов', 'Карточка заказа': 'Карточка заказа' }, catalog: 'Каталог', product: 'Карточка заказа', points: 'Точки продаж', point: 'точку продаж' },
+    services: { name: 'Услуги', desc: 'Каталог услуг и онлайн-запись к специалисту на свободное время', pages: ['Каталог услуг', 'Карточка услуги', 'Специалисты', 'Карточка специалиста', 'Выбор времени записи'], widgets: { 'Каталог услуг': 'Каталог услуг', 'Карточка услуги': 'Карточка услуги', 'Специалисты': 'Мастера', 'Карточка специалиста': 'Карточка специалиста', 'Выбор времени записи': 'Выбор специалиста и времени' }, catalog: 'Каталог услуг', product: 'Карточка услуги', points: 'Филиалы', point: 'филиал' },
+    hotel: { name: 'Отель', desc: 'Номера и цены, бронирование на даты с оплатой онлайн', pages: ['Номера', 'Карточка номера'], widgets: { 'Номера': 'Каталог номеров', 'Карточка номера': 'Сведения о номере' }, catalog: 'Номера', product: 'Карточка номера', points: 'Объекты размещения', point: 'объект размещения' },
   };
-  // Компонент, чьи настройки в блоке: подключённый (он один), а без компонента — «Электронное меню», если на сайте его каталог
-  const compActive = () => [...compOn][0] ?? (catalogAdded ? 'restaurant' : null);
-  const compCfg = () => COMP[compActive() ?? 'restaurant'];
-  const compOn = new Set();    // подключавшиеся, в порядке подключения: их страницы и настройки на сайте
-  const compRoots = new Set(); // подключённые виджетом, а не как зависимость
+  const compOn = new Set();
+  const componentBlocks = new Map();
+  const componentSales = new Map();
+  let salesComponent = 'restaurant';
+  const compCfg = () => COMP[salesComponent];
+  const salesFor = (id) => id === 'restaurant' ? salesSaved : componentSales.get(id) ?? [];
+  function setSalesFor(id, rows) {
+    if (id === 'restaurant') salesSaved = rows;
+    else componentSales.set(id, rows);
+  }
   let catalogHome = false;     // каталог стоит на главной (сценарии компонентов), а не на странице «Меню» прочих сценариев
   let catalogMenu = false;     // каталог стоит на странице «Меню», которую принесло «Электронное меню» (подключён в «Параметрах сайта» без виджета)
   const compConfigured = () => salesSaved.length > 0;
   // Чипсы «Параметров сайта»: неподключённые компоненты, иконка компонента + название. Подключённый уходит из чипсов
   function compChipsRender() {
-    // Компоненты взаимоисключающие: чипсы — у всех, кроме подключённого; чипса при подключённом компоненте заменяет его
     const chips = Object.entries(COMP).filter(([id]) => !compOn.has(id)).map(([id, c]) => {
       const chip = el('button', 'chips chips--optional'); // опциональное свойство ui-kit (PropertyGrid 37372:32955)
       chip.type = 'button';
@@ -390,10 +396,8 @@
       chip.lastChild.textContent = c.name;
       return chip;
     });
-    // Подключённый компонент один — его настройки в общем блоке #salesSettings (заполняет и скрывает salesRender)
     $('#compChips').replaceChildren(...chips);
     renderExtraComponentChips();
-    renderExtraComponentGroups();
   }
   const extraComponentSite = () => tplSite || (stage.classList.contains('is-tpl') ? 'draft:' + stage.dataset.tpl : 'mili-yar.saby.ws');
   function removeExtraComponent(id, name) {
@@ -423,8 +427,13 @@
       remove.addEventListener('click', () => removeExtraComponent(id, name));
       return group;
     });
-    const sales = $('#salesSettings');
-    if (sales.parentNode !== groups) groups.prepend(sales);
+    for (const [id, block] of componentBlocks) {
+      if (id !== 'restaurant' && !compOn.has(id)) { block.remove(); componentBlocks.delete(id); }
+    }
+    for (const id of Object.keys(COMP)) {
+      const block = componentBlocks.get(id);
+      if (block) groups.append(block);
+    }
     groups.querySelectorAll(':scope > .extra-component-group').forEach((group) => group.remove());
     groups.append(...extraGroups);
   }
@@ -434,9 +443,8 @@
   }
   window.addEventListener('extra-components-change', renderExtraComponents);
   const salesCopy = (rows) => rows.map((row) => ({ ...row, prices: row.prices?.slice() }));
-  const salesCurrent = () => salesDraft || salesSaved;
+  const salesCurrent = (id = salesComponent) => (id === 'restaurant' && salesDraft) || salesFor(id);
 
-  // pricePick — прайс кнопкой, открывает выбор прайсов (прежний вид «Параметров сайта», Figma 2547:71389)
   // Экспандеры в «Параметрах сайта»: «Сайт» и компонент сворачивают всю плашку (так же — в «Параметрах» реестра)
   document.addEventListener('click', e => {
     const t = e.target.closest('.sales-settings__toggle');
@@ -444,13 +452,13 @@
     const open = t.getAttribute('aria-expanded') === 'false';
     t.setAttribute('aria-expanded', String(open));
   });
-  function salesRenderRows(root, rows, pricePick = false) {
+  function salesRenderRows(root, rows, id = salesComponent) {
     root.replaceChildren();
     if (!rows.length) {
       const empty = el('p', 'sales-empty');
       // «точки продаж» (у компонента — его точки) — кнопка-ссылка, работает как «+»
       empty.innerHTML = 'Добавьте ваши <button class="sales-empty__link" type="button" data-sales-add></button>, чтобы получать актуальную информацию о них';
-      $('[data-sales-add]', empty).textContent = compCfg().points.toLocaleLowerCase('ru');
+      $('[data-sales-add]', empty).textContent = COMP[id].points.toLocaleLowerCase('ru');
       root.append(empty);
       return;
     }
@@ -463,16 +471,6 @@
       label.textContent = SALES.find((point) => point.id === row.id).name;
       name.append(label);
       if (!index) name.append(el('span', 'ico', '&#xEABA;'));
-      const price = el(pricePick ? 'button' : 'span', 'sales-price');
-      price.textContent = row.price;
-      if (pricePick) {
-        // текст — отдельным span с троеточием, чтобы кнопка не обрезала индикатор клика
-        price.replaceChildren(el('span', 'sales-price__text'));
-        price.firstChild.textContent = row.price;
-        price.type = 'button';
-        price.dataset.salesPrice = row.id;
-        price.setAttribute('aria-label', 'Прайс: ' + label.textContent);
-      }
       const actions = el('div', 'sales-row__actions');
       if (index) {
         const primary = el('button', '', '<span class="ico">&#xEABA;</span>');
@@ -487,44 +485,54 @@
       remove.dataset.salesDelete = row.id;
       remove.setAttribute('aria-label', 'Удалить точку: ' + label.textContent);
       actions.append(remove);
-      item.append(name, price, actions);
+      item.append(name, actions);
       root.append(item);
     }
   }
   // Виджеты из магазина не убираем: «Меню ресторана» там всегда. Когда его не добавить (уже на сайте или подключён другой компонент) — нет только подсказки клика
   function shopMenuPinSync() {
     const pin = $('#rsWidgets .rs-w__name--pin > .pin');
-    if (pin) pin.hidden = catalogAdded || [...compOn].some((id) => id !== 'restaurant');
+    if (pin) pin.hidden = catalogAdded;
   }
   function salesRender() {
     compChipsRender();
     shopMenuPinSync();
-    // Прежний вид «Параметров сайта»: настройки компонента — страницы и точки (с прайсами, если они у него есть) — когда компонент подключён
-    // или на сайте каталог «Электронного меню»
-    const active = compActive(), cfg = compCfg();
-    const block = $('#salesSettings');
-    block.hidden = !active;
-    block.setAttribute('aria-label', cfg.name);
-    block.classList.toggle('sales-settings--no-price', !cfg.price);
-    $('.sales-settings__icon', block).src = `assets/img/comp/${active ?? 'restaurant'}.svg`;
-    $('#salesSettingsTitle').textContent = cfg.name;
-    // компонент сменился — свёрнутая плашка раскрывается (экспандер заголовка)
-    if (active && block.dataset.comp !== active) $('.params-group-toggle', block).setAttribute('aria-expanded', 'true');
-    block.dataset.comp = active ?? '';
-    $('#salesSettingsPoints').textContent = cfg.points;
-    window.QrCode?.sync($('#compQr'), active ?? 'restaurant'); // табличка QR и «Привязать к …» — по типу сайта (qr.js)
-    window.CompCatalog?.sync($('#compCatalog'), active ?? 'restaurant'); // настройки каталога — только у меню и услуг (comp-catalog.js)
-    const add =$('.sales-settings__sub--points [data-sales-add]', block);
-    add.title = 'Добавить ' + cfg.point;
-    add.setAttribute('aria-label', 'Добавить ' + cfg.point);
-    const remove = $('#salesSettingsRemove');
-    remove.hidden = !compOn.size; // каталог без компонента отключать нечего
-    remove.dataset.compToggle = active ?? 'restaurant';
-    remove.setAttribute('aria-label', `Отключить компонент «${cfg.name}»`);
-    salesRenderRows($('#salesSettingsRows'), salesSaved, true);
+    const base = $('#salesSettings');
+    componentBlocks.set('restaurant', base);
+    for (const [id, cfg] of Object.entries(COMP)) {
+      const connected = compOn.has(id);
+      if (!connected && id !== 'restaurant') continue;
+      let block = componentBlocks.get(id);
+      if (!block) {
+        block = base.cloneNode(true);
+        block.removeAttribute('id');
+        block.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
+        $('.params-group-toggle', block).setAttribute('aria-expanded', 'true');
+        componentBlocks.set(id, block);
+      }
+      block.dataset.comp = id;
+      block.hidden = !connected && !catalogAdded;
+      block.setAttribute('aria-label', cfg.name);
+      $('.sales-settings__icon', block).src = `assets/img/comp/${id}.svg`;
+      $('.sales-settings__comp', block).textContent = cfg.name;
+      $('.sales-settings__sub--points span', block).textContent = cfg.points;
+      QrCode.sync($('.comp-qr', block), id);
+      CompCatalog.sync($('.comp-cat', block), id);
+      const add = $('.sales-settings__sub--points [data-sales-add]', block);
+      add.title = 'Добавить ' + cfg.point;
+      add.setAttribute('aria-label', add.title);
+      const remove = $('.sales-settings__remove', block);
+      remove.hidden = !connected;
+      remove.dataset.compToggle = id;
+      remove.setAttribute('aria-label', `Отключить компонент «${cfg.name}»`);
+      salesRenderRows($('.sales-rows', block), salesFor(id), id);
+    }
+    renderExtraComponentGroups();
+    pagePickRender();
+    catalogPriceRender();
     $('#salesData').hidden = !catalogAdded && !compOn.has('restaurant');
     $('#siteCatalog').classList.toggle('is-demo', (catalogHome || catalogMenu) && !salesSaved.length); // без точек продаж — демоданные
-    salesRenderRows($('#salesPopupRows'), salesCurrent());
+    salesRenderRows($('#salesPopupRows'), salesCurrent('restaurant'), 'restaurant');
     $('#salesReset').disabled = !salesDraft?.length; // сброс убирает точки: без них сбрасывать нечего
     salesDataCurrentRender();
   }
@@ -563,6 +571,7 @@
   }
   // Из «Параметров сайта» окно компонента открывается поверх них, параметры остаются открыты
   function salesOpen(overParams = false) {
+    salesComponent = 'restaurant';
     overParams = overParams === true && rsParamsOpen;
     if (overParams) { salesPickerCancel(); lsCloseMenu(); lsNewClose(); wsClose(); secClose(); btnSetClose(); fbClose(); }
     else popupsClose();
@@ -571,21 +580,25 @@
     salesRender();
     salesPopup.hidden = false;
   }
-  function salesPickerOpen(pointId = null) {
-    salesPickerMode = pointId || 'points';
+  function catalogPriceRender() {
+    for (const link of document.querySelectorAll('[data-catalog-price]')) {
+      link.textContent = CompCatalog.getPrice(extraComponentSite(), link.dataset.catalogPrice) || 'Выбрать прайс';
+    }
+  }
+  window.addEventListener('catalog-price-change', catalogPriceRender);
+  function salesPickerOpen(component = null) {
+    salesPickerMode = component || 'points';
     salesOnlySelected = false;
     const rows = salesCurrent();
-    const priceRow = pointId && rows.find((row) => row.id === pointId);
-    // Точек ещё нет — список открывается с уже отмеченными двумя ресторанами «Мили»
     const picked = rows.length ? rows.map((row) => row.id) : ROOT_SALES.slice(0, 2).map((point) => point.id);
-    salesSelection = new Set(pointId ? (priceRow.prices || priceRow.price.split(', ')).filter((name) => PRICES.includes(name)) : picked);
-    if (pointId) { priceExpanded.clear(); priceExpanded.add('Мили'); }
-    // у прайсов в правой колонке «+» вместо настроек списка — как в реестре
-    $('.sales-list-settings', salesPicker).hidden = !!pointId;
-    $('#salesPickerPlus').hidden = !pointId;
-    $('#salesPickerTitle').textContent = pointId ? 'Прайсы' : compCfg().points;
+    const price = component && CompCatalog.getPrice(extraComponentSite(), component);
+    salesSelection = new Set(component ? (price ? [price] : []) : picked);
+    if (component) { priceExpanded.clear(); priceExpanded.add('Мили'); }
+    $('.sales-list-settings', salesPicker).hidden = !!component;
+    $('#salesPickerPlus').hidden = !component;
+    $('#salesPickerTitle').textContent = component ? 'Прайсы' : compCfg().points;
     $('#salesSearch').value = '';
-    $('#salesSearch').setAttribute('aria-label', pointId ? 'Поиск прайсов' : 'Поиск: ' + compCfg().points.toLocaleLowerCase('ru'));
+    $('#salesSearch').setAttribute('aria-label', component ? 'Поиск прайсов' : 'Поиск: ' + compCfg().points.toLocaleLowerCase('ru'));
     salesPicker.hidden = false;
     salesPickerRender();
     $('#salesSearch').focus();
@@ -605,6 +618,10 @@
       input.value = option.id;
       input.checked = salesSelection.has(option.id);
       input.addEventListener('change', () => {
+        if (isPrice && input.checked) {
+          salesSelection.clear();
+          root.querySelectorAll('input:checked').forEach((other) => { other.checked = other === input; });
+        }
         if (input.checked) salesSelection.add(option.id);
         else salesSelection.delete(option.id);
         salesPickerHeader();
@@ -671,7 +688,7 @@
     const options = salesPickerMode === 'points' ? SALES.map((point) => point.id) : PRICES;
     all.setAttribute('aria-label', salesPickerMode === 'points' ? 'Выбрать все точки продаж' : 'Выбрать все прайсы');
     $('#salesCount').setAttribute('aria-label', salesPickerMode === 'points' ? 'Показать только отмеченные точки' : 'Показать только отмеченные прайсы');
-    all.hidden = false;
+    all.hidden = salesPickerMode !== 'points';
     // Пока ничего не отмечено — ни «Отмечено», ни чекбокса «Выбрать все»
     all.classList.toggle('is-empty', empty);
     $('#salesCount').hidden = empty;
@@ -683,23 +700,19 @@
     salesPickerRender();
   });
   $('#salesSelectAll').addEventListener('change', (e) => {
-    salesSelection = new Set(e.target.checked ? (salesPickerMode === 'points' ? SALES.map((point) => point.id) : PRICES) : []);
+    salesSelection = new Set(e.target.checked ? SALES.map((point) => point.id) : []);
     salesPickerRender();
   });
   $('#salesPickerDone').addEventListener('click', () => {
-    let rows = salesCopy(salesCurrent());
-    if (salesPickerMode === 'points') {
-      rows = rows.filter((row) => salesSelection.has(row.id));
-      for (const point of SALES) if (salesSelection.has(point.id) && !rows.some((row) => row.id === point.id)) rows.push({ id: point.id, price: point.price });
-    } else {
-      const row = rows.find((row) => row.id === salesPickerMode);
-      if (row) {
-        row.prices = PRICES.filter((name) => salesSelection.has(name)); // порядок — как в дереве
-        row.price = row.prices.join(', ') || 'Выбрать прайс';
-      }
+    if (salesPickerMode !== 'points') {
+      CompCatalog.setPrice(extraComponentSite(), salesPickerMode, [...salesSelection][0] || '');
+      salesPickerCancel();
+      return;
     }
+    const rows = salesCopy(salesCurrent()).filter((row) => salesSelection.has(row.id));
+    for (const point of SALES) if (salesSelection.has(point.id) && !rows.some((row) => row.id === point.id)) rows.push({ id: point.id, price: point.price });
     // Выбор из окна компонента идёт в черновик окна: на сайт точки попадают только по «Сохранить» (галке) в окне
-    if (salesDraft) salesDraft = salesCopy(rows);
+    if (salesComponent === 'restaurant' && salesDraft) salesDraft = salesCopy(rows);
     else salesSave(rows);
     salesPickerCancel();
     salesRender();
@@ -709,8 +722,8 @@
   $('#salesClose').addEventListener('click', salesClose);
   // Сохранённые точки продаж = «Электронное меню» настроено: оно подключается со своими страницами
   function salesSave(rows) {
-    salesSaved = salesCopy(rows);
-    if (salesSaved.length && !compOn.size) { compConnect('restaurant', true); pagePickDefaults('restaurant'); lsRender(); pagePickRender(); }
+    setSalesFor(salesComponent, salesCopy(rows));
+    if (salesComponent === 'restaurant' && salesSaved.length && !compOn.has('restaurant')) { compConnect('restaurant'); pagePickDefaults('restaurant'); lsRender(); pagePickRender(); }
   }
   $('#salesDone').addEventListener('click', () => { salesSave(salesDraft); salesClose(); salesRender(); });
   $('#salesReset').addEventListener('click', () => { salesDraft = []; salesRender(); });
@@ -807,17 +820,22 @@
   }
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') catSetClose(); });
   stage.addEventListener('click', (e) => {
-    if (e.target.closest('[data-sales-add]')) salesPickerOpen();
-    const price = e.target.closest('[data-sales-price]');
-    if (price) salesPickerOpen(price.dataset.salesPrice);
+    if (e.target.closest('[data-sales-add]')) {
+      salesComponent = e.target.closest('.sales-settings[data-comp]')?.dataset.comp ?? 'restaurant';
+      salesPickerOpen();
+    }
+    const price = e.target.closest('[data-catalog-price], #catSet .btnset__list');
+    if (price) salesPickerOpen(price.dataset.catalogPrice || 'restaurant');
+    if (e.target.closest('#catSet .catset__clear')) CompCatalog.setPrice(extraComponentSite(), 'restaurant', '');
     const remove = e.target.closest('[data-sales-delete]');
     const primary = e.target.closest('[data-sales-primary]');
     if (!remove && !primary) return;
-    let rows = salesCopy(salesCurrent());
+    const id = e.target.closest('.sales-settings[data-comp]')?.dataset.comp ?? 'restaurant';
+    let rows = salesCopy(salesCurrent(id));
     if (remove) rows = rows.filter((row) => row.id !== remove.dataset.salesDelete);
     else { const at = rows.findIndex((row) => row.id === primary.dataset.salesPrimary); rows.unshift(...rows.splice(at, 1)); }
-    if (salesDraft) salesDraft = rows;
-    else salesSaved = rows;
+    if (id === 'restaurant' && salesDraft) salesDraft = rows;
+    else setSalesFor(id, rows);
     salesRender();
   });
   // Перетаскивание строк точек продаж: порядок меняется, первая строка становится основной точкой
@@ -854,9 +872,10 @@
     dragged.classList.remove('is-drag');
     document.documentElement.classList.remove('is-row-dragging');
     const order = [...dragged.parentNode.querySelectorAll('[data-sales-row]')].map((row) => row.dataset.salesRow);
-    const rows = salesCopy(salesCurrent()).sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
-    if (salesDraft) salesDraft = rows;
-    else salesSaved = rows;
+    const id = dragged.closest('.sales-settings[data-comp]')?.dataset.comp ?? 'restaurant';
+    const rows = salesCopy(salesCurrent(id)).sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+    if (id === 'restaurant' && salesDraft) salesDraft = rows;
+    else setSalesFor(id, rows);
     salesRender();
   };
   document.addEventListener('pointerup', salesDragEnd);
@@ -869,7 +888,6 @@
     if (!salesPicker.hidden) salesPickerCancel();
     else salesClose();
   }, true);
-  salesRender();
 
   // «Магазин»: статика с ховером
   $('#rsSmall').innerHTML = ['E6D3', 'EAC3', 'EAEE', 'EA80'].map((g) => `<div class="rs-cell"><span class="ico24">&#x${g};</span></div>`).join('');
@@ -1108,14 +1126,14 @@
   // «Меню ресторана» встаёт на главную и подключает «Электронное меню» с его страницами.
   // Окно настроек открывается, только если компонент ещё не настроен (нет точек продаж), иначе виджет берёт настройки компонента.
   function siteAddCatalog() {
-    if (catalogAdded || [...compOn].some((id) => id !== 'restaurant')) return;
+    if (catalogAdded) return;
     const home = lsPages.find((p) => p.home);
     if (!home) return; // главную удалили — ставить некуда
     if (lsActive !== home.id) lsSelect(home.id);
     catalogHomeSet(true);
     catalogAdded = true;
     shopMenuPinSync();
-    compConnect('restaurant', true);
+    compConnect('restaurant');
     pagePickDefaults('restaurant');
     pagePickRender();
     siteCatalogShow(true);
@@ -1129,7 +1147,7 @@
     salesClose();
     catSetClose();
     catalogAdded = false;
-    if (!compOn.size) { // каталог других сценариев: без компонента, точки и «Карточка товара» уходят вместе с ним
+    if (!compOn.has('restaurant')) { // каталог других сценариев: без компонента, точки и «Карточка товара» уходят вместе с ним
       salesSaved = [];
       lsRemoveCardPage();
     }
@@ -1143,8 +1161,7 @@
     siteCatalog.classList.remove('is-active');
   }
   // Подключение: компонент и его страницы. Уже подключённый компонент возвращает свои страницы, если их удалили вместе с виджетом
-  function compConnect(id, root = false) {
-    if (root) compRoots.add(id);
+  function compConnect(id) {
     compOn.add(id);
     COMP[id].pages.forEach((name, i) => {
       if (lsPages.some((p) => p.comp === id && p.name === name)) return;
@@ -1177,42 +1194,62 @@
     lsRender();
   }
   // Отключение компонента: уходят только его страницы (и его виджет, его настройки). Другие компоненты — ни зависящие от него, ни его зависимости — остаются
-  function compRemoveSet(id) {
-    return [id];
-  }
-  // Сначала окно: какие компоненты отключатся вместе с ним и что уйдёт с сайта — страницы и виджет
   function compRemoveAsk(id) {
-    const ids = compRemoveSet(id);
-    const widget = catalogAdded && ids.includes('restaurant');
-    const others = ids.filter((c) => c !== id);
-    // В тексте — страницы компонента по его описанию (страница виджета и остальные), про виджет не пишем
-    const pages = [...new Set(ids.flatMap((c) => [COMP[c].widgetHome, ...COMP[c].pages].filter(Boolean)))];
-    const quoted = pages.map((n) => `«${n}»`);
-    const list = quoted.length > 1 ? quoted.slice(0, -1).join(', ') + ' и ' + quoted.at(-1) : quoted[0];
-    const lines = [];
-    if (others.length) lines.push(`Вместе с ним ${others.length > 1 ? 'отключатся компоненты' : 'отключится компонент'} ` + others.map((c) => `«${COMP[c].name}»`).join(', ') + '.');
-    if (pages.length) lines.push(pages.length > 1 ? `Удалятся страницы ${list}.` : `Удалится страница ${list}.`);
+    const match = (page) => lsGroupOf(page) === id ||
+      (id === 'restaurant' && catalogAdded && page.id === lsCardPageId);
+    const pages = lsPages.filter((page) => !page.home && match(page)).map((page) => `«${page.name}»`);
+    const list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages.at(-1) : pages[0];
     salesClose();
     confirmAsk({
       message: `Отключить компонент «${COMP[id].name}»?`,
-      details: lines.join(' '),
+      details: pages.length ? (pages.length > 1 ? 'Удалятся страницы ' : 'Удалится страница ') + list + '.' : '',
       answers: [['yes', 'Да', true], ['cancel', 'Отмена']],
-    }, (answer) => { if (answer === 'yes') compRemove(ids, widget, pages); });
-  }
-  // names — страницы из текста окна: удаляются и они, даже если на сайте это свои страницы (как «Меню» в «В конструкторе»). Главная остаётся
-  function compRemove(ids, widget, names = []) {
-    for (const c of ids) { compOn.delete(c); compRoots.delete(c); }
-    if (widget) siteRemoveCatalog();
-    { // настройки компонента — точки и выбранные страницы каталога и товара — уходят с ним (у всех компонентов одинаково)
-      salesSaved = [];
-      pagePicks.catalog = pagePicks.product = null; // при новом подключении — снова страницы по умолчанию (pagePickDefaults)
+    }, (answer) => {
+      if (answer !== 'yes') return;
+      compOn.delete(id);
+      compDropPages((page) => !page.home && match(page));
+      if (id === 'restaurant') {
+        if (catalogAdded) siteRemoveCatalog();
+        salesSaved = [];
+        pagePicks.catalog = pagePicks.product = null;
+      } else {
+        componentSales.delete(id);
+        componentPicks.delete(id);
+      }
       pagePickClose();
+      salesRender();
+    });
+  }
+  function restoreComponents(settings) {
+    if (!settings) { salesRender(); return; }
+    const ids = new Set(settings.map(({ id }) => id));
+    for (const id of compOn) {
+      if (ids.has(id)) continue;
+      compOn.delete(id);
+      compDropPages((page) => !page.home && lsGroupOf(page) === id);
+      if (id === 'restaurant' && catalogAdded) siteRemoveCatalog();
     }
-    // с меню уходит и карточка товара сайта (product) — она открывается из меню
-    const card = ids.includes('restaurant');
-    compDropPages((p) => ids.includes(p.comp) || (!p.home && (names.includes(p.name) || (card && p.product))));
+    for (const { id, points, pages } of settings) {
+      if (!compOn.has(id)) {
+        compConnect(id);
+        compAddWidgetHome(id);
+      }
+      if (points) {
+        setSalesFor(id, points.flatMap(({ name, price }) => {
+          const point = SALES.find((item) => item.name === name);
+          return point ? [{ id: point.id, price }] : [];
+        }));
+      }
+      const picks = picksFor(id);
+      pagePickDefaults(id);
+      for (const kind of Object.keys(picks)) {
+        if (!pages || !(kind in pages)) continue;
+        const matches = (page) => page.name === pages[kind];
+        picks[kind] = (lsPages.find((page) => matches(page) && lsGroupOf(page) === id) ?? lsPages.find(matches))?.id ?? null;
+      }
+    }
+    lsRender();
     salesRender();
-    pagePickRender();
   }
   // Чипса подключает компонент, крестик группы отключает (с подтверждением):
   // приходят только его страницы
@@ -1220,13 +1257,12 @@
     const toggle = e.target.closest('[data-comp-toggle], [data-comp-add]');
     if (toggle) {
       const id = toggle.dataset.compToggle || toggle.dataset.compAdd;
-      if (compOn.has(id)) { compRemoveAsk(id); return; }
-      // подключён другой компонент — замена с подтверждением: он отключается со своими страницами, новый подключается
-      if (toggle.dataset.compAdd && compOn.size) {
-        compSwitchAsk(id);
+      if (toggle.dataset.compToggle) {
+        if (compOn.has(id)) compRemoveAsk(id);
         return;
       }
-      compConnect(id, true);
+      if (compOn.has(id)) return;
+      compConnect(id);
       compAddWidgetHome(id);
       pagePickDefaults(id);
       lsRender();
@@ -3067,12 +3103,20 @@
   // Ссылка «Выберите страницу»: если страница на сайте одна, клик сразу ставит её; если несколько — радиоменю со страницами (как «Доступ»).
   // Меню одно на оба свойства, pagePickBtn — кнопка, из которой оно открыто. Выбор пока ни на что не влияет.
   // Та же разметка — на вкладке «Данные» реестра (registry/index.html), там список страниц демо.
-  const pagePickBtns = [...document.querySelectorAll('[data-page-pick]')];
+  const pagePickBtns = () => document.querySelectorAll('[data-page-pick]');
   const pagePickMenu = $('#pagePickMenu');
   const pagePicks = { catalog: null, product: null }; // id выбранной страницы по свойству
+  const componentPicks = new Map();
+  function picksFor(id) {
+    if (id === 'restaurant') return pagePicks;
+    if (!componentPicks.has(id)) componentPicks.set(id, { catalog: null, product: null });
+    return componentPicks.get(id);
+  }
+  const pickComponent = (btn) => btn.closest('.sales-settings')?.dataset.comp ?? 'restaurant';
   let pagePickBtn = null;
   function pagePickRender() {
-    for (const btn of pagePickBtns) {
+    for (const btn of pagePickBtns()) {
+      const pagePicks = picksFor(pickComponent(btn));
       const kind = btn.dataset.pagePick;
       if (pagePicks[kind] != null && !lsPage(pagePicks[kind])) pagePicks[kind] = null; // выбранную страницу удалили
       btn.textContent = lsPage(pagePicks[kind])?.name ?? 'Выберите';
@@ -3082,26 +3126,30 @@
   // («Меню», а если каталог стоит на главной — «Главная»), товар — карточка («Карточка блюда»). Уже выбранное не трогаем
   // У остальных компонентов — их страницы из COMP (catalog, product), например «Каталог услуг» и «Карточка услуги»
   function pagePickDefaults(id) {
+    const pagePicks = picksFor(id);
     const own = (name) => lsPages.find((p) => p.comp === id && p.name === name);
     const catalogPage = id === 'restaurant' ? lsPages.find((p) => p.menu) ?? (catalogAdded ? lsPages.find((p) => p.home) : null) : own(COMP[id].catalog);
     const productPage = id === 'restaurant' ? lsPages.find((p) => p.comp === id && p.product) ?? lsPages.find((p) => p.product) : own(COMP[id].product);
     if (pagePicks.catalog == null && catalogPage) pagePicks.catalog = catalogPage.id;
     if (pagePicks.product == null && productPage) pagePicks.product = productPage.id;
   }
-  function pagePickSet(kind, id) {
-    pagePicks[kind] = id;
+  function pagePickSet(btn, id) {
+    picksFor(pickComponent(btn))[btn.dataset.pagePick] = id;
     pagePickRender();
   }
   function pagePickClose() {
     pagePickMenu.hidden = true;
-    for (const btn of pagePickBtns) btn.setAttribute('aria-expanded', 'false');
+    for (const btn of pagePickBtns()) btn.setAttribute('aria-expanded', 'false');
   }
-  for (const btn of pagePickBtns) btn.addEventListener('click', () => {
+  stage.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-page-pick]');
+    if (!btn) return;
+    const pagePicks = picksFor(pickComponent(btn));
     const kind = btn.dataset.pagePick;
     const wasOpen = !pagePickMenu.hidden && pagePickBtn === btn;
     pagePickClose();
     if (wasOpen) return;
-    if (lsPages.length === 1) { pagePickSet(kind, lsPages[0].id); return; }
+    if (lsPages.length === 1) { pagePickSet(btn, lsPages[0].id); return; }
     pagePickBtn = btn;
     const list = $('.mw-menu__list', pagePickMenu);
     list.replaceChildren(...lsPages.map((page) => {
@@ -3124,62 +3172,10 @@
   });
   pagePickMenu.addEventListener('click', (e) => {
     const item = e.target.closest('[data-page-id]');
-    if (item) pagePickSet(pagePickBtn.dataset.pagePick, Number(item.dataset.pageId));
+    if (item) pagePickSet(pagePickBtn, Number(item.dataset.pageId));
     if (item || e.target.closest('#pagePickClose')) pagePickClose();
   });
   document.addEventListener('mousedown', (e) => { if (!e.target.closest('#pagePickMenu, [data-page-pick]')) pagePickClose(); });
-
-  // «Тип сайта» (Figma j0TcGAxRru4vkoaXdGwmWO 560:28184): клик по названию компонента в «Параметрах сайта» — радиоменю компонентов из COMP,
-  // отмечен показанный в блоке. Меню встаёт поверх названия: заголовок «Тип сайта» — на его месте, по тексту пунктов.
-  // Выбор другого компонента меняет тип сайта: после подтверждения (compSwitchAsk) прежний отключается со своими страницами и настройками, новый подключается.
-  const compMenu = $('#compMenu'), compMenuBtn = $('#salesSettingsTitle');
-  function compMenuClose() {
-    compMenu.hidden = true;
-    compMenuBtn.setAttribute('aria-expanded', 'false');
-  }
-  function compSwitch(id) {
-    const cur = compActive();
-    if (cur === id && compOn.has(id)) return;
-    if (cur && cur !== id) {
-      const pages = [COMP[cur].widgetHome, ...COMP[cur].pages].filter(Boolean);
-      compRemove([cur], catalogAdded && cur === 'restaurant', pages);
-    }
-    compConnect(id, true);
-    compAddWidgetHome(id);
-    pagePickDefaults(id);
-    lsRender();
-    pagePickRender();
-    salesRender();
-  }
-  // Тип сайта по клику на название компонента не меняется (решение пользователя): название — просто заголовок, меню #compMenu по нему не открывается
-  // Смена на другой компонент — с подтверждением, как у крестика (compRemoveAsk): что отключится и какие страницы удалятся
-  function compSwitchAsk(id) {
-    const cur = compActive();
-    if (!cur || cur === id) { compSwitch(id); return; }
-    const names = [COMP[cur].widgetHome, ...COMP[cur].pages].filter(Boolean);
-    const pages = lsPages.filter((page) => !page.home &&
-      (page.comp === cur || names.includes(page.name) || (cur === 'restaurant' && page.product))
-    ).map((page) => `«${page.name}»`);
-    const list = pages.length > 1 ? pages.slice(0, -1).join(', ') + ' и ' + pages.at(-1) : pages[0];
-    const lines = [`Компонент «${COMP[cur].name}» отключится.`];
-    if (pages.length) lines.push(pages.length > 1 ? `Удалятся страницы ${list}.` : `Удалится страница ${list}.`);
-    salesClose();
-    confirmAsk({
-      message: `Сменить тип сайта на «${COMP[id].name}»?`,
-      details: lines.join(' '),
-      answers: [['yes', 'Да', true], ['cancel', 'Отмена']],
-    }, (answer) => {
-      if (answer !== 'yes') return;
-      compSwitch(id);
-    });
-  }
-  compMenu.addEventListener('click', (e) => {
-    const item = e.target.closest('[data-comp-pick]');
-    if (item || e.target.closest('#compMenuClose')) compMenuClose();
-    if (item) compSwitchAsk(item.dataset.compPick);
-  });
-  document.addEventListener('mousedown', (e) => { if (!e.target.closest('#compMenu, #salesSettingsTitle')) compMenuClose(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') compMenuClose(); });
 
   // Сценарии панели — состояния страницы. «Новая страница»: открытая новая страница (или последняя, или созданная заново) получает режим сценария.
   // Остальные возвращают исходные страницы и каталог, подсказка на плюсе — только в «Создании окна с товаром».
@@ -3208,7 +3204,8 @@
       lsActive = isComp ? 1 : 2;
       lsCardPageId = null;
       compOn.clear();
-      compRoots.clear();
+      componentSales.clear();
+      componentPicks.clear();
       pagePicks.catalog = pagePicks.product = null;
       pagePickClose();
       sitePlaceCatalog();
@@ -3222,7 +3219,6 @@
         lsPages.push(page('О нас', { about: true }), page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), page('Меню', { menu: true, group: 'restaurant' }), page('Карточка товара', { blank: true, product: true, key: true, group: 'restaurant' }));
         lsActive = lsPages.find((p) => p.home).id; // редактор открывается на «Главной»
         compOn.add('restaurant');
-        compRoots.add('restaurant');
         salesSaved = ROOT_SALES.slice(0, 2).map((point) => ({ id: point.id, price: point.price }));
         // страницы каталога и товара уже выбраны: «Меню» и «Карточка товара» (как в «Типовом заполнении» dynamic-pages)
         pagePicks.catalog = lsPages.find((p) => p.menu).id;
@@ -3384,7 +3380,7 @@
   function pubOpen() {
     rsCloseParams();
     pubBody.append(rsParamsBody);
-    pub.append(pagePickMenu, compMenu);
+    pub.append(pagePickMenu);
     pagePickRender();
     const addr = $('.rs-site .dom__text', rsParamsBody);
     if (addr && !addr.value) { addr.value = pubRand(); addr.dispatchEvent(new Event('input', { bubbles: true })); }
@@ -3397,9 +3393,8 @@
   function pubClose() {
     if (pub.hidden) return;
     pagePickClose();
-    compMenuClose();
     pub.hidden = true;
-    rsParams.append(rsParamsBody, pagePickMenu, compMenu);
+    rsParams.append(rsParamsBody, pagePickMenu);
   }
   $('#chPublish').addEventListener('click', () => (pub.hidden ? pubOpen() : pubClose()));
   $('#pubClose').addEventListener('click', pubClose);
@@ -3426,12 +3421,14 @@
     const name = $('.dom__text', dom).value.trim() || pubRand();
     const link = dom.classList.contains('dom--saby') ? name + $('.dom__zone', dom).textContent : name;
     ExtraComponents.copy(extraComponentSite(), link);
+    for (const component of ['restaurant', 'services']) {
+      CompCatalog.setPrice(link, component, CompCatalog.getPrice(extraComponentSite(), component));
+    }
     const params = regParams(publish);
     if (params.domain) params.domain.value = name;
     // точки продаж — те, что настроены в «Параметрах сайта» конструктора (в шаблоне их нет)
     regPublish = { link, title: chTitle.textContent, tpl: Number(stage.dataset.tpl) || 1, kind: stage.dataset.tplKind || 'menu',
       points: params.points, params, save: !publish };
-    tplSites[link] = salesSaved.map((row) => ({ ...row }));
     tplSite = null;
     frame.select('sites');
   }

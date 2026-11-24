@@ -465,16 +465,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ls-mode__item:hover .ls-mode__toggle::before { visibility: visible; border: 1px solid var(--border-border-color); background: var(--background-background-color); }
 .ls-mode__item.is-selected .ls-mode__toggle::before { visibility: visible; border: 0; background: var(--extra-marker_color); }
 
-/* меню «Тип сайта» (Figma j0TcGAxRru4vkoaXdGwmWO 560:28184): 210 шириной, поля 8, заголовок 28 с крестиком 28, пункты 32 через 6.
-   Заголовок — по тексту пунктов (как .ls-mode__head). То же — в registry/index.html */
-.mw-menu.comp-menu { width: 210px; }
-.comp-menu .mw-menu__list { padding: 8px; }
-.comp-menu__top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.comp-menu__head { flex: 1; min-width: 0; }
-.comp-menu__close { flex: none; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
-.comp-menu__close img { flex: none; display: block; } /* глиф 12 в рамке 32 — в кнопке 28 по центру */
-.comp-menu__items { display: flex; flex-direction: column; gap: 6px; }
-
 /* меню «⋮» страницы */
 .mw-menu.ls-menu { width: 240px; }
 .ls-menu .mw-menu__list { padding: 8px; border: 2px solid transparent; } /* рамка 2px — из макета */
@@ -741,7 +731,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-settings__sub--points:has(.sales-settings__toggle[aria-expanded="false"]) .sales-settings__price { visibility: hidden; }
 
 .mw-menu.page-pick-menu { width: max-content; min-width: 200px; max-width: 320px; }
-.sales-row { position: relative; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 10px; min-height: 32px; padding: 0 12px; font-size: 14px; letter-spacing: -.1974px; }
+.sales-row { position: relative; display: grid; grid-template-columns: minmax(0,1fr); align-items: center; gap: 10px; min-height: 32px; padding: 0 12px; font-size: 14px; letter-spacing: -.1974px; }
 .sales-settings .sales-row { padding-right: 66px; }
 .sales-row:hover, .sales-row:focus-within { background: var(--menu-item-hover); }
 .sales-row__name { display: flex; align-items: center; gap: 4px; min-width: 0; }
@@ -749,8 +739,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-row__name .ico { color: #8991a9; flex: none; }
 .sales-price { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Компонент без прайса («Услуги», «Отель»): у точек только название — колонки «Прайс» нет */
-.sales-settings--no-price .sales-settings__price, .sales-settings--no-price .sales-price { display: none; }
-.sales-settings--no-price .sales-row { grid-template-columns: minmax(0,1fr); }
+.sales-settings__price { display: none; }
 /* Текст без своего ховера: подсвечивается только строка; курсор — рука, как у пунктов мастера (перетаскивание остаётся) */
 .sales-row { cursor: pointer; }
 /* Перетаскиваемая строка — своего размера (pointer-события, не HTML5 drag: у нативного призрака нет масштаба сцены) */

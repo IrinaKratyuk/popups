@@ -1,0 +1,133 @@
+--- a/registry/index.html
++++ b/registry/index.html
+@@ -1644,8 +1644,16 @@
+ .master--data .master__list > .master__item{ cursor: pointer; }
+ .master--data .site-tree :is(.site-tree__page, .site-tree__site){ cursor: pointer; }
+ .master__item[hidden]{ display: none; }
+-#regMasterComp{ gap: 0; font-weight: 600; }
+-#regMasterComp .master__name{ flex: 0 1 auto; }
++#screen-3 .reg-tree-heading{ gap: 0; font-weight: 600; }
++#screen-3 .reg-tree-heading .master__name{ flex: 0 1 auto; }
++#screen-3 .reg-tree-heading.site-tree__site{ padding-inline-start: var(--page-list-inset); }
++.reg-tree-toggle{
++  padding: 0;
++  border: 0;
++  background: transparent;
++  cursor: pointer;
++}
++.reg-tree-toggle[hidden]{ display: none; }
+ .reg-component-pages[hidden], #regDeliverySettings[hidden], #regDeliveryHours[hidden], #regDeliveryAreas[hidden]{ display: none; }
+ .master--data .site-tree .reg-component-pages .site-tree__page:not([data-reg-nav]){ cursor: default; }
+ #regDeliveryNav .switch{ pointer-events: none; }
+@@ -3833,18 +3841,18 @@
+             <aside class="master master--data" data-no-options>
+               <ul class="master__list site-tree">
+                 <li>
+-                  <div class="site-tree__heading">
+-                    <div class="master__item master__item--selected site-tree__site" data-reg-nav="general" tabindex="0" role="button">
+-                      <span class="master__name ml__caption" id="regSiteLabel">Сайт</span>
+-                    </div>
+-                    <button class="site-tree__expander ml__arrow ml__arrow--down" id="regSiteToggle" type="button" aria-label="Страницы сайта" aria-expanded="true" aria-controls="regSitePages"></button>
++                  <div class="master__item master__item--selected site-tree__site reg-tree-heading" data-reg-nav="general" tabindex="0" role="button">
++                    <img class="master__comp-icon" src="../assets/img/comp/site.svg" alt="">
++                    <span class="master__name ml__caption" id="regSiteLabel">Сайт</span>
++                    <button class="reg-tree-toggle ml__arrow ml__arrow--down" type="button" aria-label="Страницы сайта" aria-expanded="true" aria-controls="regSitePages"></button>
+                   </div>
+                   <ul class="site-tree__pages" id="regSitePages" aria-labelledby="regSiteLabel"></ul>
+                 </li>
+                 <!-- Подключённый компонент — пункт навигации: клик открывает его настройки (#regSales); название и видимость задаёт render() скрипта компонентов -->
+-                <li class="master__item component-group" data-reg-nav="comp" tabindex="0" role="button" id="regMasterComp">
++                <li class="master__item component-group reg-tree-heading" data-reg-nav="comp" tabindex="0" role="button" id="regMasterComp">
+                   <img class="master__comp-icon" src="../assets/img/comp/restaurant.svg" alt="">
+                   <span class="master__name ml__caption">Электронное меню</span>
++                  <button class="reg-tree-toggle ml__arrow ml__arrow--down" type="button" aria-label="Страницы компонента" aria-expanded="true" hidden></button>
+                   <!-- Команда по ховеру — как у точки продаж в мастере; ✕ работает как крестик блока компонента: окно подтверждения -->
+                   <button class="component-group__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"></button>
+                 </li>
+@@ -4173,10 +4181,18 @@
+                 var sales, on;
+                 function render(){
+                   sales.hidden = !on;
+-                  document.getElementById('regRestaurantNav').hidden = on !== 'restaurant';
+-                  document.getElementById('regDeliveryNav').hidden = on !== 'delivery';
+                   var mc = document.getElementById('regMasterComp');
+                   if (mc){
++                    var toggle = mc.querySelector('.reg-tree-toggle');
++                    var navId = { restaurant: 'regRestaurantNav', delivery: 'regDeliveryNav' }[on];
++                    var expanded = navId && (toggle.getAttribute('aria-controls') !== navId || toggle.getAttribute('aria-expanded') === 'true');
++                    toggle.hidden = !navId;
++                    if (navId) toggle.setAttribute('aria-controls', navId);
++                    else toggle.removeAttribute('aria-controls');
++                    toggle.setAttribute('aria-expanded', String(Boolean(expanded)));
++                    toggle.classList.toggle('ml__arrow--down', Boolean(expanded));
++                    document.getElementById('regRestaurantNav').hidden = !expanded || on !== 'restaurant';
++                    document.getElementById('regDeliveryNav').hidden = !expanded || on !== 'delivery';
+                     mc.hidden = !on;
+                     if (on){
+                       mc.querySelector('.master__name').textContent = COMP[on].name;
+@@ -6458,6 +6474,8 @@
+   function renderExtraComponents(){
+     var site = current;
+     var list = $('#regMasterComp').parentNode;
++    var galleryNav = $('#regGalleryNav');
++    var galleryExpanded = galleryNav.dataset.site !== site || !galleryNav.hidden;
+     ExtraComponents.renderRows(list, site, {
+       tag: 'li', rowClass: 'master__item', iconClass: 'master__comp-icon',
+       nameClass: 'master__name ml__caption', remove: function(id, name){
+@@ -6465,9 +6483,22 @@
+       }
+     });
+     var gallery = $(':scope > .extra-component-row:has(> img[src$="/gallery.svg"])', list);
+-    var galleryNav = $('#regGalleryNav');
+-    galleryNav.hidden = !gallery;
+-    if (gallery) gallery.after(galleryNav);
++    galleryNav.hidden = !gallery || !galleryExpanded;
++    if (gallery){
++      galleryNav.dataset.site = site;
++      gallery.classList.add('reg-tree-heading');
++      var toggle = document.createElement('button');
++      toggle.type = 'button';
++      toggle.className = 'reg-tree-toggle ml__arrow';
++      toggle.classList.toggle('ml__arrow--down', galleryExpanded);
++      toggle.setAttribute('aria-label', 'Страницы галереи');
++      toggle.setAttribute('aria-expanded', String(galleryExpanded));
++      toggle.setAttribute('aria-controls', galleryNav.id);
++      $('.master__name', gallery).after(toggle);
++      gallery.after(galleryNav);
++    } else {
++      delete galleryNav.dataset.site;
++    }
+     ExtraComponents.renderChips($('#regAddable .addable__list'), site);
+   }
+   window.addEventListener('extra-components-change', renderExtraComponents);
+@@ -6526,7 +6557,7 @@
+     selectedProperties = parameterPages[row.dataset.pageIndex];
+     $('#regSite').hidden = key !== 'general';
+     var component = $('#regDetail .reg-nav-component');
+-    var deliveryOverview = key === 'comp' && !$('#regDeliveryNav').hidden;
++    var deliveryOverview = key === 'comp' && $('#regMasterComp .reg-tree-toggle').getAttribute('aria-controls') === 'regDeliveryNav';
+     component.hidden = key !== 'comp' && key !== 'delivery-site';
+     component.classList.toggle('reg-nav-component--delivery-overview', deliveryOverview);
+     $('#regDeliverySettings').hidden = !deliveryOverview;
+@@ -6590,15 +6621,15 @@
+   document.addEventListener('click', function(e){
+     if (e.target.id === 'regPageNameInput') e.target.readOnly = false;
+     var row = e.target.closest('[data-reg-nav]');
+-    var siteToggle = e.target.closest('#regSiteToggle');
++    var treeToggle = e.target.closest('.reg-tree-toggle');
+     var expander = e.target.closest('.master__expander');
+-    if (siteToggle){
+-      var pages = $('#regSitePages');
++    if (treeToggle){
++      var pages = document.getElementById(treeToggle.getAttribute('aria-controls'));
+       var open = pages.hidden;
+-      if (!open && $('.master__item--selected', pages)) window.regNavSelect('general');
++      if (!open && row && $('.master__item--selected', pages)) window.regNavSelect(row.dataset.regNav);
+       pages.hidden = !open;
+-      siteToggle.setAttribute('aria-expanded', String(open));
+-      siteToggle.classList.toggle('ml__arrow--down', open);
++      treeToggle.setAttribute('aria-expanded', String(open));
++      treeToggle.classList.toggle('ml__arrow--down', open);
+     } else if (expander){
+       var expand = expander.getAttribute('aria-expanded') === 'false';
+       expander.setAttribute('aria-expanded', String(expand));
