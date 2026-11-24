@@ -106,15 +106,15 @@ ul { list-style: none; margin: 0; padding: 0; }
   gap: 8px;
   margin-top: 16px;
   margin-inline: 4px;
-  padding: 12px 6px 16px;
+  padding-block-start: 12px;
+  padding-inline: 6px;
   border-radius: 8px;
   background: #edeef2;
 }
-.lsb__components:has(> .lsb__components-title[hidden]) { padding-block: 8px; }
-.lsb__components[hidden], .lsb__components-title[hidden] { display: none; }
+.lsb__components[hidden] { display: none; }
 .lsb__components-title {
   margin: 0;
-  padding-left: 8px;
+  padding-inline-start: 18px;
   font-size: 12px;
   font-weight: 400;
   line-height: normal;
@@ -693,11 +693,10 @@ ul { list-style: none; margin: 0; padding: 0; }
 .comp-groups { display: flex; flex-direction: column; gap: 4px; }
 .comp-groups:not(:has(> :not([hidden]))) { display: none; } /* скрытый блок «Ресторана» лежит внутри: без этого лишний gap */
 :is(.rs-params, .pub) .comp-group .sales-settings__head { margin-bottom: 0; }
-.rs-comps { padding: 12px 8px 12px; } /* сверху 12 + 4 (gap тела) = 16 от плашки выше, как в Figma qRTnmlLncsGaoD9FD0u3Nh 17264:108765 */
+.rs-comps { padding-block-start: 12px; padding-inline: 8px; } /* сверху 12 + 4 (gap тела) = 16 от плашки выше, как в Figma qRTnmlLncsGaoD9FD0u3Nh 17264:108765 */
 /* заголовок группы чипсов — «МОЖНО ДОБАВИТЬ» из Figma 21912:180563: 12px капсом, 8 до чипсов; слева 8 + 16 = 24 — на линии текста чипсов плашки «Сайт» */
 .rs-comps__title { padding: 0 0 8px 16px; font-size: 12px; line-height: normal; letter-spacing: .24px; text-transform: uppercase; color: var(--text-label_contrast_text-color); }
-.rs-comps[hidden], .rs-comps .chips[hidden], .rs-comps__title[hidden] { display: none; }
-.rs-comps:has(> .rs-comps__title[hidden]) { padding-top: 8px; } /* компонент подключён, заголовка нет: 8 + 4 (gap тела) = 12 от плашки компонента до чипсов */
+.rs-comps[hidden], .rs-comps .chips[hidden] { display: none; }
 .rs-comps__chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .rs-comps .chips__icon { padding: 0; }
 .rs-comps .chips__icon img { display: block; width: 24px; height: 24px; }
@@ -1181,7 +1180,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .stage:is(.is-tpl, [data-scenario="catalog-setup"]):not(.is-tpl-view) .ch-publish { display: inline-flex; }
 .stage.is-tpl .rs-w__name--pin > .pin { display: none; } /* в шаблоне каталог уже на сайте — подсказки клика на «Меню ресторана» нет */
 .stage.is-tpl-view :is(.ch-done, .ch-view, .ch-cmd:not([aria-label="Предпросмотр"])) { display: none; }
-.stage.is-tpl-view :is(.rs-panel, .rs-params, .right-panel, #lsAdd, .lsb__cmds, .site-plus, .content .wg__toolbar) { display: none; }
+.stage.is-tpl-view :is(.rs-panel, .rs-params, .right-panel, #lsAdd, .lsb__cmds, .component-group__remove, .site-plus, .content .wg__toolbar) { display: none; }
 .stage.is-tpl-view { background: var(--background-unaccented_background-color); } /* фон просмотра: шапка и поля вокруг сайта */
 .stage.is-tpl-view .content { right: 8px; }
 .stage.is-tpl-view :is(.site, .site-blank, .site-float) { pointer-events: none; } /* прокрутка остаётся: колесо ловит .content */
@@ -1303,13 +1302,12 @@ ul { list-style: none; margin: 0; padding: 0; }
 .pub__close { flex: none; display: flex; box-sizing: content-box; width: 24px; height: 24px; padding: 0 8px 0 12px; border: 0; background: none; cursor: pointer; }
 .pub__close img { display: block; }
 /* Предупреждение — белая плашка, под ней в 4px тело «Параметров сайта» (#rsParams), перенесённое pubOpen:
-   те же блоки «Сайт», компоненты и «Добавить компонент»; длинное — прокручивается внутри окна.
+   те же блоки «Сайт», настройки подключённого компонента и «Компоненты»; длинное — прокручивается внутри окна.
    overflow окна не режем: меню выбора страницы не обрезается краем */
 .pub__body { display: flex; flex-direction: column; gap: 4px; min-height: 0; padding: 0 4px 4px; }
 .pub__card[hidden] { display: none; }
 .pub__card { padding: 12px; background: #fff; border-radius: 8px; }
 .pub .rs-params__body { flex: none; max-height: 600px; padding: 0; }
-.pub .rs-comps { padding-bottom: 8px; } /* снизу 8 + 4 (поле окна) = 12, как сбоку: 4 + 8 */
 /* Предупреждение — иконка и текст warning, «предпросмотра» подчёркнуто */
 .pub__warn { display: flex; align-items: flex-start; font-size: 14px; line-height: normal; letter-spacing: -.1974px; color: var(--text-warning_text-color, #e6a119); }
 .pub__warn-ico { flex: none; margin-right: 4px; padding-bottom: 1px; color: var(--icon-warning_icon-color, #e6a119); }

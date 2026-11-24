@@ -15,6 +15,7 @@
 <!-- .pe — окно «Сайт» у «Подключить» (вид — как #salesPopup конструктора); стили только под .pe, шрифты cbuc-icons/cbuc-icons24 — ниже -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.css">
 <link rel="stylesheet" href="../page-editor.css">
+<link rel="stylesheet" href="../component-list.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/input/input.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/button/button.css">
 <script src="../page-editor.js"></script>
@@ -1622,7 +1623,7 @@ html, body{
 }
 
 /* Мастер-колонка «Данных» — группа 119:21447. Между пунктами — 2 px, как во всех мастерах (gap .master__list),
-   ниже через 20 px — блок «Добавить компонент». */
+   ниже через 20 px — блок «Компоненты». */
 /* Группа «Точки продаж» (Figma 2841:47949): линия слева, подпись справа; над и под — 2 px, как между пунктами */
 .master__group{ display: flex; flex-direction: column; gap: var(--o-3xs); margin-top: var(--o-3xs); }
 .master__group[hidden]{ display: none; }
@@ -1645,8 +1646,8 @@ html, body{
 .master__item .sales-row__actions{ background: var(--c-list-hover); border-radius: 0 var(--r-xs) var(--r-xs) 0; }
 .master__item:hover .sales-row__actions{ display: flex; }
 .master__item .sales-row__actions .icon{ font-size: 16px; color: #656c87; }
-.master__item .sales-row__actions :is([data-sales-delete], [data-comp-off]) .icon{ color: #c2140a; } /* красный ✕, как удаление точки в конструкторе */
-.master__item .sales-row__actions :is([data-sales-delete], [data-comp-off]):hover .icon{ color: #8f0e07; }
+.master__item .sales-row__actions [data-sales-delete] .icon{ color: #c2140a; }
+.master__item .sales-row__actions [data-sales-delete]:hover .icon{ color: #8f0e07; }
 .master--data .master__list > .master__item{ cursor: pointer; }
 .master__item[hidden]{ display: none; }
 #regMasterComp{ gap: 0; font-weight: 600; }
@@ -1697,11 +1698,8 @@ html, body{
 .reg-nav-detail::before{ align-self: stretch; top: var(--o-s); }
 /* Выбранная точка (Figma 2829:79753): фон и маркер выбранного пункта, текст обычный */
 .master--data .master__group .master__item--selected:hover{ background: var(--c-bg-secondary); }
-.addable{ margin-top: 16px; display: flex; flex-direction: column; gap: 8px; padding: var(--o-m) var(--o-xs) var(--o-l); border-radius: var(--r-s); background: var(--c-bg-active); }
-/* без заголовка (компонент подключён) — поля чипсов одинаковые со всех сторон: 8 px (6 + 2 у списка) */
-.addable:has(> .addable__caption[hidden]){ padding: var(--o-s) var(--o-xs); }
-.addable__caption[hidden]{ display: none; }
-.addable__caption{ margin: 0; padding-left: var(--o-s); font-size: var(--fs-xs); font-weight: 400; line-height: normal; letter-spacing: 1.2px; text-transform: uppercase; color: var(--c-text-label-contrast); }
+.addable{ margin-top: 16px; display: flex; flex-direction: column; gap: 8px; padding-block-start: var(--o-m); padding-inline: var(--o-xs); border-radius: var(--r-s); background: var(--c-bg-active); }
+.addable__caption{ margin: 0; padding-inline-start: calc(var(--o-3xs) + var(--o-l)); font-size: var(--fs-xs); font-weight: 400; line-height: normal; letter-spacing: 1.2px; text-transform: uppercase; color: var(--c-text-label-contrast); }
 .addable__list{ display: flex; flex-wrap: wrap; gap: 8px; padding: 0 var(--o-3xs); }
 .addable__list .chips[hidden]{ display: none; }
 .addable .chips__icon{ padding: 0; }
@@ -1922,10 +1920,9 @@ html, body{
 .connect-popup__hint{ margin: 8px 0 0; font-size: 16px; line-height: 1.4; color: #8991a9; }
 .connect-popup__hint a{ color: #2562aa; text-decoration: none; }
 .connect-popup__hint a:hover{ text-decoration: underline; }
-/* Чипсы «Добавить компонент» — как .rs-comps в styles.css конструктора.
-   Компоненты взаимоисключающие: чипсы — у всех, кроме подключённого; чипса другого компонента заменяет подключённый (с подтверждением #comp-switch).
-   Пока компонент подключён, заголовка «Добавить компонент» нет. */
-.sales-settings[hidden], .rs-comps[hidden], .rs-comps .chips[hidden], .rs-comps__title[hidden]{ display: none; }
+/* Чипсы блока «Компоненты» — как .rs-comps в styles.css конструктора.
+   Компоненты взаимоисключающие: чипсы — у всех, кроме подключённого; чипса другого компонента заменяет подключённый (с подтверждением #comp-switch). */
+.sales-settings[hidden], .rs-comps[hidden], .rs-comps .chips[hidden]{ display: none; }
 .comp-group .sales-settings__head{ margin-bottom: 0; }
 #regCompGroups{ align-self: stretch; width: 100%; } /* обёртка карточек компонентов — на всю ширину, как «Сайт» */
 #regCompGroups:empty{ display: none; }
@@ -3805,18 +3802,18 @@ button.tpl-cat{ cursor: pointer; }
                   <span class="master__name">Сайт</span>
                 </li>
                 <!-- Подключённый компонент — пункт навигации: клик открывает его настройки (#regSales); название и видимость задаёт render() скрипта компонентов -->
-                <li class="master__item" data-reg-nav="comp" tabindex="0" role="button" id="regMasterComp">
+                <li class="master__item component-group" data-reg-nav="comp" tabindex="0" role="button" id="regMasterComp">
                   <img class="master__comp-icon" src="../assets/img/comp/restaurant.svg" alt="">
                   <span class="master__name ml__caption">Электронное меню</span>
                   <button class="master__expander ml__arrow ml__arrow--down" type="button" aria-label="Страницы компонента" aria-expanded="true"></button>
                   <!-- Команда по ховеру — как у точки продаж в мастере; ✕ работает как крестик блока компонента: окно подтверждения -->
-                  <span class="sales-row__actions"><button type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"><i class="icon" aria-hidden="true">&#xE65C;</i></button></span>
+                  <button class="component-group__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"></button>
                 </li>
               </ul>
-              <!-- «Добавить компонент»: все компоненты чипсами, как #compChipsBlock конструктора.
+              <!-- «Компоненты»: все компоненты чипсами, как #compChipsBlock конструктора.
                    Клик подключает компонент тем же скриптом (data-comp-add); чипса подключённого скрыта, пока компонент подключён — заголовка нет -->
-              <section class="addable" id="regAddable" aria-label="Добавить компонент">
-                <h3 class="addable__caption" hidden>Добавить компонент</h3>
+              <section class="component-list addable" id="regAddable" aria-label="Компоненты">
+                <h3 class="addable__caption">Компоненты</h3>
                 <div class="addable__list">
                   <button class="chips chips--optional" type="button" data-comp-add="restaurant" hidden title="Меню и карточки блюд на сайте, цены и наличие из точек продаж" aria-label="Подключить компонент: Электронное меню"><span class="chips__icon"><img src="../assets/img/comp/restaurant.svg" alt=""></span><span class="chips__caption">Электронное меню</span></button>
                   <button class="chips chips--optional" type="button" data-comp-add="delivery" title="Корзина, оформление и оплата заказа с доставкой, история заказов покупателя" aria-label="Подключить компонент: Доставка"><span class="chips__icon"><img src="../assets/img/comp/delivery.svg" alt=""></span><span class="chips__caption">Доставка</span></button>
@@ -3915,7 +3912,7 @@ button.tpl-cat{ cursor: pointer; }
               </div>
               <!-- Остальные подключённые компоненты: иконка, название, крестик (строит скрипт ниже) -->
               <div id="regCompGroups"></div>
-              <!-- Чипсов «Добавить компонент» в карточке нет: подключение — блоком в мастере (#regAddable), в конструкторе — #compChipsBlock -->
+              <!-- Подключение через блок «Компоненты» в мастере (#regAddable), в конструкторе — #compChipsBlock -->
               <!-- Каталог точки продаж (Figma 2829:79707): показывается вместо настроек по клику на точку в мастере.
                    Прайс — тот, что у точки в блоке «Электронное меню»; категории — как на странице «Меню» сайта -->
               <section class="reg-cat" id="regSalesCatalog" aria-label="Каталог точки продаж" hidden>
@@ -4067,7 +4064,6 @@ button.tpl-cat{ cursor: pointer; }
                   }
                   // чипсы остаются: скрыта только чипса подключённого компонента, чипса другого заменяет его (после подтверждения #comp-switch)
                   document.querySelectorAll('#regAddable [data-comp-add]').forEach(function(b){ b.hidden = b.dataset.compAdd === on; });
-                  document.querySelector('#regAddable .addable__caption').hidden = !!on; // компонент подключён — заголовка «Добавить компонент» нет
                   if (!on) return;
                   var c = COMP[on];
                   sales.setAttribute('aria-label', c.name);

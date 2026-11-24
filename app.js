@@ -390,10 +390,8 @@
     $('#compGroups').replaceChildren($('#salesSettings'));
     $('#compChips').replaceChildren(...chips);
     $('#compChipsBlock').hidden = !chips.length;
-    $('#compChipsBlock .rs-comps__title').hidden = compOn.size > 0; // компонент подключён — заголовка «Добавить компонент» нет, чипсы заменяют его
     $('#lsComponentChips').replaceChildren(...chips.map((chip) => chip.cloneNode(true)));
     $('#lsComponents').hidden = !chips.length;
-    $('#lsComponents .lsb__components-title').hidden = compOn.size > 0;
   }
   const salesCopy = (rows) => rows.map((row) => ({ ...row, prices: row.prices?.slice() }));
   const salesCurrent = () => salesDraft || salesSaved;
@@ -2729,6 +2727,14 @@
     expander.setAttribute('aria-expanded', String(expanded));
     expander.classList.toggle('ml__arrow--down', expanded);
     head.append(icon, name, expander);
+    if (compOn.has(id)) {
+      const remove = el('button', 'component-group__remove');
+      remove.type = 'button';
+      remove.dataset.compToggle = id;
+      remove.setAttribute('aria-label', `Отключить компонент «${COMP[id].name}»`);
+      head.classList.add('component-group');
+      head.append(remove);
+    }
     return head;
   }
   function lsToggleGroup(expander) {
@@ -2905,7 +2911,7 @@
     if (row && !e.target.closest('[data-cmd], [data-save]') && !row.classList.contains('is-edit')) lsStartRename(Number(row.dataset.id));
   });
   lsList.addEventListener('keydown', (e) => {
-    if (e.target.closest('[data-group-expander]')) return;
+    if (e.target.closest('[data-group-expander], .component-group__remove')) return;
     if (e.key === 'Enter') lsFinishRename(true);
     else if (e.key === 'Escape') lsFinishRename(false);
   });

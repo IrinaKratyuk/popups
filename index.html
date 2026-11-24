@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap">
   <link rel="stylesheet" href="page-editor.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="component-list.css">
   <link rel="stylesheet" href="domain.css">
   <!-- arrow-button появился в ките позже 1.13.0 (стрелки «Стиль» и шевроны цветов в окне QR-кода) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/arrow-button/arrow-button.css">
@@ -91,8 +92,8 @@
             </div>
           </header>
           <div class="lsb__list" id="lsList"></div>
-          <section class="lsb__components" id="lsComponents" aria-label="Добавить компонент" hidden>
-            <h3 class="lsb__components-title">Добавить компонент</h3>
+          <section class="component-list lsb__components" id="lsComponents" aria-label="Компоненты" hidden>
+            <h3 class="lsb__components-title">Компоненты</h3>
             <div class="rs-comps__chips" id="lsComponentChips"></div>
           </section>
         </div>
@@ -456,8 +457,8 @@
           <!-- Группы остальных подключённых компонентов (у «Ресторана» — блок выше): иконка, название, крестик «отключить». Строит compChipsRender -->
           <div class="comp-groups" id="compGroups"></div>
           <!-- Неподключённые компоненты чипсами ui-kit с иконкой: клик подключает компонент (с зависимостями). Чипсы строит compChipsRender -->
-          <section class="rs-comps" id="compChipsBlock" aria-label="Подключить компонент">
-            <div class="rs-comps__title">Добавить компонент</div>
+          <section class="component-list rs-comps" id="compChipsBlock" aria-label="Компоненты">
+            <div class="rs-comps__title">Компоненты</div>
             <div class="rs-comps__chips" id="compChips"></div>
           </section>
         </div>
