@@ -1661,23 +1661,22 @@ html, body{
 .reg-nav-component{ width: 100%; }
 .reg-nav-component > .params.sales-settings{ margin-top: 0; }
 /* Встроенная форма использует редакторы окна внутри одной карточки. */
-.reg-page{ position: relative; --reg-page-field-width: 200px; }
+.reg-page{ position: relative; }
 .reg-page .pe__body{ display: grid; gap: 8px; padding: 0; }
 .reg-page .pe__card, .reg-page .pe__rows{ display: grid; gap: 8px; }
 .reg-page .pe__card{ padding: 0; background: transparent; box-shadow: none; }
 .reg-page .ls-new__main > .pe__rows{ grid-auto-rows: 24px; }
 .reg-page .pe__row:has(> .ls-new__addr) > *{ align-self: baseline; }
 .reg-page .ls-new__addr{ align-items: baseline; }
-.reg-page :is(.ls-new__addr > .input, .ls-new__seo-title > .input__body){
-  width: var(--reg-page-field-width);
+.reg-page :is(.ls-new__main > .pe__rows, .ls-new__seo-fields > .ls-new__seo-title, .ls-new__description){
+  width: 400px;
   max-width: 100%;
-  min-width: 0;
 }
-.reg-page .ls-new__addr > .input{ flex: 0 1 auto; }
 .reg-page .ls-new__addr :is(.input, .input__body, .input__field){
   display: flex;
   align-items: baseline;
 }
+.reg-page .ls-new__addr .input__field{ width: 100%; }
 .reg-page .ls-new__addr :is(.input, .input__body, .input__field, .input__control),
 .reg-page .ls-new__access{ height: 24px; }
 .reg-page .ls-new__addr .input__control{
@@ -1760,6 +1759,11 @@ html, body{
 .rs-site__title{ margin: 0 0 8px; font-size: var(--fs-l); font-weight: 600; line-height: 24px; color: var(--components-heading-default_text-color_heading); }
 /* Строка задаёт ту же базовую линию, что и пункт «Сайт» в мастере. */
 .rs-site__title > span{ font-size: var(--font-font-size-font-size_xl); line-height: 0; letter-spacing: -.2256px; }
+#regPageTitle{ max-width: 100%; }
+#regPageTitle:has(input:not([readonly])){ width: 400px; }
+#regPageTitle > .pe__name{ margin: 0; width: 100%; height: 1lh; font: inherit; font-size: var(--font-font-size-font-size_xl); letter-spacing: -.2256px; }
+#regPageTitle .pe__name-input:not([readonly]){ field-sizing: fixed; }
+#regPageTitle > .pe__name:has(input[readonly])::after{ display: none; }
 #regSales > .rs-site__title{ margin-inline: 12px; }
 .rs-site__props{ display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px; align-items: center; justify-items: start; grid-auto-rows: minmax(24px, auto); /* строка свойства 24, между свойствами 8 */ font-size: 14px; letter-spacing: -.1974px; white-space: nowrap; }
 /* Иконка сайта (Figma DBmmGUNJ5Pwg8BsFOI5Kuv 7113:110857): круг 28 с рамкой #eaeaea; 28 в строке 24 — выступает на 2 сверху и снизу.
@@ -3854,7 +3858,9 @@ button.tpl-cat{ cursor: pointer; }
               </section>
 
               <section class="params rs-site reg-page" id="regPage" aria-labelledby="regPageTitle" hidden>
-                <h2 class="rs-site__title" id="regPageTitle"><span></span></h2>
+                <h2 class="rs-site__title" id="regPageTitle">
+                  <label class="pe__name"><input class="pe__name-input" id="regPageNameInput" aria-label="Название страницы" readonly></label>
+                </h2>
               </section>
               <!-- Точки продаж компонента «Электронное меню» — 1:1 из «Параметров сайта» конструктора
                    (Figma 2547:71389, .sales-settings в ../styles.css). Точки — первые две из ROOT_SALES
@@ -6339,15 +6345,16 @@ button.tpl-cat{ cursor: pointer; }
       }
       var label = document.createElement('span');
       label.className = 'master__name';
-      label.textContent = page.name;
+      var edits = propertyEdits.get(key);
+      label.textContent = edits.name ?? page.name;
       row.appendChild(label);
       list.insertBefore(row, group ? null : folder);
       var path = page.link.slice(current.length).replace(/^\//, '');
       var address = (source ? source.addr : path) || PageEditor.defaultAddress(page.name);
       var values = Object.assign({ addr: address, access: 'public', mode: 'page' }, source);
       values.addr = address;
-      return { values: Object.assign(values, propertyEdits.get(key)),
-        edits: propertyEdits.get(key), name: page.name, placeholder: source ? slug(page.name).replace(/-/g, '_') : '' };
+      return { values: Object.assign(values, edits), edits: edits, label: label,
+        name: label.textContent, placeholder: source ? slug(page.name).replace(/-/g, '_') : '' };
     });
   }
   var editorRoot, editor;
@@ -6364,6 +6371,8 @@ button.tpl-cat{ cursor: pointer; }
     var rows = $$('#screen-3 [data-reg-nav]');
     var row = rows.find(function(item){ return item.dataset.regNav === key; });
     if (!row || row.hidden) return;
+    var nameInput = $('#regPageNameInput');
+    if (selectedProperties && nameInput) finishPageName(nameInput, true);
     rows.forEach(function(item){
       item.classList.toggle('master__item--selected', item === row);
       item.setAttribute('aria-pressed', item === row);
@@ -6372,8 +6381,12 @@ button.tpl-cat{ cursor: pointer; }
     $('#regSite').hidden = key !== 'general';
     $('#regDetail .reg-nav-component').hidden = key !== 'comp';
     $('#regPage').hidden = !selectedProperties;
-    var title = selectedProperties ? '#regPageTitle' : key === 'comp' ? '#regSalesTitle' : '#regSiteTitle';
-    $(title + ' > span').textContent = $('.master__name', row).textContent;
+    if (selectedProperties){
+      nameInput.value = selectedProperties.name;
+      $('#regPageTitle').setAttribute('aria-label', selectedProperties.name);
+    } else {
+      $(key === 'comp' ? '#regSalesTitle > span' : '#regSiteTitle > span').textContent = $('.master__name', row).textContent;
+    }
     $('#regDetail').scrollTop = 0;
     if (editor) editor.lsAccessClose();
     if (!selectedProperties) return;
@@ -6399,11 +6412,26 @@ button.tpl-cat{ cursor: pointer; }
   function setProperty(key, value){
     selectedProperties.values[key] = selectedProperties.edits[key] = value;
   }
+  function finishPageName(input, save){
+    if (input.readOnly) return;
+    var name = input.value.trim();
+    if (save && name){
+      selectedProperties.name = selectedProperties.edits.name = name;
+      selectedProperties.label.textContent = name;
+      $('#regPageTitle').setAttribute('aria-label', name);
+    }
+    input.value = selectedProperties.name;
+    input.readOnly = true;
+  }
+  document.addEventListener('focusout', function(e){
+    if (e.target.id === 'regPageNameInput') finishPageName(e.target, true);
+  });
   document.addEventListener('input', function(e){
     var key = { lsNewAddr: 'addr', lsNewSeoTitle: 'seo', lsNewSeoDescription: 'seoDescription' }[e.target.id];
     if (key && e.target.closest('#regPage') && selectedProperties) setProperty(key, e.target.value);
   });
   document.addEventListener('click', function(e){
+    if (e.target.id === 'regPageNameInput') e.target.readOnly = false;
     var row = e.target.closest('[data-reg-nav]');
     var expander = e.target.closest('.master__expander');
     if (expander){
@@ -6447,6 +6475,16 @@ button.tpl-cat{ cursor: pointer; }
     }
   });
   document.addEventListener('keydown', function(e){
+    if (e.target.id === 'regPageNameInput' && e.target.readOnly && (e.key === 'Enter' || e.key === ' ')){
+      e.preventDefault();
+      e.target.readOnly = false;
+      return;
+    }
+    if (e.target.id === 'regPageNameInput' && !e.target.readOnly && !e.isComposing && (e.key === 'Enter' || e.key === 'Escape')){
+      e.preventDefault();
+      finishPageName(e.target, e.key === 'Enter');
+      return;
+    }
     if (e.key === 'Escape' && editor && editorRoot.contains(document.activeElement)){
       if (!editor.lsAccessMenu.hidden) { editor.lsAccessClose(); editor.lsAccess.focus(); }
     }
