@@ -94,8 +94,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* ---------- Список страниц конструктора ---------- */
 .lsb__list {
   --page-list-inset: 8px;
-  --page-list-icon-size: 24px;
-  --page-list-icon-gap: 6px;
   flex: 0 1 auto;
   gap: 2px;
 }
@@ -125,14 +123,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .lsb__components .rs-comps__chips { padding-inline: 2px; }
 .lsb__components .chips__icon { padding: 0; }
 .lsb__components .chips__icon img { display: block; width: 24px; height: 24px; }
-.lsb__list > :is(.lsb__page, .lsb__group) { height: 31px; }
-.lsb__list > .lsb__page {
-  position: relative;
-  padding-inline-start: var(--page-list-inset);
-}
-.lsb__list:has(> .lsb__group:not([hidden])) > .lsb__page {
-  padding-inline-start: calc(var(--page-list-inset) + var(--page-list-icon-size) + var(--page-list-icon-gap));
-}
+.lsb__list > :is(.lsb__page, .lsb__group) { height: var(--site-tree-row-height); }
+.lsb__list > .lsb__page { padding-inline-start: var(--site-tree-label-inset); }
 .lsb__page > .lsb__marker {
   position: absolute;
   inset-inline-start: 0;
@@ -152,8 +144,6 @@ ul { list-style: none; margin: 0; padding: 0; }
   height: var(--page-list-icon-size);
   margin-inline-end: var(--page-list-icon-gap);
 }
-.lsb__group-expander { flex: none; }
-.lsb__page[hidden] { display: none; }
 
 /* ---------- Контент ---------- */
 /* между сайдбарами: слева колонка 366 или линии 52, справа панель с тулбаром 412 или только тулбар 54 */

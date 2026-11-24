@@ -2708,7 +2708,6 @@
   let lsMenuPage = null; // страница, у которой открыто меню «⋮»
   let lsEditing = null;  // { page, row, input } — идёт переименование
   let lsCloseTimer = 0;
-  const lsCollapsedGroups = new Set();
 
   const lsPage = (id) => lsPages.find((p) => p.id === id);
   const lsVisibleCount = () => lsPages.filter((p) => !p.off).length;
@@ -2731,9 +2730,7 @@
     try { localStorage.setItem(LS_KEY, collapsed ? 'collapsed' : 'pinned'); } catch {}
   }
 
-  // Порядок показа: сначала страницы сайта, потом страницы компонента — одним списком, без групп
-  // Порядок показа: сначала страницы сайта, потом страницы компонентов группами — в порядке компонентов, как в «Параметрах сайта».
-  // Группа — компонент страницы; group — только для показа (своя страница сайта в группе компонента, механика как у своей)
+  // Сначала собственные страницы, затем страницы компонентов в порядке настроек сайта.
   const lsGroupOf = (p) => p.group ?? p.comp;
   function lsGroups() {
     return [lsPages.filter((p) => !lsGroupOf(p)), ...Object.keys(COMP).map((id) => lsPages.filter((p) => lsGroupOf(p) === id))];
@@ -2750,15 +2747,9 @@
       '<button class="btn btn--link btn--style-label btn--size-m btn--icon" type="button" data-cmd="more" aria-label="Ещё"><span class="btn__icon">&#xE9D9;</span></button>' +
       '</span>');
     row.dataset.id = p.id;
-    const group = lsGroupOf(p);
-    if (group) {
-      row.dataset.pageGroup = group;
-      row.hidden = lsCollapsedGroups.has(group);
-    }
     row.querySelector('.lsb__page-name').textContent = p.name;
     return row;
   }
-  // Заголовок группы компонента, под ним — его страницы.
   function lsGroupHead(id) {
     const head = el('div', 'lsb__group');
     const icon = el('img', 'lsb__group-icon');
@@ -2766,14 +2757,7 @@
     icon.alt = '';
     const name = el('span', 'lsb__group-name ml__caption');
     name.textContent = COMP[id].name;
-    const expander = el('button', 'lsb__group-expander ml__arrow');
-    const expanded = !lsCollapsedGroups.has(id);
-    expander.type = 'button';
-    expander.dataset.groupExpander = id;
-    expander.setAttribute('aria-label', `Страницы компонента «${COMP[id].name}»`);
-    expander.setAttribute('aria-expanded', String(expanded));
-    expander.classList.toggle('ml__arrow--down', expanded);
-    head.append(icon, name, expander);
+    head.append(icon, name);
     if (compOn.has(id)) {
       const remove = el('button', 'component-group__remove');
       remove.type = 'button';
@@ -2784,24 +2768,9 @@
     }
     return head;
   }
-  function lsToggleGroup(expander) {
-    const id = expander.dataset.groupExpander;
-    const expanded = lsCollapsedGroups.delete(id);
-    if (!expanded) lsCollapsedGroups.add(id);
-    lsCloseMenu();
-    if (lsEditing) {
-      lsFinishRename(true);
-      lsList.querySelector(`[data-group-expander="${id}"]`).focus();
-      return;
-    }
-    expander.setAttribute('aria-expanded', String(expanded));
-    expander.classList.toggle('ml__arrow--down', expanded);
-    lsList.querySelectorAll(`[data-page-group="${id}"]`).forEach((row) => { row.hidden = !expanded; });
-  }
   function lsRender() {
-    const [own, ...groups] = lsGroups();
-    const shown = groups.filter((g) => g.length);
-    lsList.replaceChildren(...own.map(lsRow), ...shown.flatMap((g) => [lsGroupHead(lsGroupOf(g[0])), ...g.map(lsRow)]));
+    const groups = Object.keys(COMP).filter((id) => compOn.has(id) || lsPages.some((p) => lsGroupOf(p) === id));
+    lsList.replaceChildren(...lsOrdered().map(lsRow), ...groups.map(lsGroupHead));
     renderExtraComponentRows();
     lsRenderLines();
     siteShowPage(lsPage(lsActive));
@@ -2813,7 +2782,7 @@
   function lsSelect(id) {
     if (id !== lsActive) salesClose(); // окно точек продаж относится к открытой странице: при переходе на другую закрывается
     lsActive = id;
-    for (const row of lsList.children) {
+    for (const row of lsList.querySelectorAll('.lsb__page')) {
       row.classList.toggle('is-active', Number(row.dataset.id) === id);
     }
     lsRenderLines();
@@ -2834,7 +2803,7 @@
     lsMenuPage = id;
     btn.closest('.lsb__page').classList.add('is-menu');
     // Страница компонента принадлежит ему: её нельзя сделать главной, скрыть, дублировать и удалить — удаляет только сам компонент.
-    // Так же и страницы собранного сайта в группе компонента (group, «В конструкторе»)
+    // Те же ограничения действуют для связанных страниц собранного сайта (group, «В конструкторе»).
     const comp = !!lsGroupOf(lsPage(id));
     for (const act of ['home', 'duplicate', 'hide', 'delete']) $(`[data-act="${act}"]`, lsMenu).hidden = comp;
     lsMenu.hidden = false;
@@ -2937,8 +2906,6 @@
   lsToggle.addEventListener('click', () => lsSetCollapsed(!lsRoot.classList.contains('lsb--hover')));
 
   lsList.addEventListener('click', (e) => {
-    const expander = e.target.closest('[data-group-expander]');
-    if (expander) { lsToggleGroup(expander); return; }
     const row = e.target.closest('.lsb__page');
     if (!row) return;
     const id = Number(row.dataset.id);
@@ -2959,7 +2926,7 @@
     if (row && !e.target.closest('[data-cmd], [data-save]') && !row.classList.contains('is-edit')) lsStartRename(Number(row.dataset.id));
   });
   lsList.addEventListener('keydown', (e) => {
-    if (e.target.closest('[data-group-expander], .component-group__remove')) return;
+    if (!e.target.closest('.lsb__page')) return;
     if (e.key === 'Enter') lsFinishRename(true);
     else if (e.key === 'Escape') lsFinishRename(false);
   });
@@ -3119,7 +3086,7 @@
   // Клик мимо закрывает меню и сохраняет название.
   stage.addEventListener('mousedown', (e) => {
     if (lsMenuPage != null && !e.target.closest('#lsMenu, [data-cmd="more"]')) lsCloseMenu();
-    if (lsEditing && !lsEditing.row.contains(e.target) && !e.target.closest('[data-group-expander]')) lsFinishRename(true);
+    if (lsEditing && !lsEditing.row.contains(e.target)) lsFinishRename(true);
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lsCloseMenu(); });
 
@@ -3265,7 +3232,6 @@
     } else {
       // Сценарии компонентов начинаются с одной главной: страницы приходят с компонентами
       const isComp = ['catalog-add', 'catalog-setup'].includes(scenario);
-      lsCollapsedGroups.clear();
       lsPages = isComp ? lsInitialPages().filter((p) => p.home) : lsInitialPages();
       lsActive = isComp ? 1 : 2;
       lsCardPageId = null;
@@ -3278,7 +3244,7 @@
         // «В конструкторе» — сайт уже собран (как «Типовое заполнение» в dynamic-pages): «Главная», «О нас», «Профиль» с виджетом покупателя
         // (эти три есть на любом сайте, как в реестре),
         // «Меню» с каталогом, «Карточка товара» с карточкой. Это свои страницы сайта, не страницы компонента,
-        // но в списке страниц стоят в группе «Электронного меню» (group — только для показа).
+        // Связь с «Электронным меню» определяет порядок и доступные действия в списке.
         // «Электронное меню» подключено без своих страниц, у него две точки продаж; сайт открывается на «Главной»
         const page = (name, extra) => ({ id: lsNextId++, name, off: false, mode: 'page', fixed: true, ...extra });
         lsPages.push(page('О нас', { about: true }), page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), page('Меню', { menu: true, group: 'restaurant' }), page('Карточка товара', { blank: true, product: true, key: true, group: 'restaurant' }));
