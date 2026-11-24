@@ -898,6 +898,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* ---------- Панель сценариев: разделы поверх demo-frame ---------- */
 /* в макете панели (Figma xMQ3ZEN4AUINgwjVoxR8hS 18715:93398) своего фона нет — карточки стоят на фоне страницы, в ките панель белая */
 .df-panel { background: transparent; overflow: hidden; } /* всё умещается в 900 по высоте, скролла нет */
+.df-panel .df-card--bottom { display: none; } /* «Работа с окнами/страницами» и «Внешние виджеты» скрыты на демо */
 .df-team__label { display: grid; width: auto; } /* в ките 54px: отступ до имён — только gap 8 из .df-team */
 .df-team__label::after { content: "Develop"; height: 0; overflow: hidden; visibility: hidden; } /* колонка подписей по самой широкой: имена дизайнеров и разработчика на одной линии */
 /* .df-panel — чтобы перекрыть сброс кнопок в demo-frame (.df-panel button) */

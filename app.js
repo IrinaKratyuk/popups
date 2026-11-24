@@ -63,6 +63,9 @@
         { id: 'ext-link', title: 'Связь кнопки с окном' },
       ] },
     ],
+    links: [
+      { title: 'Сайты - Васильева Елена', href: 'https://axure.tensor.ru/sabycrm-inter/%D1%81%D0%B0%D0%B9%D1%82%D1%8B.html' },
+    ],
     team: [
       { label: 'Design', name: 'Смирнова Мария', links: [
         { title: 'Описание', href: 'https://online.sbis.ru/shared/disk/8a1d0f8c-06f5-47f1-924b-23c7f2efd143' },

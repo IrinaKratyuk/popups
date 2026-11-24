@@ -1646,13 +1646,32 @@ html, body{
 .master__item[hidden]{ display: none; }
 #regMasterComp{ gap: 0; font-weight: 600; }
 #regMasterComp .master__name{ flex: 0 1 auto; }
-.reg-component-pages[hidden], #regDeliverySettings[hidden], #regDeliveryHours[hidden]{ display: none; }
+.reg-component-pages[hidden], #regDeliverySettings[hidden], #regDeliveryHours[hidden], #regDeliveryAreas[hidden]{ display: none; }
 .master--data .site-tree .reg-component-pages .site-tree__page:not([data-reg-nav]){ cursor: default; }
 #regDeliveryNav .switch{ pointer-events: none; }
 #regDeliverySettings{ display: grid; gap: 8px; }
 .reg-nav-component--delivery-overview > #regSales{ display: none; }
+#regDetail:has(> #regDeliveryAreas:not([hidden])){ padding-bottom: 0; }
+#regDeliveryAreas{ position: relative; flex: 1 1 0; min-height: 0; margin: 0; overflow: hidden; }
+#regDeliveryAreas img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#regDeliveryAreas .btn{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: var(--btn-h);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding-inline: var(--components-button-padding-horizontal_5xl_button, 24px);
+  border-radius: 23px;
+  background-color: var(--components-button-translucent_background-color_button, #00000033);
+  color: var(--text-contrast_text-color, #fff);
+  pointer-events: none;
+}
 #regSalesTitle[hidden]{ display: none; }
-.reg-delivery-card{ gap: 8px; padding: 10px 20px; font-size: var(--fs-l); }
+.reg-delivery-card{ gap: 8px; padding: 10px var(--o-m); font-size: var(--fs-l); }
 .reg-delivery-card__row{ display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 24px; }
 .reg-delivery-card__link{ color: var(--c-text-link); }
 .reg-delivery-card__muted{ color: var(--c-text-label); }
@@ -3846,7 +3865,7 @@ button.tpl-cat{ cursor: pointer; }
                 <li class="reg-component-pages" id="regDeliveryNav" hidden>
                   <ul class="site-tree__pages" aria-label="Настройки доставки">
                     <li class="master__item site-tree__page" data-reg-nav="delivery-hours" tabindex="0" role="button"><span class="master__name">Режим работы</span></li>
-                    <li class="master__item site-tree__page"><span class="master__name">Районы обслуживания</span></li>
+                    <li class="master__item site-tree__page" data-reg-nav="delivery-areas" tabindex="0" role="button"><span class="master__name">Районы обслуживания</span></li>
                     <li class="master__item site-tree__page" data-reg-nav="delivery-site" tabindex="0" role="button">
                       <span class="master__name">Сайт</span>
                       <span class="switch" role="switch" aria-label="Сайт" aria-checked="true" aria-readonly="true"><input class="switch__input" type="checkbox" checked inert><span class="switch__button"></span></span>
@@ -4020,6 +4039,10 @@ button.tpl-cat{ cursor: pointer; }
                 <div class="reg-delivery-card__row">Первая доставка <span class="reg-delivery-card__link">с учетом времени выполнения заказа</span></div>
                 <div class="reg-delivery-card__row">Завершить прием заказов <span class="reg-delivery-card__link">по времени доставки</span></div>
               </section>
+              <figure class="params" id="regDeliveryAreas" hidden>
+                <img src="../assets/img/delivery-moscow-map.png" loading="lazy" alt="Карта центра Москвы">
+                <span class="btn btn--translucent btn--style-dark btn--size-5xl"><span class="btn__caption">Настроить</span></span>
+              </figure>
               <!-- Остальные подключённые компоненты: иконка, название, крестик (строит скрипт ниже) -->
               <div id="regCompGroups"></div>
               <!-- Подключение через блок «Компоненты» в мастере (#regAddable), в конструкторе — #compChipsBlock -->
@@ -6510,6 +6533,7 @@ button.tpl-cat{ cursor: pointer; }
     $('#regDeliverySettings').hidden = !deliveryOverview;
     $('#regSalesTitle').hidden = key === 'delivery-site';
     $('#regDeliveryHours').hidden = key !== 'delivery-hours';
+    $('#regDeliveryAreas').hidden = key !== 'delivery-areas';
     $('#regSalesPicker').hidden = true;
     $('#regPage').hidden = !selectedProperties;
     window.regCatalogSelect(key === 'catalog');
