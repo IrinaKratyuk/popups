@@ -651,7 +651,7 @@
     salesPickerHeader();
     const matches = (option) => option.name.toLocaleLowerCase('ru').includes(query) && (!salesOnlySelected || salesSelection.has(option.id));
     function optionRow(option) {
-      const label = el('label', 'sales-option');
+      const label = el('label', isPrice ? 'sales-option sales-option--price' : 'sales-option');
       const input = el('input');
       input.type = 'checkbox';
       input.name = 'sales-selection';

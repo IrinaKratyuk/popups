@@ -2044,15 +2044,15 @@ html, body{
 .sales-picker__node[open] > .sales-picker__group .ico{ transform: rotate(90deg); }
 .sales-picker__node > summary{ list-style: none; }
 .sales-picker__node > summary::-webkit-details-marker{ display: none; }
-.sales-picker__children .sales-option{ padding-left: 24px; }
-/* Прайсы (Figma 2829:85088): второй уровень дерева — группа на 20 правее, прайсы в ней ещё на 20 */
+.sales-picker__children .sales-option:not(.sales-option--price){ padding-left: 24px; }
+/* Прайсы (Figma 2829:85088) */
 .sales-picker__children .sales-picker__group{ padding-left: 40px; }
-.sales-picker__children .sales-picker__children .sales-option{ padding-left: 44px; }
 .sales-picker__rail [hidden]{ display: none; }
 .sales-picker__group:hover, .sales-option:hover{ background: #f3f4f8; }
 .sales-picker__company{ display: flex; align-items: center; height: 31px; font-size: 16px; font-weight: 600; padding: 0 20px; letter-spacing: -.2256px; }
 .sales-option{ display: flex; align-items: center; gap: 23px; min-height: 31px; padding: 4px 16px 3px 4px; font-size: 14px; letter-spacing: -.1974px; cursor: pointer; }
 .sales-option input, .sales-checkbox{ width: 13px; height: 13px; margin: 0; flex: none; }
+.sales-option--price{ gap: 43px; }
 .sales-option input[type="checkbox"], .sales-checkbox{ appearance: none; border: 0; border-radius: 0; background: url('../assets/img/sales-unchecked.svg') center / 13px 13px no-repeat; cursor: pointer; }
 .sales-option input[type="checkbox"]:not(:checked){ opacity: 0; }
 .sales-option:hover input[type="checkbox"]{ opacity: 1; }
@@ -5542,7 +5542,7 @@ button.tpl-cat{ cursor: pointer; }
         }
         function option(name){
           var label = document.createElement('label');
-          label.className = 'sales-option';
+          label.className = mode ? 'sales-option sales-option--price' : 'sales-option';
           label.innerHTML = '<input type="checkbox" name="reg-sales-selection">' + esc(name);
           var input = label.firstChild;
           input.checked = selected.has(name);

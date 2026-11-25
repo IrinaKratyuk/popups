@@ -802,11 +802,12 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-picker__node[open] > .sales-picker__group .ico { transform: rotate(90deg); }
 .sales-picker__node > summary { list-style: none; }
 .sales-picker__node > summary::-webkit-details-marker { display: none; }
-.sales-picker__children .sales-option { padding-left: 24px; }
+.sales-picker__children .sales-option:not(.sales-option--price) { padding-left: 24px; }
 .sales-picker__group:hover, .sales-option:hover { background: var(--menu-item-hover); }
 .sales-picker__company { display: flex; align-items: center; height: 31px; font-size: 16px; font-weight: 600; padding: 0 20px; letter-spacing: -.2256px; }
 .sales-option { display: flex; align-items: center; gap: 23px; min-height: 31px; padding: 4px 16px 3px 4px; font-size: 14px; letter-spacing: -.1974px; cursor: pointer; }
 .sales-option input, .sales-checkbox { width: 13px; height: 13px; margin: 0; flex: none; }
+.sales-option--price { gap: 43px; }
 .sales-option input[type="checkbox"], .sales-checkbox { appearance: none; border: 0; border-radius: 0; background: url('assets/img/sales-unchecked.svg') center / 13px 13px no-repeat; cursor: pointer; }
 .sales-option input[type="checkbox"]:not(:checked) { opacity: 0; }
 .sales-option:hover input[type="checkbox"], .sales-option:focus-within input[type="checkbox"] { opacity: 1; }
@@ -818,9 +819,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .sales-picker__rail { width: 52px; border-left: 2px solid #0000000a; display: flex; flex-direction: column; align-items: center; padding: 7px 10px 6px 12px; gap: 7px; }
 .sales-picker__rail .sales-icon { width: 32px; height: 32px; }
 
-/* Прайсы (Figma 2829:85088) — дерево, как в реестре: второй уровень — группа на 20 правее, прайсы в ней ещё на 20 */
+/* Прайсы (Figma 2829:85088) */
 .sales-picker__children .sales-picker__group { padding-left: 40px; }
-.sales-picker__children .sales-picker__children .sales-option { padding-left: 44px; }
 .sales-picker__rail [hidden] { display: none; }
 
 /* переключатель: включён — акцентный (Figma), выключен — подобран */
