@@ -1675,6 +1675,7 @@ html, body{
 }
 .reg-delivery-card{ gap: 8px; padding: 10px var(--o-m); font-size: var(--fs-l); }
 .reg-delivery-card__row{ display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 24px; }
+.reg-delivery-card__row > .btn[data-catalog-price]{ padding-inline: var(--btn-px, 0px); }
 .reg-delivery-card__link{ color: var(--c-text-link); }
 .reg-delivery-card__muted{ color: var(--c-text-label); }
 .reg-delivery-card__amount{ width: 50px; border-bottom: 1px solid var(--border-unaccented_border-color); }
@@ -3978,6 +3979,7 @@ button.tpl-cat{ cursor: pointer; }
                 </li>
                 <li class="reg-component-pages" id="regDeliveryNav" hidden>
                   <ul class="site-tree__pages" aria-label="Настройки доставки">
+                    <li class="master__item site-tree__page" data-reg-nav="delivery-catalog" tabindex="0" role="button"><span class="master__name">Каталог</span></li>
                     <li class="master__item site-tree__page" data-reg-nav="delivery-hours" tabindex="0" role="button"><span class="master__name">Режим работы</span></li>
                     <li class="master__item site-tree__page" data-reg-nav="delivery-areas" tabindex="0" role="button"><span class="master__name">Районы обслуживания</span></li>
                   </ul>
@@ -4166,7 +4168,7 @@ button.tpl-cat{ cursor: pointer; }
                   </div>
                 </section>
                 <section class="params reg-delivery-card" aria-label="Каталог и предоплата">
-                  <div class="reg-delivery-card__row">Выбор товаров из <span class="reg-delivery-card__link">Каталога</span></div>
+                  <div class="reg-delivery-card__row">Выбор товаров из <button class="btn btn--link btn--style-link btn--size-m" data-catalog-price="delivery" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"><span class="btn__caption">Каталога</span></button></div>
                   <div class="reg-delivery-card__row">Предоплата <span class="reg-delivery-card__amount">0</span><span class="reg-delivery-card__muted">%</span><span class="reg-delivery-card__muted">＋ Порог</span></div>
                   <div class="reg-delivery-card__row">Тип чека при онлайн-оплате <span class="reg-delivery-card__link">предоплата</span></div>
                 </section>
@@ -4235,14 +4237,15 @@ button.tpl-cat{ cursor: pointer; }
                 document.addEventListener('scroll', function(e){
                   if (e.target.id === 'regSalesCatalog') e.target.parentNode.classList.toggle('is-scrolled', e.target.scrollTop > 0);
                 }, true);
-                window.regCatalogSelect = function(open){
+                window.regCatalogSelect = function(component){
                   var cat = document.getElementById('regSalesCatalog');
                   var detail = cat.parentNode;
-                  cat.hidden = !open;
-                  detail.classList.toggle('is-sales-catalog', open);
-                  if (!open) return;
-                  var price = window.CompCatalog?.getPrice(window.regCatalogSite(), 'restaurant') || '';
+                  cat.hidden = !component;
+                  detail.classList.toggle('is-sales-catalog', !!component);
+                  if (!component) return;
+                  var price = window.CompCatalog?.getPrice(window.regCatalogSite(), component) || '';
                   var button = cat.querySelector('.reg-cat__link');
+                  button.dataset.catalogPrice = component;
                   button.textContent = price || 'Выбрать прайс';
                   if (cat.dataset.price === price) return;
                   cat.dataset.price = price;
@@ -6584,8 +6587,10 @@ button.tpl-cat{ cursor: pointer; }
     if (!window.CompCatalog) return;
     var props = $('#regSales .comp-cat__price');
     if (props) props.textContent = CompCatalog.getPrice(current, props.dataset.catalogPrice) || 'Выбрать прайс';
+    var deliveryPrice = $('#regDeliverySettings [data-catalog-price="delivery"] .btn__caption');
+    if (deliveryPrice) deliveryPrice.textContent = CompCatalog.getPrice(current, 'delivery') || 'Каталога';
     var catalog = $('#regSalesCatalog');
-    if (catalog && !catalog.hidden) window.regCatalogSelect(true);
+    if (catalog && !catalog.hidden) window.regCatalogSelect($('[data-catalog-price]', catalog).dataset.catalogPrice);
   }
   window.addEventListener('catalog-price-change', catalogPriceRender);
   var UNPUBLISHED = {}; // сайты, снятые с публикации («Снять с публикации» → «Да»)
@@ -6820,7 +6825,7 @@ button.tpl-cat{ cursor: pointer; }
     $('#regDeliveryAreas').hidden = key !== 'delivery-areas';
     $('#regSalesPicker').hidden = true;
     $('#regPage').hidden = !selectedProperties;
-    window.regCatalogSelect(key === 'catalog');
+    window.regCatalogSelect({ catalog: 'restaurant', 'delivery-catalog': 'delivery' }[key]);
     if (selectedProperties){
       nameInput.value = selectedProperties.name;
       $('#regPageTitle').setAttribute('aria-label', selectedProperties.name);
