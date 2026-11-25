@@ -1426,6 +1426,7 @@ html, body{
 .master__comp > span{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .master__comp > .master__expander{ flex: none; }
 #screen-3 .site-tree, .site-page-list{ --page-list-inset: var(--o-l); }
+#screen-3 #regSiteToggle{ inset-inline-start: calc(var(--page-list-inset) + 2px); }
 .site-page-list{ --page-group-inset: var(--page-list-inset); }
 .site-page-list > .site-tree__page{ padding-inline-start: var(--site-tree-label-inset); }
 .site-page-list .page-group .site-tree__page{ padding-inline-start: calc(var(--site-tree-label-inset) + 20px); }
@@ -3986,9 +3987,9 @@ button.tpl-cat{ cursor: pointer; }
                     <div class="master__item master__item--selected site-tree__site" data-reg-nav="general" tabindex="0" role="button">
                       <span class="master__name ml__caption" id="regSiteLabel">Сайт</span>
                     </div>
-                    <button class="site-tree__expander" id="regSiteToggle" type="button" aria-label="Страницы сайта" aria-expanded="true" aria-controls="regSitePages"><img class="site-tree__icon" src="../assets/img/comp/site.svg" alt=""></button>
+                    <button class="site-tree__expander ml__arrow" id="regSiteToggle" type="button" aria-label="Страницы сайта" aria-expanded="false" aria-controls="regSitePages"></button>
                   </div>
-                  <ul class="site-tree__pages" id="regSitePages" aria-labelledby="regSiteLabel"></ul>
+                  <ul class="site-tree__pages" id="regSitePages" aria-labelledby="regSiteLabel" hidden data-collapsed></ul>
                 </li>
                 <!-- Подключённый компонент — пункт навигации: клик открывает его настройки (#regSales); название и видимость задаёт render() скрипта компонентов -->
                 <li class="master__item component-group" data-reg-nav="comp" tabindex="0" role="button" id="regMasterComp">
@@ -4022,8 +4023,8 @@ button.tpl-cat{ cursor: pointer; }
               <section class="component-list addable" id="regAddable" aria-label="Компоненты">
                 <h3 class="addable__caption">Компоненты</h3>
                 <div class="addable__list">
-                  <button class="chips chips--optional" type="button" data-comp-add="restaurant" hidden title="Меню и карточки блюд на сайте, цены и наличие из точек продаж" aria-label="Подключить компонент: Электронное меню"><span class="chips__icon"><img src="../assets/img/comp/restaurant.svg" alt=""></span><span class="chips__caption">Электронное меню</span></button>
-                  <button class="chips chips--optional" type="button" data-comp-add="delivery" title="Корзина, оформление и оплата заказа с доставкой, история заказов покупателя" aria-label="Подключить компонент: Доставка"><span class="chips__icon"><img src="../assets/img/comp/delivery.svg" alt=""></span><span class="chips__caption">Доставка</span></button>
+                  <button class="chips chips--optional" type="button" data-comp-add="restaurant" title="Меню и карточки блюд на сайте, цены и наличие из точек продаж" aria-label="Подключить компонент: Электронное меню"><span class="chips__icon"><img src="../assets/img/comp/restaurant.svg" alt=""></span><span class="chips__caption">Электронное меню</span></button>
+                  <button class="chips chips--optional" type="button" data-comp-add="delivery" hidden title="Корзина, оформление и оплата заказа с доставкой, история заказов покупателя" aria-label="Подключить компонент: Доставка"><span class="chips__icon"><img src="../assets/img/comp/delivery.svg" alt=""></span><span class="chips__caption">Доставка</span></button>
                   <button class="chips chips--optional" type="button" data-comp-add="services" title="Каталог услуг и онлайн-запись к специалисту на свободное время" aria-label="Подключить компонент: Услуги"><span class="chips__icon"><img src="../assets/img/comp/services.svg" alt=""></span><span class="chips__caption">Услуги</span></button>
                   <button class="chips chips--optional" type="button" data-comp-add="hotel" title="Номера и цены, бронирование на даты с оплатой онлайн" aria-label="Подключить компонент: Отель"><span class="chips__icon"><img src="../assets/img/comp/hotel.svg" alt=""></span><span class="chips__caption">Отель</span></button>
                 </div>
@@ -6326,8 +6327,8 @@ button.tpl-cat{ cursor: pointer; }
   /* по домену: средний чек, позиции для откликов, страницы */
   var EXTRA = {
     'mili-yar.saby.ws': { avg: 2900, items: ['Пицца пепперони', 'Тартар из тунца', 'Севиче из лангустинов', 'Кейтеринг на 20 персон'],
-      // состав, порядок и группы — как в конструкторе («В конструкторе») и в шаблоне: Главная, О нас, Профиль; «Электронное меню»: Меню, Карточка товара
-      pages: [P('Главная', '', 34, .8, 168), P('О нас', '/about', 7, .2, 95), P('Профиль', '/profile', 9, .4, 72), P('Меню', '/menu', 33, 1.6, 241, 'restaurant'), P('Карточка товара', '/product', 17, 2.4, 133, 'restaurant')] },
+      // Состав и порядок страниц совпадают со сценарием «В конструкторе».
+      pages: [P('Главная', '', 34, .8, 168), P('О нас', '/about', 7, .2, 95), P('Профиль', '/profile', 9, .4, 72), P('Каталог', '/catalog', 33, 1.6, 241, 'delivery'), P('Корзина', '/cart', 10, 2.4, 96, 'delivery'), P('Заказы', '/orders', 5, .6, 64, 'delivery'), P('Карточка заказа', '/order', 17, 2.4, 133, 'delivery')] },
     'saby.ru': { avg: 11900, items: ['Saby Бухгалтерия', 'Saby ЭДО', 'Saby Отчетность', 'Saby Престо'],
       pages: [P('Главная', '', 46, 1, 215), P('Тарифы', '/tariffs', 24, 2.2, 262), P('Решения', '/solutions', 21, .8, 318), P('Контакты', '/contacts', 9, 0, 64)] },
     'mili-rest.ru': { avg: 3200, items: ['Стейк рибай', 'Паста карбонара', 'Тирамису', 'Бургер с трюфелем'],
@@ -6952,6 +6953,7 @@ button.tpl-cat{ cursor: pointer; }
       pages.hidden = !open;
       pages.toggleAttribute('data-collapsed', !open);
       siteToggle.setAttribute('aria-expanded', String(open));
+      if (siteToggle.classList.contains('ml__arrow')) siteToggle.classList.toggle('ml__arrow--down', open);
     } else if (expander){
       var expand = expander.getAttribute('aria-expanded') === 'false';
       expander.setAttribute('aria-expanded', String(expand));

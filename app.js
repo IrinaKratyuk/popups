@@ -3261,19 +3261,23 @@
       pagePickClose();
       sitePlaceCatalog();
       if (scenario === 'catalog-setup') {
-        // «В конструкторе» — сайт уже собран (как «Типовое заполнение» в dynamic-pages): «Главная», «О нас», «Профиль» с виджетом покупателя
-        // (эти три есть на любом сайте, как в реестре),
-        // «Меню» с каталогом, «Карточка товара» с карточкой. Это свои страницы сайта, не страницы компонента,
-        // Связь с «Электронным меню» определяет порядок и доступные действия в списке.
-        // «Электронное меню» подключено без своих страниц, у него две точки продаж; сайт открывается на «Главной»
         const page = (name, extra) => ({ id: lsNextId++, name, off: false, mode: 'page', fixed: true, ...extra });
-        lsPages.push(page('О нас', { about: true }), page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }), page('Меню', { menu: true, group: 'restaurant' }), page('Карточка товара', { blank: true, product: true, key: true, group: 'restaurant' }));
-        lsActive = lsPages.find((p) => p.home).id; // редактор открывается на «Главной»
-        compOn.add('restaurant');
-        salesSaved = ROOT_SALES.slice(0, 2).map((point) => ({ id: point.id, price: point.price }));
-        // страницы каталога и товара уже выбраны: «Меню» и «Карточка товара» (как в «Типовом заполнении» dynamic-pages)
-        pagePicks.catalog = lsPages.find((p) => p.menu).id;
-        pagePicks.product = lsPages.find((p) => p.product).id;
+        lsPages.push(page('О нас', { about: true }), page('Профиль', { blank: true, compWidget: 'Профиль покупателя' }));
+        salesSaved = [];
+        if (tplOpening) {
+          const menu = page('Меню', { menu: true, group: 'restaurant' });
+          const product = page('Карточка товара', { blank: true, product: true, key: true, group: 'restaurant' });
+          lsPages.push(menu, product);
+          compOn.add('restaurant');
+          pagePicks.catalog = menu.id;
+          pagePicks.product = product.id;
+        } else {
+          catalogHomeSet(true);
+          catalogAdded = false;
+          siteCatalogShow(false);
+          compConnect('delivery');
+          pagePickDefaults('delivery');
+        }
       } else if (isComp) {
         catalogHomeSet(true);
         catalogAdded = false;
@@ -3391,11 +3395,8 @@
     stage.dataset.tplKind = kind || 'menu'; // набор шаблонов: у отеля свои баннеры (styles.css)
     chTitleText = chTitle.textContent;
     chTitle.textContent = name || 'Шаблон';
-    // страницы шаблона — те же, что «В конструкторе» и на карточке сайта в реестре (состав и порядок одни):
-    // Главная, О нас, Профиль, Меню (каталог), Карточка товара — их собрал frame.select('catalog-setup')
     const home = lsPages.find((p) => p.home);
-    // шаблон — сайт без данных: точек продаж нет, каталог с демоданными (.is-demo, как в превью шаблонов)
-    salesSaved = [];
+    // В шаблоне каталог использует демоданные, как в превью.
     salesRender();
     lsActive = home.id;
     siteShown = null;
