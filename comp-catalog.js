@@ -10,7 +10,7 @@
   'use strict';
   // needs — индекс чекбокса, без которого этот недоступен
   var TYPES = {
-    restaurant: { toggles: [{ name: 'Заказ по меню' }, { name: 'Онлайн-платежи', needs: 0 }, { name: 'Вызов официанта' }], source: 'Выбор товара из', price: 'Меню A la carte' },
+    restaurant: { toggles: [{ name: 'Заказ по меню' }, { name: 'Онлайн-платежи', needs: 0 }, { name: 'Вызов официанта' }], source: 'Выбор товаров из', price: 'Меню A la carte' },
     services: { toggles: [{ name: 'Заказ по каталогу' }, { name: 'Онлайн-платежи', needs: 0 }], source: 'Выбор услуги из', price: 'Прайс 17.12.19' }
   };
   var state = {}; // компонент → [вкл/выкл] по чекбоксам; по умолчанию всё включено
