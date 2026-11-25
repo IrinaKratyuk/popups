@@ -1375,8 +1375,6 @@ html, body{
 .master__caption--sort{
   align-items: center;
   gap: 5px;
-  /* 15 + 18 + 8 = 41 — как отступ над списком на «Данных»: первый пункт
-     мастера при переходе между вкладками не прыгает. */
   padding: 15px var(--o-m) 8px 0;
   font-size: var(--fs-m);
   line-height: var(--lh-m);
@@ -1427,10 +1425,10 @@ html, body{
 .master__comp{ display: flex; align-items: center; min-height: 31px; margin-top: var(--o-xs); padding: 0 var(--o-m) 0 var(--o-l); font-size: var(--fs-l); font-weight: 600; color: var(--c-text); }
 .master__comp > span{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .master__comp > .master__expander{ flex: none; }
-#screen-2 .site-tree, #screen-3 .site-tree{ --page-list-inset: var(--o-l); }
-#screen-2 .site-tree{ --page-group-inset: var(--page-list-inset); }
-#screen-2 .site-tree > .site-tree__page{ padding-inline-start: var(--site-tree-label-inset); }
-#screen-2 .page-group .site-tree__page{ padding-inline-start: calc(var(--site-tree-label-inset) + 20px); }
+#screen-3 .site-tree, .site-page-list{ --page-list-inset: var(--o-l); }
+.site-page-list{ --page-group-inset: var(--page-list-inset); }
+.site-page-list > .site-tree__page{ padding-inline-start: var(--site-tree-label-inset); }
+.site-page-list .page-group .site-tree__page{ padding-inline-start: calc(var(--site-tree-label-inset) + 20px); }
 
 /* Состояния пункта — фрейм «Пункты в master [09.06.26]».
    Наведение на строку: подсветка и выезжающие справа опции записи.
@@ -1658,7 +1656,7 @@ html, body{
 [data-component-row] .master__name{ flex: 0 1 auto; }
 .reg-component-pages[hidden], #regDeliverySettings[hidden], #regDeliveryHours[hidden], #regDeliveryAreas[hidden]{ display: none; }
 .master--data .site-tree .reg-component-pages .site-tree__page:not([data-reg-nav]){ cursor: default; }
-#regDeliverySettings{ display: grid; gap: 8px; margin-top: 8px; }
+#regDeliverySettings{ display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; gap: 8px; margin-top: 8px; }
 #regDetail:has(> #regDeliveryAreas:not([hidden])){ padding-bottom: 0; }
 #regDeliveryAreas{ position: relative; flex: 1 1 0; min-height: 0; margin: 0; overflow: hidden; }
 #regDeliveryAreas img{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -1672,11 +1670,12 @@ html, body{
 .reg-delivery-card{ gap: 8px; padding: 10px var(--o-m); font-size: var(--fs-l); }
 .reg-delivery-card > .rs-site__title{ margin-bottom: 0; }
 .reg-delivery-card__row{ display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 24px; }
-#regDeliverySettings .reg-delivery-card__row{ height: 24px; flex-wrap: nowrap; }
+#regDeliverySettings .reg-delivery-card__row{ max-width: 100%; }
 #regDeliverySettings .reg-delivery-card .switch{ font-size: inherit; }
 .reg-delivery-card__properties{
   display: grid;
-  grid-template-columns: max-content max-content;
+  grid-template-columns: fit-content(50%) minmax(0, 1fr);
+  width: 100%;
   gap: 8px;
 }
 .reg-delivery-card__properties > .reg-delivery-card__row{
@@ -1687,7 +1686,7 @@ html, body{
 }
 .reg-delivery-card__prepayment{ display: flex; align-items: center; gap: 8px; }
 #regDeliverySettings .reg-delivery-card__row > .switch:not(:has(> .switch__input:checked)) ~ *{ display: none; }
-#regDeliverySettings .reg-delivery-card__row > .btn--link{
+#regDeliverySettings .reg-delivery-card__row > .btn--link:not(.btn--icon){
   height: 24px;
   padding-inline: 0;
   font: inherit;
@@ -1990,7 +1989,8 @@ html, body{
 /* «Точки продаж» с подписью «Прайс»: те же колонки, что у строк точек (1fr 1fr, gap 10, справа 66), «Прайс» — над колонкой прайса,
    серым обычным начертанием, по базовой линии с заголовком. Без точек подписи нет */
 .sales-settings__sub--points{ align-self: stretch; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: baseline; gap: 10px; padding-right: 66px; }
-.sales-settings__sub--points > div{ display: flex; align-items: center; gap: 8px; height: 24px; }
+.sales-settings__sub--points > div{ display: flex; align-items: center; gap: 8px; height: 24px; white-space: nowrap; }
+.sales-settings__sub--points > div > button{ flex: none; }
 .sales-settings__price{ font-size: var(--font-font-size-font-size_m); font-weight: var(--font-font-weight-regular); letter-spacing: -.1974px; color: #8991a9; }
 .sales-settings__sub--points:has(+ .sales-rows .sales-empty) .sales-settings__price,
 .sales-settings__sub--points:has(+ .sales-rows:empty) .sales-settings__price{ visibility: hidden; }
@@ -3599,6 +3599,30 @@ button.tpl-cat{ cursor: pointer; }
   </div>
 </template>
 
+<template id="tpl-site-page-list">
+  <div class="master__caption master__caption--sort">
+    <svg width="7" height="16" viewBox="0 0 7 16" fill="none" aria-hidden="true">
+      <path d="M3.5 0V15M0.5 12L3.5 15L6.5 12" stroke="currentColor"/>
+    </svg>
+    Посетители
+  </div>
+
+  <ul class="master__list site-tree site-page-list">
+    <li class="master__item master__item--selected">
+      <span class="master__name">Сайт</span><span class="master__count">1 667 626</span>
+    </li>
+    <li class="master__item">
+      <span class="master__name">Главная s-billing.saby.ws</span><span class="master__count">851 546</span>
+    </li>
+    <li class="master__item">
+      <span class="master__name">Цена</span><span class="master__count">601 245</span>
+    </li>
+    <li class="master__item">
+      <span class="master__name">Контакты</span><span class="master__count">575 893</span>
+    </li>
+  </ul>
+</template>
+
 <template id="tpl-chart">
   <figure class="chart">
     <figcaption class="chart__unit">ТЫС</figcaption>
@@ -3848,27 +3872,7 @@ button.tpl-cat{ cursor: pointer; }
 
             <aside class="master">
               <!-- Сводка «Новые / Больше 1 визита» переехала в счётчики над карточками. -->
-              <div class="master__caption master__caption--sort">
-                <svg width="7" height="16" viewBox="0 0 7 16" fill="none" aria-hidden="true">
-                  <path d="M3.5 0V15M0.5 12L3.5 15L6.5 12" stroke="currentColor"/>
-                </svg>
-                Посетители
-              </div>
-
-              <ul class="master__list">
-                <li class="master__item master__item--selected">
-                  <span class="master__name">Сайт</span><span class="master__count">1 667 626</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Главная s-billing.saby.ws</span><span class="master__count">851 546</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Цена</span><span class="master__count">601 245</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Контакты</span><span class="master__count">575 893</span>
-                </li>
-              </ul>
+              <div data-site-page-list></div>
             </aside>
 
             <!-- Содержимое — из прототипа Axure «Сайты» (s-billing): строка
@@ -4216,7 +4220,7 @@ button.tpl-cat{ cursor: pointer; }
                     </label>
                     <button class="btn btn--link btn--style-link btn--size-m" type="button"><span class="btn__caption">Приборы</span></button>
                     <button class="btn btn--link btn--style-secondary btn--size-m btn--icon" type="button" aria-label="Редактировать приборы">
-                      <i class="btn__icon icon" aria-hidden="true">&#xE660;</i>
+                      <i class="btn__icon" aria-hidden="true">&#xE660;</i>
                     </button>
                   </div>
                 </section>
@@ -4846,22 +4850,7 @@ button.tpl-cat{ cursor: pointer; }
                 </div>
               </div>
 
-              <div class="master__caption">Посетители</div>
-
-              <ul class="master__list">
-                <li class="master__item master__item--selected">
-                  <span class="master__name">Сайт</span><span class="master__count">1 667 626</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Главная</span><span class="master__count">851 546</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Цена</span><span class="master__count">601 245</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Контакты</span><span class="master__count">575 893</span>
-                </li>
-              </ul>
+              <div data-site-page-list></div>
             </aside>
 
             <div class="detail detail--flush">
@@ -5054,22 +5043,7 @@ button.tpl-cat{ cursor: pointer; }
                 </div>
               </div>
 
-              <div class="master__caption">Посетители</div>
-
-              <ul class="master__list">
-                <li class="master__item master__item--selected">
-                  <span class="master__name">Сайт</span><span class="master__count">1 667 626</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Главная</span><span class="master__count">851 546</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Цена</span><span class="master__count">601 245</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Контакты</span><span class="master__count">575 893</span>
-                </li>
-              </ul>
+              <div data-site-page-list></div>
             </aside>
 
             <div class="detail detail--flush detail--gap">
@@ -5343,22 +5317,7 @@ button.tpl-cat{ cursor: pointer; }
                 </div>
               </div>
 
-              <div class="master__caption">Посетители</div>
-
-              <ul class="master__list">
-                <li class="master__item master__item--selected">
-                  <span class="master__name">Сайт</span><span class="master__count">1 667 626</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Главная</span><span class="master__count">851 546</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Цена</span><span class="master__count">601 245</span>
-                </li>
-                <li class="master__item">
-                  <span class="master__name">Контакты</span><span class="master__count">575 893</span>
-                </li>
-              </ul>
+              <div data-site-page-list></div>
             </aside>
 
             <div class="detail detail--flush detail--gap">
@@ -6147,6 +6106,9 @@ button.tpl-cat{ cursor: pointer; }
       });
       work.insertBefore(tabs, bar ? bar.nextSibling : work.firstChild);
     }
+
+    var pageListSlot = s.querySelector('[data-site-page-list]');
+    if (pageListSlot) pageListSlot.replaceWith(document.getElementById('tpl-site-page-list').content.cloneNode(true));
 
     /* Опции записи — в каждый пункт мастер-колонки; видны только на ховере. */
     Array.prototype.forEach.call(s.querySelectorAll('.master:not([data-no-options]) .master__item'), function(item){
@@ -7047,10 +7009,8 @@ button.tpl-cat{ cursor: pointer; }
   });
 
   // keepParams — смена компонента в «Параметрах»: их разметку не трогаем (там уже новый компонент), остальные вкладки — заново
-  function groupCardPages(closed){
-    var list = $('#screen-2 .master__list');
+  function groupCardPages(list, closed){
     var [site, ...rows] = list.children;
-    list.classList.add('site-tree');
     PageGroups.render(list, rows.map(function(row){
       row.classList.add('site-tree__page');
       return { row: row, group: row.dataset.pageComponent };
@@ -7062,7 +7022,10 @@ button.tpl-cat{ cursor: pointer; }
   function apply(keepParams, imported, selection){
     if (!keepParams && !imported) window.regCompSave?.();
     markTiles();
-    var cardGroups = keepParams ? PageGroups.collapsed($('#screen-2 .master__list')) : new Set();
+    var cardGroups = new Map();
+    if (keepParams) $$('.site-page-list').forEach(function(list){
+      cardGroups.set(list.closest('.screen').id, PageGroups.collapsed(list));
+    });
     var m = current === BILLING ? null : MODELS[current];
     IDS.forEach(function(id){
       if (keepParams && id === 'screen-3') return;
@@ -7092,7 +7055,9 @@ button.tpl-cat{ cursor: pointer; }
       if ($('.chart', s)) chart(s, m);
     });
     if (!m && current === BILLING) (COMP_OF[current] || []).forEach(billingComp);
-    groupCardPages(cardGroups);
+    $$('.site-page-list').forEach(function(list){
+      groupCardPages(list, cardGroups.get(list.closest('.screen').id));
+    });
     renderExtraComponents();
     renderParameterList(m, selection);
     queueMicrotask(catalogPriceRender);

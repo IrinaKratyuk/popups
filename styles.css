@@ -16,6 +16,7 @@
   --text: #000;
 
   /* окна и меню */
+  --site-settings-width: 650px;
   --win-shadow: 0 0 46px rgba(0, 0, 0, .12), 0 0 15px rgba(0, 0, 0, .12); /* shadow_a */
   --shadow-c: 0 0 8px rgba(0, 0, 0, .06); /* shadow_c: color/shadow-color_c, blur/shadow-blur_c 8 */
   --label: #656c87;            /* icon/secondary_icon-color */
@@ -621,8 +622,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-sub__value { padding-bottom: 4px; font-size: 14px; letter-spacing: -.1974px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* text/unaccented_text-color */
 
 /* окно «Параметры сайта» */
-.rs-params, .pub { background: #f8f8f8; }
-.rs-params { --params-left: 946px; --params-top: 44px; --params-head-height: 44px; position: absolute; z-index: 15; left: var(--params-left); top: var(--params-top); bottom: 8px; width: 600px; display: flex; flex-direction: column; border-radius: 8px; box-shadow: var(--win-shadow); }
+.rs-params, .pub { width: var(--site-settings-width); background: #f8f8f8; }
+.rs-params { --params-top: 44px; --params-head-height: 44px; position: absolute; z-index: 15; right: 54px; top: var(--params-top); bottom: 8px; display: flex; flex-direction: column; border-radius: 8px; box-shadow: var(--win-shadow); }
 .rs-params[hidden], .rs-params__body[hidden] { display: none; }
 .rs-params__frame { flex: 1; min-height: 0; width: 100%; border: 0; }
 :is(.rs-params, .pub).is-overlay-open { z-index: 35; }
@@ -725,7 +726,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* «Точки продаж» с подписью «Прайс»: те же колонки, что у строк точек (1fr 1fr, gap 10, справа 66), «Прайс» — над колонкой прайса,
    серым обычным начертанием, по базовой линии с заголовком. Без точек подписи нет */
 .sales-settings__sub--points { align-self: stretch; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: baseline; gap: 10px; padding-right: 66px; }
-.sales-settings__sub--points > div { display: flex; align-items: center; gap: 8px; height: 24px; }
+.sales-settings__sub--points > div { display: flex; align-items: center; gap: 8px; height: 24px; white-space: nowrap; }
+.sales-settings__sub--points > div > button { flex: none; }
 .sales-settings__price { font-size: var(--font-font-size-font-size_m); font-weight: var(--font-font-weight-regular); letter-spacing: -.1974px; color: #8991a9; }
 .sales-settings__sub--points:has(+ .sales-rows .sales-empty) .sales-settings__price,
 .sales-settings__sub--points:has(+ .sales-rows:empty) .sales-settings__price { visibility: hidden; }
@@ -1241,7 +1243,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .stage.is-tpl .site.is-home .site-about { display: none; }
 /* ---------- Окно «Параметры» по «Опубликовать» (Figma DBmmGUNJ5Pwg8BsFOI5Kuv 7113:102645, app.js pubOpen) ----------
    Окно по центру сцены, под шапкой — общий мастер параметров. */
-.pub { position: absolute; z-index: 30; inset: 0; margin: auto; width: 650px; height: 644px; display: flex; flex-direction: column; border-radius: 12px; box-shadow: var(--win-shadow); }
+.pub { position: absolute; z-index: 30; inset: 0; margin: auto; height: 644px; display: flex; flex-direction: column; border-radius: 12px; box-shadow: var(--win-shadow); }
 .pub[hidden] { display: none; }
 .pub__head { display: flex; align-items: center; min-height: 44px; }
 .pub__title { flex: 1; padding: 0 12px 0 16px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; white-space: nowrap; }
