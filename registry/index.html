@@ -1702,6 +1702,8 @@ html, body{
 .reg-nav-detail{ overflow-y: auto; scrollbar-width: none; }
 .is-params-embed, .is-params-embed body{ background: transparent; }
 .is-params-embed #canvas{ width: 100%; height: 100%; border-radius: 0; }
+.is-publish-params :is(#canvas, #screen-3, #screen-3 > .workspace){ background: transparent; }
+.is-publish-params .master--data .master__item:not(:hover, .master__item--selected, .is-hover, .is-drag){ background: transparent; }
 .is-params-embed.is-overlay-open #canvas{
   left: var(--params-left);
   top: var(--params-top);
@@ -1712,7 +1714,7 @@ html, body{
 .is-params-embed #screen-3 > .workspace > :not(.content){ display: none; }
 .is-params-embed #screen-3{ display: flex; }
 .is-params-embed:not(.is-params-ready) #screen-3{ visibility: hidden; }
-.is-params-embed #screen-3 .content{ gap: var(--o-s); padding: var(--o-s) var(--o-s) var(--o-s) 4px; }
+.is-params-embed #screen-3 .content{ gap: var(--o-s); padding: 0 var(--o-s) var(--o-s) 4px; }
 .is-params-embed .master--data{ width: 200px; max-height: 100%; }
 .is-params-embed #regDetail{ margin-top: 0; padding-top: 0; overflow-wrap: anywhere; }
 .is-params-embed :is(.rs-site__props, .comp-props){ white-space: normal; grid-auto-rows: minmax(24px, auto); }
@@ -1906,7 +1908,10 @@ html, body{
 .reg-card__buy{ display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 12px; background: rgba(51,51,51,.05); border-radius: 39px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; color: #cc3d00; }
 .reg-card__cart{ font-family: var(--font-icon-m); font-size: 24px; line-height: 1; padding-bottom: 4px; color: #f47843; }
 .reg-cat__title{ position: absolute; z-index: 1; left: 0; top: 0; width: 100%; padding: 12px; font-size: 20px; font-weight: 600; line-height: normal; letter-spacing: -.282px; color: #fff; }
-.master--data{ overflow-y: auto; padding-top: 4px; }
+.master--data{ overflow-y: auto; overflow-anchor: none; scrollbar-width: none; }
+.master--data > .master__list{ padding-top: 4px; }
+.master--data.scroll-shadow::before,
+.master--data.scroll-shadow::after{ flex-shrink: 0; }
 .master--data [data-reg-nav="general"] .master__name{ line-height: 24px; }
 
 
@@ -3948,7 +3953,7 @@ button.tpl-cat{ cursor: pointer; }
         <main class="workspace">
           <div class="content">
 
-            <aside class="master master--data" data-no-options>
+            <aside class="master master--data scroll-shadow" data-no-options>
               <ul class="master__list site-tree site-tree--params">
                 <li>
                   <div class="site-tree__heading">
@@ -4163,7 +4168,7 @@ button.tpl-cat{ cursor: pointer; }
                   </div>
                 </section>
                 <section class="params reg-delivery-card" aria-label="Каталог и предоплата">
-                  <div class="reg-price"><span class="reg-price__label">Прайс</span><button class="btn btn--link btn--style-link btn--size-m" data-catalog-price="delivery" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"><span class="btn__caption">Выбрать прайс</span></button></div>
+                  <div class="reg-price"><span class="reg-price__label">Выбор товаров из</span><button class="btn btn--link btn--style-link btn--size-m" data-catalog-price="delivery" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"><span class="btn__caption">Выбрать прайс</span></button></div>
                   <div class="reg-delivery-card__row">Предоплата <span class="reg-delivery-card__amount">0</span><span class="reg-delivery-card__muted">%</span><span class="reg-delivery-card__muted">＋ Порог</span></div>
                   <div class="reg-delivery-card__row">Тип чека при онлайн-оплате <span class="reg-delivery-card__link">предоплата</span></div>
                 </section>
@@ -4320,7 +4325,12 @@ button.tpl-cat{ cursor: pointer; }
                   }).join('');
                 }
                 var scr = document.getElementById('screen-3');
-                if (window.ScrollShadow && scr && !window.regNavShadow) window.regNavShadow = window.ScrollShadow.mount(scr);
+                if (window.ScrollShadow && scr && !window.regNavShadow) {
+                  window.regNavShadow = window.ScrollShadow.mount(scr);
+                  new MutationObserver(function(changes){
+                    if (changes.some(function(change){ return change.target.closest('.master--data'); })) window.regNavShadow.refresh();
+                  }).observe(scr, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
+                }
               })();
               </script>
               <script>
@@ -4462,6 +4472,8 @@ button.tpl-cat{ cursor: pointer; }
                   get('comp-switch').hidden = true;
                 });
                 function update(){
+                  var master = get('regMasterComp').closest('.master--data');
+                  var scrollTop = master.scrollTop;
                   var selection = document.querySelector('#screen-3 .master__item--selected[data-reg-nav]')?.dataset.regNav;
                   render();
                   document.dispatchEvent(new CustomEvent('reg:comp', { detail: {
@@ -4470,6 +4482,8 @@ button.tpl-cat{ cursor: pointer; }
                       return { id: id, name: COMP[id].name, pages: COMP[id].pages };
                     })
                   } }));
+                  master.scrollTop = scrollTop;
+                  window.regNavShadow?.refresh();
                 }
                 window.regCompSave = function(){
                   if (!renderedSite) return [];
@@ -6555,10 +6569,7 @@ button.tpl-cat{ cursor: pointer; }
   document.addEventListener('reg:comp', function(e){
     if (!paramsEmbedded && current !== BILLING && !MODELS[current]) return;
     var { components, selection } = e.detail;
-    var previous = new Set((COMP_OF[current] || []).map(function(component){ return component.id; }));
-    var added = components.some(function(component){ return !previous.has(component.id); });
     COMP_OF[current] = components;
-    if (added && $('#regSitePages').hidden) $('#regSiteToggle').click();
     if (paramsEmbedded){
       var list = PAGE_LIST[current] || [];
       var connected = new Set(components.map(function(c){ return c.id; }));
@@ -7132,6 +7143,7 @@ button.tpl-cat{ cursor: pointer; }
     }
     window.addEventListener('message', function(e){
       if (e.source !== window.parent || e.data?.type !== 'reg:embed-params') return;
+      document.documentElement.classList.toggle('is-publish-params', e.data.inPublishDialog === true);
       current = e.data.site;
       var params = e.data.params;
       DOMAIN[current] = params.domain;

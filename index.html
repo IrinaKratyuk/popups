@@ -467,9 +467,7 @@
         </div>
       </section>
 
-      <!-- Окно «Параметры» по кнопке «Опубликовать» шаблона (Figma DBmmGUNJ5Pwg8BsFOI5Kuv 7113:102645, dialog 650 по центру).
-           Параметры — те же «Параметры сайта» (#rsParams): pubOpen переносит сюда их тело и меню выбора страницы, pubClose возвращает.
-           Пустой адрес сайта при первом открытии получает случайный набор букв -->
+      <!-- Окно публикации использует тот же мастер параметров, что и боковая панель. -->
       <section class="pub" id="pub" role="dialog" aria-label="Параметры" hidden>
         <header class="pub__head">
           <span class="pub__title">Параметры</span>
@@ -481,7 +479,6 @@
           <div class="pub__card" hidden>
             <div class="pub__warn"><span class="ico pub__warn-ico" aria-hidden="true">&#xE675;</span><span>Чтобы опубликовать сайт - привяжите домен. Сайт доступен для <span class="pub__link">предпросмотра</span>.</span></div>
           </div>
-          <!-- сюда pubOpen переносит .rs-params__body и #pagePickMenu -->
         </div>
       </section>
 

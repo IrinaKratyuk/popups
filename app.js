@@ -184,7 +184,7 @@
   /* «Параметры сайта» конструктора для карточки в реестре: домен (не подключён — сайт не опубликован), точки продаж
      с прайсами и страницы каталога и товара. publish — «Опубликовать»: домен подключается */
   function regParams(publish) {
-    const dom = $('.rs-site [data-domain]'); // один редактор: в «Параметрах» или перенесён в окно «Опубликовать»
+    const dom = $('.rs-site [data-domain]');
     const domain = dom && window.domainState ? window.domainState(dom) : null;
     if (domain && publish) domain.state = 'Connected';
     const exportPoints = (id) => salesFor(id).map((row) => ({ name: SALES.find((p) => p.id === row.id).name, price: row.price }));
@@ -258,30 +258,42 @@
   // «Структура», «Стиль», «Шрифт» пока только с ховером: их панелей в макете нет.
   const rsParams = $('#rsParams');
   const rsParamsFrame = $('#rsParamsFrame');
+  const pub = $('#pub'), pubBody = $('#pubBody');
+  function paramsHost() {
+    if (!pub.hidden) return pub;
+    return rsParamsOpen ? rsParams : null;
+  }
   function sendConstructorParams() {
-    const top = rsParams.offsetTop + $('.rs-params__head', rsParams).offsetHeight;
+    const host = paramsHost();
+    const panelBounds = stageRect(rsParamsFrame);
+    const bounds = stageRect(host);
+    host.style.setProperty('--params-frame-left', `${-bounds.left}px`);
+    host.style.setProperty('--params-frame-top', `${-bounds.top}px`);
     rsParamsFrame.contentWindow.postMessage({
       type: 'reg:embed-params',
       site: extraComponentSite(),
       params: regParams(false),
-      panelBounds: {
-        left: rsParams.offsetLeft,
-        top,
-        width: rsParams.offsetWidth,
-        height: rsParams.offsetTop + rsParams.offsetHeight - top,
-      },
+      panelBounds,
+      inPublishDialog: host === pub,
     }, '*');
   }
+  function showConstructorParams() {
+    if (rsParamsFrame.hasAttribute('src')) sendConstructorParams();
+    else rsParamsFrame.src = rsParamsFrame.dataset.src;
+  }
   rsParamsFrame.addEventListener('load', () => {
-    if (rsParamsOpen && rsParamsFrame.hasAttribute('src')) sendConstructorParams();
+    if (paramsHost() && rsParamsFrame.hasAttribute('src')) sendConstructorParams();
   });
   window.addEventListener('message', (e) => {
     if (e.source !== rsParamsFrame.contentWindow || e.data?.site !== extraComponentSite()) return;
     if (e.data.type === 'reg:embed-overlay') {
-      rsParams.classList.toggle('is-overlay-open', rsParamsOpen && e.data.open === true);
+      paramsHost()?.classList.toggle('is-overlay-open', e.data.open === true);
       return;
     }
-    if (e.data.type === 'reg:embed-close') rsCloseParams();
+    if (e.data.type === 'reg:embed-close') {
+      if (pub.hidden) rsCloseParams();
+      else pubClose();
+    }
     if (e.data.type !== 'reg:embed-change') return;
     const { domain, components, pages } = e.data;
     if (domain) window.domainSetState($('.rs-site [data-domain]'), domain);
@@ -300,10 +312,7 @@
     for (const name of ['shop', 'data']) $('#rs-' + name).hidden = name !== rsPanel || rsParamsOpen;
     const wasOpen = !rsParams.hidden;
     rsParams.hidden = !rsParamsOpen;
-    if (rsParamsOpen && !wasOpen) {
-      if (rsParamsFrame.hasAttribute('src')) sendConstructorParams();
-      else rsParamsFrame.src = rsParamsFrame.dataset.src;
-    }
+    if (rsParamsOpen && !wasOpen) showConstructorParams();
     if (!rsParamsOpen) { // меню выбора страницы закрывается вместе с окном; через DOM — rsRender зовётся и до объявления pagePick*
       $('#pagePickMenu').hidden = true;
       for (const b of document.querySelectorAll('[data-page-pick]')) b.setAttribute('aria-expanded', 'false');
@@ -3409,10 +3418,8 @@
   }
   $('#chUse').addEventListener('click', () => stage.classList.remove('is-tpl-view'));
 
-  // Окно «Параметры» по «Опубликовать» (Figma 7113:102645). Параметры в нём — те же «Параметры сайта»:
-  // на время открытия тело #rsParams и меню выбора страницы переезжают сюда (одна разметка — одна механика), при закрытии возвращаются.
+  // Боковая панель и окно публикации используют один мастер параметров.
   // Пустой адрес сайта при первом открытии получает случайный набор букв (слоги «согласная + гласная», как vobara)
-  const pub = $('#pub'), pubBody = $('#pubBody'), rsParamsBody = $('.rs-params__body', rsParams);
   const pubRand = () => {
     const c = 'bvgdzklmnprstf', v = 'aeiou';
     let s = '';
@@ -3421,22 +3428,17 @@
   };
   function pubOpen() {
     rsCloseParams();
-    pubBody.append(rsParamsBody);
-    pub.append(pagePickMenu);
-    pagePickRender();
-    const addr = $('.rs-site .dom__text', rsParamsBody);
+    const addr = $('.rs-site .dom__text', rsParams);
     if (addr && !addr.value) { addr.value = pubRand(); addr.dispatchEvent(new Event('input', { bubbles: true })); }
-    // центр — только при открытии; дальше верх закреплён, свёртка точек и прочее не двигают шапку
-    pub.style.top = pub.style.transform = '';
     pub.hidden = false;
-    pub.style.top = pub.offsetTop - pub.offsetHeight / 2 + 'px';
-    pub.style.transform = 'translateX(-50%)';
+    pubBody.append(rsParamsFrame);
+    showConstructorParams();
   }
   function pubClose() {
     if (pub.hidden) return;
-    pagePickClose();
     pub.hidden = true;
-    rsParams.append(rsParamsBody, pagePickMenu);
+    pub.classList.remove('is-overlay-open');
+    rsParams.insertBefore(rsParamsFrame, $('.rs-params__body', rsParams));
   }
   $('#chPublish').addEventListener('click', () => (pub.hidden ? pubOpen() : pubClose()));
   $('#pubClose').addEventListener('click', pubClose);

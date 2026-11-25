@@ -624,9 +624,9 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-params { --params-left: 946px; --params-top: 44px; --params-head-height: 44px; position: absolute; z-index: 15; left: var(--params-left); top: var(--params-top); bottom: 8px; width: 600px; display: flex; flex-direction: column; background: #f8f8f8; border-radius: 8px; box-shadow: var(--win-shadow); }
 .rs-params[hidden], .rs-params__body[hidden] { display: none; }
 .rs-params__frame { flex: 1; min-height: 0; width: 100%; border: 0; }
-.rs-params.is-overlay-open { z-index: 35; }
-.rs-params.is-overlay-open .rs-params__frame {
-  position: absolute; left: calc(-1 * var(--params-left)); top: calc(-1 * var(--params-top));
+:is(.rs-params, .pub).is-overlay-open { z-index: 35; }
+:is(.rs-params, .pub).is-overlay-open .rs-params__frame {
+  position: absolute; left: var(--params-frame-left); top: var(--params-frame-top);
   width: var(--stage-width); height: var(--stage-height);
 }
 .rs-params__head { flex: none; height: var(--params-head-height); display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 16px; }
@@ -1239,21 +1239,17 @@ ul { list-style: none; margin: 0; padding: 0; }
 .site-story__visit .site-about__button { flex: none; color: #47382f; }
 .stage.is-tpl .site.is-home .site-about { display: none; }
 /* ---------- Окно «Параметры» по «Опубликовать» (Figma DBmmGUNJ5Pwg8BsFOI5Kuv 7113:102645, app.js pubOpen) ----------
-   dialog 650 по центру экрана: шапка 44, под ней предупреждение и «Параметры сайта» в 4px от краёв окна */
-.pub { position: absolute; z-index: 30; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 650px; display: flex; flex-direction: column; background: #f3f5f7; border-radius: 12px; box-shadow: var(--win-shadow); }
+   Окно по центру сцены, под шапкой — общий мастер параметров. */
+.pub { position: absolute; z-index: 30; inset: 0; margin: auto; width: 650px; height: 644px; display: flex; flex-direction: column; background: #f3f5f7; border-radius: 12px; box-shadow: var(--win-shadow); }
 .pub[hidden] { display: none; }
 .pub__head { display: flex; align-items: center; min-height: 44px; }
 .pub__title { flex: 1; padding: 0 12px 0 16px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; white-space: nowrap; }
 .pub__publish { --btn-h: 26px; flex: none; width: 139px; }
 .pub__close { flex: none; display: flex; box-sizing: content-box; width: 24px; height: 24px; padding: 0 8px 0 12px; border: 0; background: none; cursor: pointer; }
 .pub__close img { display: block; }
-/* Предупреждение — белая плашка, под ней в 4px тело «Параметров сайта» (#rsParams), перенесённое pubOpen:
-   те же блоки «Сайт», настройки подключённого компонента и «Компоненты»; длинное — прокручивается внутри окна.
-   overflow окна не режем: меню выбора страницы не обрезается краем */
-.pub__body { display: flex; flex-direction: column; gap: 4px; min-height: 0; padding: 0 4px 4px; }
+.pub__body { display: flex; flex: 1; flex-direction: column; gap: 4px; min-height: 0; }
 .pub__card[hidden] { display: none; }
 .pub__card { padding: 12px; background: #fff; border-radius: 8px; }
-.pub .rs-params__body { flex: none; max-height: 600px; padding: 0; }
 /* Предупреждение — иконка и текст warning, «предпросмотра» подчёркнуто */
 .pub__warn { display: flex; align-items: flex-start; font-size: 14px; line-height: normal; letter-spacing: -.1974px; color: var(--text-warning_text-color, #e6a119); }
 .pub__warn-ico { flex: none; margin-right: 4px; padding-bottom: 1px; color: var(--icon-warning_icon-color, #e6a119); }
