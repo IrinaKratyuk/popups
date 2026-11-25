@@ -1670,7 +1670,29 @@ html, body{
   pointer-events: none;
 }
 .reg-delivery-card{ gap: 8px; padding: 10px var(--o-m); font-size: var(--fs-l); }
+.reg-delivery-card > .rs-site__title{ margin-bottom: 0; }
 .reg-delivery-card__row{ display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 24px; }
+#regDeliverySettings .reg-delivery-card__row{ height: 24px; flex-wrap: nowrap; }
+#regDeliverySettings .reg-delivery-card .switch{ font-size: inherit; }
+.reg-delivery-card__properties{
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: 8px;
+}
+.reg-delivery-card__properties > .reg-delivery-card__row{
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  justify-items: start;
+}
+.reg-delivery-card__prepayment{ display: flex; align-items: center; gap: 8px; }
+#regDeliverySettings .reg-delivery-card__row > .switch:not(:has(> .switch__input:checked)) ~ *{ display: none; }
+#regDeliverySettings .reg-delivery-card__row > .btn--link{
+  height: 24px;
+  padding-inline: 0;
+  font: inherit;
+  letter-spacing: inherit;
+}
 .reg-price > .btn{ padding-inline: var(--btn-px, 0px); }
 .reg-delivery-card__link{ color: var(--c-text-link); }
 .reg-delivery-card__muted{ color: var(--c-text-label); }
@@ -1715,7 +1737,7 @@ html, body{
 .is-params-embed #screen-3{ display: flex; }
 .is-params-embed:not(.is-params-ready) #screen-3{ visibility: hidden; }
 .is-params-embed #screen-3 .content{ gap: var(--o-s); padding: 0 var(--o-s) var(--o-s) 4px; }
-.is-params-embed .master--data{ width: 200px; max-height: 100%; }
+.is-params-embed .master--data{ width: 200px; }
 .is-params-embed #regDetail{ margin-top: 0; padding-top: 0; overflow-wrap: anywhere; }
 .is-params-embed :is(.rs-site__props, .comp-props){ white-space: normal; grid-auto-rows: minmax(24px, auto); }
 .is-params-embed #regSite .dom__form{ flex-wrap: wrap; }
@@ -1908,7 +1930,7 @@ html, body{
 .reg-card__buy{ display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 12px; background: rgba(51,51,51,.05); border-radius: 39px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; color: #cc3d00; }
 .reg-card__cart{ font-family: var(--font-icon-m); font-size: 24px; line-height: 1; padding-bottom: 4px; color: #f47843; }
 .reg-cat__title{ position: absolute; z-index: 1; left: 0; top: 0; width: 100%; padding: 12px; font-size: 20px; font-weight: 600; line-height: normal; letter-spacing: -.282px; color: #fff; }
-.master--data{ overflow-y: auto; overflow-anchor: none; scrollbar-width: none; }
+.master--data{ align-self: stretch; min-height: 0; overflow-y: auto; overflow-anchor: none; scrollbar-width: none; }
 .master--data > .master__list{ padding-top: 4px; }
 .master--data.scroll-shadow::before,
 .master--data.scroll-shadow::after{ flex-shrink: 0; }
@@ -4158,27 +4180,63 @@ button.tpl-cat{ cursor: pointer; }
               <div id="regDeliverySettings" hidden>
                 <section class="params reg-delivery-card" aria-label="Способы получения и оплаты">
                   <div class="reg-delivery-card__row">
-                    <label class="switch switch--size-s" inert><input class="switch__input" type="checkbox" checked><span class="switch__button"></span><span class="switch__caption">Самовывоз</span></label>
+                    <label class="switch switch--size-s"><input class="switch__input" type="checkbox" role="switch" checked><span class="switch__button"></span><span class="switch__caption">Самовывоз</span></label>
                   </div>
                   <div class="reg-delivery-card__row">
-                    <label class="switch switch--size-s" inert><input class="switch__input" type="checkbox" checked><span class="switch__button"></span><span class="switch__caption">Курьером</span></label>
+                    <label class="switch switch--size-s"><input class="switch__input" type="checkbox" role="switch" checked><span class="switch__button"></span><span class="switch__caption">Курьером</span></label>
                     <span class="reg-delivery-card__muted">с оплатой</span>
-                    <label class="checkbox checkbox--outlined" inert><input class="checkbox__input" type="checkbox" checked><span class="checkbox__box"></span><span class="checkbox__caption">Наличными</span></label>
-                    <label class="checkbox checkbox--outlined" inert><input class="checkbox__input" type="checkbox"><span class="checkbox__box"></span><span class="checkbox__caption">Картой</span></label>
+                    <label class="checkbox checkbox--outlined"><input class="checkbox__input" type="checkbox" checked><span class="checkbox__box"></span><span class="checkbox__caption">Наличными</span></label>
+                    <label class="checkbox checkbox--outlined"><input class="checkbox__input" type="checkbox"><span class="checkbox__box"></span><span class="checkbox__caption">Картой</span></label>
                   </div>
                 </section>
                 <section class="params reg-delivery-card" aria-label="Каталог и предоплата">
-                  <div class="reg-price"><span class="reg-price__label">Выбор товаров из</span><button class="btn btn--link btn--style-link btn--size-m" data-catalog-price="delivery" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"><span class="btn__caption">Выбрать прайс</span></button></div>
-                  <div class="reg-delivery-card__row">Предоплата <span class="reg-delivery-card__amount">0</span><span class="reg-delivery-card__muted">%</span><span class="reg-delivery-card__muted">＋ Порог</span></div>
-                  <div class="reg-delivery-card__row">Тип чека при онлайн-оплате <span class="reg-delivery-card__link">предоплата</span></div>
+                  <div class="reg-delivery-card__properties">
+                  <div class="reg-delivery-card__row">
+                    <span class="reg-delivery-card__muted">Выбор товаров из</span>
+                    <button class="btn btn--link btn--style-link btn--size-m" data-catalog-price="delivery" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"><span class="btn__caption">Выбрать прайс</span></button>
+                  </div>
+                  <div class="reg-delivery-card__row">
+                    <span class="reg-delivery-card__muted">Предоплата</span>
+                    <div class="reg-delivery-card__prepayment">
+                      <span class="reg-delivery-card__amount">0</span>
+                      <span class="reg-delivery-card__muted">%</span>
+                      <span class="reg-delivery-card__muted">＋ Порог</span>
+                    </div>
+                  </div>
+                  <div class="reg-delivery-card__row">
+                    <span class="reg-delivery-card__muted">Тип чека при онлайн-оплате</span>
+                    <button class="btn btn--link btn--style-link btn--size-m" type="button"><span class="btn__caption">предоплата</span></button>
+                  </div>
+                  </div>
+                  <div class="reg-delivery-card__row">
+                    <label class="switch switch--size-s">
+                      <input class="switch__input" type="checkbox" role="switch" checked>
+                      <span class="switch__button"></span>
+                      <span class="switch__caption">Учитывать приборы (вилки/ложки/стаканы)</span>
+                    </label>
+                    <button class="btn btn--link btn--style-link btn--size-m" type="button"><span class="btn__caption">Приборы</span></button>
+                    <button class="btn btn--link btn--style-secondary btn--size-m btn--icon" type="button" aria-label="Редактировать приборы">
+                      <i class="btn__icon icon" aria-hidden="true">&#xE660;</i>
+                    </button>
+                  </div>
                 </section>
-                <section class="params reg-delivery-card" aria-label="Стоимость доставки">
-                  <div class="reg-delivery-card__row"><strong>Стоимость доставки</strong></div>
-                  <div class="reg-delivery-card__row">Номенклатура в чеке <span class="reg-delivery-card__link">Доставка</span></div>
-                  <div class="reg-delivery-card__row"><span class="reg-delivery-card__link">без учета скидки на заказ</span></div>
+                <section class="params reg-delivery-card" aria-labelledby="regDeliveryCostTitle">
+                  <h2 class="rs-site__title" id="regDeliveryCostTitle"><span>Стоимость доставки</span></h2>
+                  <div class="reg-delivery-card__row">
+                    <span class="reg-delivery-card__muted">Номенклатура в чеке</span>
+                    <button class="btn btn--link btn--style-link btn--size-m" type="button"><span class="btn__caption">Доставка</span></button>
+                  </div>
+                  <div class="reg-delivery-card__row">
+                    <button class="btn btn--link btn--style-link btn--size-m" type="button"><span class="btn__caption">без учета скидки на заказ</span></button>
+                  </div>
                 </section>
                 <section class="params reg-delivery-card" aria-label="Шаблон номера заказа">
-                  <div class="reg-delivery-card__row"><span class="ml__arrow ml__arrow--down" aria-hidden="true"></span><span>Шаблон номера заказа</span><span class="reg-delivery-card__link">{№ п/п}</span><span class="reg-delivery-card__muted" aria-hidden="true">→</span>123</div>
+                  <div class="reg-delivery-card__row">
+                    <span class="ml__arrow ml__arrow--down" aria-hidden="true"></span>
+                    <span>Шаблон номера заказа</span>
+                    <button class="btn btn--link btn--style-link btn--size-m" type="button"><span class="btn__caption">{№ п/п}</span></button>
+                    <span class="reg-delivery-card__muted" aria-hidden="true">→</span>123
+                  </div>
                 </section>
               </div>
               </div>

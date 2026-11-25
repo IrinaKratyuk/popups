@@ -621,7 +621,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-sub__value { padding-bottom: 4px; font-size: 14px; letter-spacing: -.1974px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* text/unaccented_text-color */
 
 /* окно «Параметры сайта» */
-.rs-params { --params-left: 946px; --params-top: 44px; --params-head-height: 44px; position: absolute; z-index: 15; left: var(--params-left); top: var(--params-top); bottom: 8px; width: 600px; display: flex; flex-direction: column; background: #f8f8f8; border-radius: 8px; box-shadow: var(--win-shadow); }
+.rs-params, .pub { background: #f8f8f8; }
+.rs-params { --params-left: 946px; --params-top: 44px; --params-head-height: 44px; position: absolute; z-index: 15; left: var(--params-left); top: var(--params-top); bottom: 8px; width: 600px; display: flex; flex-direction: column; border-radius: 8px; box-shadow: var(--win-shadow); }
 .rs-params[hidden], .rs-params__body[hidden] { display: none; }
 .rs-params__frame { flex: 1; min-height: 0; width: 100%; border: 0; }
 :is(.rs-params, .pub).is-overlay-open { z-index: 35; }
@@ -1240,7 +1241,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .stage.is-tpl .site.is-home .site-about { display: none; }
 /* ---------- Окно «Параметры» по «Опубликовать» (Figma DBmmGUNJ5Pwg8BsFOI5Kuv 7113:102645, app.js pubOpen) ----------
    Окно по центру сцены, под шапкой — общий мастер параметров. */
-.pub { position: absolute; z-index: 30; inset: 0; margin: auto; width: 650px; height: 644px; display: flex; flex-direction: column; background: #f3f5f7; border-radius: 12px; box-shadow: var(--win-shadow); }
+.pub { position: absolute; z-index: 30; inset: 0; margin: auto; width: 650px; height: 644px; display: flex; flex-direction: column; border-radius: 12px; box-shadow: var(--win-shadow); }
 .pub[hidden] { display: none; }
 .pub__head { display: flex; align-items: center; min-height: 44px; }
 .pub__title { flex: 1; padding: 0 12px 0 16px; font-size: 18px; font-weight: 600; letter-spacing: -.2538px; white-space: nowrap; }
