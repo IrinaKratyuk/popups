@@ -28,15 +28,14 @@ window.ExtraComponents = (() => {
   window.addEventListener('storage', (event) => {
     if (event.key?.startsWith(prefix)) window.dispatchEvent(new Event('extra-components-change'));
   });
-  function renderRows(list, site, { tag, rowClass, iconClass, nameClass, remove }) {
+  function renderRows(list, site, { tag, rowClass, nameClass, remove }) {
     list.querySelectorAll(':scope > .extra-component-row').forEach((row) => row.remove());
-    for (const { id, name, icon: iconUrl } of active(site)) {
+    for (const { id, name } of active(site)) {
       const row = document.createElement(tag);
       row.className = rowClass + ' component-group extra-component-row';
-      row.innerHTML = '<img alt=""><span></span><button class="component-group__remove" type="button"></button>';
-      const [icon, label, button] = row.children;
-      icon.className = iconClass;
-      icon.src = iconUrl;
+      row.dataset.extraComponent = id;
+      row.innerHTML = '<span></span><button class="component-group__remove" type="button"></button>';
+      const [label, button] = row.children;
       label.className = nameClass;
       label.textContent = name;
       button.setAttribute('aria-label', 'Отключить компонент «' + name + '»');

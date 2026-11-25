@@ -96,8 +96,14 @@ ul { list-style: none; margin: 0; padding: 0; }
 .lsb__list {
   flex: 0 1 auto;
   gap: 2px;
+  --page-group-inset: var(--offset-offset_s);
+  --lsb-page-indent: calc(var(--page-list-icon-size) + var(--page-list-icon-gap));
 }
-.lsb__list > .lsb__page { height: var(--site-tree-row-height); }
+.lsb__list .lsb__page { height: var(--site-tree-row-height); }
+.lsb__list .lsb__page > :is(.lsb__page-name, .lsb__input) {
+  margin-inline-start: var(--lsb-page-indent);
+}
+.lsb__list .page-group { --lsb-page-indent: calc(var(--page-list-icon-size) + var(--page-list-icon-gap) + 20px); }
 
 /* ---------- Контент ---------- */
 /* между сайдбарами: слева колонка 366 или линии 52, справа панель с тулбаром 412 или только тулбар 54 */

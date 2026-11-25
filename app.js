@@ -2820,7 +2820,8 @@
     return row;
   }
   function lsRender() {
-    lsList.replaceChildren(...lsOrdered().map(lsRow));
+    PageGroups.render(lsList, lsOrdered().map((page) => ({ row: lsRow(page), group: lsGroupOf(page) })),
+      Object.fromEntries(Object.entries(COMP).map(([id, component]) => [id, component.name])));
     lsRenderLines();
     siteShowPage(lsPage(lsActive));
     siteProductSyncShop();
@@ -3225,6 +3226,7 @@
     lsNewClose();
     lsCloseMenu();
     lsFinishRename(false);
+    lsList.replaceChildren();
     if (scenario === 'new') {
       // страницы других сценариев (fixed) сюда не переходят: остаются только свои
       lsPages = lsPages.filter((p) => !p.fixed);

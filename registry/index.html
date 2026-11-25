@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="../page-editor.css">
 <link rel="stylesheet" href="../component-list.css">
 <script src="../extra-components.js"></script>
+<script src="../page-groups.js"></script>
 <script>
   if (new URLSearchParams(location.search).get('embed') === 'params') {
     document.documentElement.classList.add('is-params-embed');
@@ -1426,15 +1427,10 @@ html, body{
 .master__comp{ display: flex; align-items: center; min-height: 31px; margin-top: var(--o-xs); padding: 0 var(--o-m) 0 var(--o-l); font-size: var(--fs-l); font-weight: 600; color: var(--c-text); }
 .master__comp > span{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .master__comp > .master__expander{ flex: none; }
-#screen-3 .site-tree{ --page-list-inset: var(--o-l); }
-.master__comp-icon{ display: none; }
-#screen-3 .master__comp-icon{
-  display: block;
-  flex: none;
-  width: var(--page-list-icon-size);
-  height: var(--page-list-icon-size);
-  margin-inline-end: var(--page-list-icon-gap);
-}
+#screen-2 .site-tree, #screen-3 .site-tree{ --page-list-inset: var(--o-l); }
+#screen-2 .site-tree{ --page-group-inset: var(--page-list-inset); }
+#screen-2 .site-tree > .site-tree__page{ padding-inline-start: var(--site-tree-label-inset); }
+#screen-2 .page-group .site-tree__page{ padding-inline-start: calc(var(--site-tree-label-inset) + 20px); }
 
 /* Состояния пункта — фрейм «Пункты в master [09.06.26]».
    Наведение на строку: подсветка и выезжающие справа опции записи.
@@ -3965,7 +3961,8 @@ button.tpl-cat{ cursor: pointer; }
                 </li>
                 <!-- Подключённый компонент — пункт навигации: клик открывает его настройки (#regSales); название и видимость задаёт render() скрипта компонентов -->
                 <li class="master__item component-group" data-reg-nav="comp" tabindex="0" role="button" id="regMasterComp">
-                  <img class="master__comp-icon" src="../assets/img/comp/restaurant.svg" alt="">
+                  <span class="site-tree__expander ml__arrow" aria-hidden="true"></span>
+                  <button class="site-tree__expander ml__arrow" type="button" hidden></button>
                   <span class="master__name ml__caption">Электронное меню</span>
                   <!-- Команда по ховеру — как у точки продаж в мастере; ✕ работает как крестик блока компонента: окно подтверждения -->
                   <button class="component-group__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"></button>
@@ -4390,8 +4387,8 @@ button.tpl-cat{ cursor: pointer; }
                   var restaurant = get('regRestaurantNav'), delivery = get('regDeliveryNav');
                   list.querySelectorAll('[data-component-row]').forEach(function(row){ row.remove(); });
                   template.hidden = true;
-                  restaurant.hidden = !connected.has('restaurant');
-                  delivery.hidden = !connected.has('delivery');
+                  restaurant.hidden = !connected.has('restaurant') || restaurant.hasAttribute('data-collapsed');
+                  delivery.hidden = !connected.has('delivery') || delivery.hasAttribute('data-collapsed');
                   var anchor = template;
                   ordered().forEach(function(id){
                     var row = template.cloneNode(true);
@@ -4400,13 +4397,21 @@ button.tpl-cat{ cursor: pointer; }
                     row.dataset.componentRow = id;
                     row.dataset.regNav = 'comp-' + id;
                     row.querySelector('.master__name').textContent = COMP[id].name;
-                    row.querySelector('img').src = '../assets/img/comp/' + id + '.svg';
+                    var sub = id === 'restaurant' ? restaurant : id === 'delivery' ? delivery : null;
+                    if (sub){
+                      row.firstElementChild.hidden = true;
+                      var toggle = row.querySelector('button.site-tree__expander');
+                      toggle.hidden = false;
+                      toggle.setAttribute('aria-controls', sub.id);
+                      toggle.setAttribute('aria-label', 'Страницы компонента «' + COMP[id].name + '»');
+                      toggle.setAttribute('aria-expanded', String(!sub.hidden));
+                      toggle.classList.toggle('ml__arrow--down', !sub.hidden);
+                    }
                     var off = row.querySelector('[data-comp-off]');
                     off.dataset.compOff = id;
                     off.setAttribute('aria-label', 'Отключить компонент «' + COMP[id].name + '»');
                     anchor.after(row);
                     anchor = row;
-                    var sub = id === 'restaurant' ? restaurant : id === 'delivery' ? delivery : null;
                     if (sub){ anchor.after(sub); anchor = sub; }
                   });
                   document.querySelectorAll('#regAddable [data-comp-add]').forEach(function(b){
@@ -4442,13 +4447,11 @@ button.tpl-cat{ cursor: pointer; }
                       states.delete(id);
                       if (active === id) active = null;
                       update();
-                      window.regNavSelect('general');
                     });
                   } else if (add){
                     var id = add.dataset.compAdd;
                     connected.add(id);
                     update();
-                    window.regNavSelect('comp-' + id);
                   }
                 });
                 document.addEventListener('keydown', function(e){
@@ -4457,10 +4460,14 @@ button.tpl-cat{ cursor: pointer; }
                   get('comp-switch').hidden = true;
                 });
                 function update(){
+                  var selection = document.querySelector('#screen-3 .master__item--selected[data-reg-nav]')?.dataset.regNav;
                   render();
-                  document.dispatchEvent(new CustomEvent('reg:comp', { detail: ordered().map(function(id){
-                    return { id: id, name: COMP[id].name, pages: COMP[id].pages };
-                  }) }));
+                  document.dispatchEvent(new CustomEvent('reg:comp', { detail: {
+                    selection: selection,
+                    components: ordered().map(function(id){
+                      return { id: id, name: COMP[id].name, pages: COMP[id].pages };
+                    })
+                  } }));
                 }
                 window.regCompSave = function(){
                   if (!renderedSite) return [];
@@ -6355,21 +6362,22 @@ button.tpl-cat{ cursor: pointer; }
 
   /* Сначала страницы сайта, затем группы в порядке компонентов. */
   var PAGE_GROUPS = { restaurant: 'Электронное меню', delivery: 'Доставка', services: 'Услуги', hotel: 'Отель' };
-  function masterGroupHead(id, name){
-    return '<li class="master__comp"><img class="master__comp-icon" src="../assets/img/comp/' + esc(id) + '.svg" alt="">' +
+  function masterGroupHead(name){
+    return '<li class="master__comp">' +
       '<span class="ml__caption">' + esc(name) + '</span>' +
       '<button class="master__expander ml__arrow ml__arrow--down" type="button" aria-expanded="true" aria-label="' +
       esc('Страницы компонента «' + name + '»') + '"></button></li>';
   }
   function masterList(m, showGroups){
-    function row(p){ return '<li class="master__item' + (showGroups && p.group ? ' master__item--grouped' : '') + '"><span class="master__name">' + esc(p.name) + '</span><span class="master__count">' + fmt(p.users) + '</span>' + OPTIONS + '</li>'; }
+    function row(p){ return '<li class="master__item' + (showGroups && p.group ? ' master__item--grouped' : '') + '"' +
+      (p.group ? ' data-page-component="' + esc(p.group) + '"' : '') + '><span class="master__name">' + esc(p.name) + '</span><span class="master__count">' + fmt(p.users) + '</span>' + OPTIONS + '</li>'; }
     var site = '<li class="master__item master__item--selected"><span class="master__name">Сайт</span><span class="master__count">' + fmt(m.U) + '</span>' + OPTIONS + '</li>';
     if (!showGroups) return site + m.pages.map(row).join('');
     return site +
       m.pages.filter(function(p){ return !p.group; }).map(row).join('') +
       Object.keys(PAGE_GROUPS).map(function(id){
         var g = m.pages.filter(function(p){ return p.group === id; });
-        return g.length ? masterGroupHead(id, PAGE_GROUPS[id]) + g.map(row).join('') : '';
+        return g.length ? masterGroupHead(PAGE_GROUPS[id]) + g.map(row).join('') : '';
       }).join('');
   }
 
@@ -6544,21 +6552,25 @@ button.tpl-cat{ cursor: pointer; }
      группа на «Страницах» и строки страниц на остальных вкладках следуют за ним */
   document.addEventListener('reg:comp', function(e){
     if (!paramsEmbedded && current !== BILLING && !MODELS[current]) return;
-    COMP_OF[current] = e.detail;
+    var { components, selection } = e.detail;
+    var previous = new Set((COMP_OF[current] || []).map(function(component){ return component.id; }));
+    var added = components.some(function(component){ return !previous.has(component.id); });
+    COMP_OF[current] = components;
+    if (added && $('#regSitePages').hidden) $('#regSiteToggle').click();
     if (paramsEmbedded){
       var list = PAGE_LIST[current] || [];
-      var connected = new Set(e.detail.map(function(c){ return c.id; }));
+      var connected = new Set(components.map(function(c){ return c.id; }));
       list = list.filter(function(page){ return !page.group || connected.has(page.group); });
-      e.detail.forEach(function(c){
+      components.forEach(function(c){
         if (list.some(function(page){ return page.group === c.id; })) return;
         c.pages.forEach(function(name){ list.push({ name: name, group: c.id }); });
       });
-      PAGE_LIST[current] = list;
-      renderParameterList();
+      PAGE_LIST[current] = groupOrder(list);
+      renderParameterList(null, selection);
       return;
     }
     rebuild(current);
-    apply(true);
+    apply(true, false, selection);
   });
 
   /* все плитки обоих реестров открывают карточку; доля на плитке — отклики к визитам */
@@ -6649,11 +6661,12 @@ button.tpl-cat{ cursor: pointer; }
       if (!list) return;
       var items = $$('.master__item', list), last = items[items.length - 1];
       var showGroups = id === 'screen-4';
-      if (showGroups) list.insertAdjacentHTML('beforeend', masterGroupHead(c.id, c.name));
+      if (showGroups) list.insertAdjacentHTML('beforeend', masterGroupHead(c.name));
       c.pages.forEach(function(name){
         var li = last.cloneNode(true);
         li.classList.toggle('master__item--selected', false);
         li.classList.toggle('master__item--grouped', showGroups);
+        li.dataset.pageComponent = c.id;
         $('.master__name', li).textContent = name;
         var n = $('.master__count', li); if (n) n.textContent = '0';
         list.appendChild(li);
@@ -6679,12 +6692,12 @@ button.tpl-cat{ cursor: pointer; }
     var site = current;
     var list = $('#regMasterComp').parentNode;
     ExtraComponents.renderRows(list, site, {
-      tag: 'li', rowClass: 'master__item', iconClass: 'master__comp-icon',
+      tag: 'li', rowClass: 'master__item',
       nameClass: 'master__name ml__caption', remove: function(id, name){
         window.regExtraOffAsk(name, function(){ ExtraComponents.set(site, id, false); });
       }
     });
-    var news = $(':scope > .extra-component-row:has(> img[src$="/news.svg"])', list);
+    var news = $(':scope > [data-extra-component="news"]', list);
     if (news){
       news.dataset.regNav = 'news';
       news.tabIndex = 0;
@@ -6694,19 +6707,30 @@ button.tpl-cat{ cursor: pointer; }
       news.setAttribute('aria-pressed', 'false');
     }
     if (!$('#regNews').hidden) window.regNavSelect(news ? 'news' : 'general');
-    var gallery = $(':scope > .extra-component-row:has(> img[src$="/gallery.svg"])', list);
+    var gallery = $(':scope > [data-extra-component="gallery"]', list);
     var galleryNav = $('#regGalleryNav');
-    galleryNav.hidden = !gallery;
-    if (gallery) gallery.after(galleryNav);
+    galleryNav.hidden = !gallery || galleryNav.hasAttribute('data-collapsed');
+    if (gallery){
+      var toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'site-tree__expander ml__arrow';
+      toggle.classList.toggle('ml__arrow--down', !galleryNav.hidden);
+      toggle.setAttribute('aria-controls', galleryNav.id);
+      toggle.setAttribute('aria-expanded', String(!galleryNav.hidden));
+      toggle.setAttribute('aria-label', 'Страницы галереи');
+      gallery.prepend(toggle);
+      gallery.after(galleryNav);
+    }
     else if ($('.master__item--selected', galleryNav)) window.regNavSelect('general');
     var addable = $('#regAddable');
     ExtraComponents.renderChips($('.addable__list', addable), site);
     addable.hidden = !addable.querySelector('button:not([hidden])');
   }
   window.addEventListener('extra-components-change', renderExtraComponents);
-  function renderParameterList(model){
+  function renderParameterList(model, selection){
     var list = $('#regSitePages');
-    list.replaceChildren();
+    var selectedPage = selectedProperties?.key;
+    var entries = [];
     var pages = paramsEmbedded && PAGE_LIST[current] ? PAGE_LIST[current].map(function(page){
       return Object.assign({ link: current + '/' }, page);
     }) : model ? model.pages : $$('#screen-2 .pagecard').map(function(card){
@@ -6729,14 +6753,21 @@ button.tpl-cat{ cursor: pointer; }
       var edits = propertyEdits.get(key);
       label.textContent = edits.name ?? page.name;
       row.appendChild(label);
-      list.appendChild(row);
+      entries.push({ row: row, group: group });
       var path = page.link.slice(current.length).replace(/^\//, '');
       var address = (source ? source.addr : path) || PageEditor.defaultAddress(page.name);
       var values = Object.assign({ addr: address, access: 'public', mode: 'page' }, source);
       values.addr = address;
-      return { id: source?.id, sourceName: page.name, group: group, values: Object.assign(values, edits), edits: edits, label: label,
+      return { key: key, id: source?.id, sourceName: page.name, group: group, values: Object.assign(values, edits), edits: edits, label: label,
         name: label.textContent, usesDefaultAddress: !('addr' in edits) && !source?.addr, placeholder: source ? slug(page.name).replace(/-/g, '_') : '' };
     });
+    PageGroups.render(list, entries, PAGE_GROUPS);
+    if (selection?.startsWith('page-')){
+      var index = parameterPages.findIndex(function(page){ return page.key === selectedPage; });
+      selection = index < 0 ? 'general' : 'page-' + index;
+    }
+    if (!$$('#screen-3 [data-reg-nav]').some(function(row){ return row.dataset.regNav === selection && !row.hidden; })) selection = 'general';
+    window.regNavSelect(selection, true);
   }
   var editorRoot, editor;
   function showSeo(open){
@@ -6791,10 +6822,10 @@ button.tpl-cat{ cursor: pointer; }
       </div>`;
     }).join('');
   }
-  window.regNavSelect = function(key){
+  window.regNavSelect = function(key, restore){
     var rows = $$('#screen-3 [data-reg-nav]');
     var row = rows.find(function(item){ return item.dataset.regNav === key; });
-    if (!row || row.closest('[hidden]')) return;
+    if (!row || (row.closest('[hidden]') && !(restore && row.closest('.page-group .site-tree__pages[hidden]')))) return;
     var nameInput = $('#regPageNameInput');
     if (selectedProperties && nameInput) finishPageName(nameInput, true);
     rows.forEach(function(item){
@@ -6877,13 +6908,14 @@ button.tpl-cat{ cursor: pointer; }
   document.addEventListener('click', function(e){
     if (e.target.id === 'regPageNameInput') e.target.readOnly = false;
     var row = e.target.closest('[data-reg-nav]');
-    var siteToggle = e.target.closest('#regSiteToggle');
+    var siteToggle = e.target.closest('button.site-tree__expander[aria-controls]');
     var expander = e.target.closest('.master__expander');
     if (siteToggle){
-      var pages = $('#regSitePages');
+      var pages = document.getElementById(siteToggle.getAttribute('aria-controls'));
       var open = pages.hidden;
       if (!open && $('.master__item--selected', pages)) window.regNavSelect('general');
       pages.hidden = !open;
+      pages.toggleAttribute('data-collapsed', !open);
       siteToggle.setAttribute('aria-expanded', String(open));
       siteToggle.classList.toggle('ml__arrow--down', open);
     } else if (expander){
@@ -6943,9 +6975,22 @@ button.tpl-cat{ cursor: pointer; }
   });
 
   // keepParams — смена компонента в «Параметрах»: их разметку не трогаем (там уже новый компонент), остальные вкладки — заново
-  function apply(keepParams, imported){
+  function groupCardPages(closed){
+    var list = $('#screen-2 .master__list');
+    var [site, ...rows] = list.children;
+    list.classList.add('site-tree');
+    PageGroups.render(list, rows.map(function(row){
+      row.classList.add('site-tree__page');
+      return { row: row, group: row.dataset.pageComponent };
+    }), PAGE_GROUPS, closed);
+    site.classList.add('site-tree__site');
+    list.prepend(site);
+  }
+
+  function apply(keepParams, imported, selection){
     if (!keepParams && !imported) window.regCompSave?.();
     markTiles();
+    var cardGroups = keepParams ? PageGroups.collapsed($('#screen-2 .master__list')) : new Set();
     var m = current === BILLING ? null : MODELS[current];
     IDS.forEach(function(id){
       if (keepParams && id === 'screen-3') return;
@@ -6975,9 +7020,9 @@ button.tpl-cat{ cursor: pointer; }
       if ($('.chart', s)) chart(s, m);
     });
     if (!m && current === BILLING) (COMP_OF[current] || []).forEach(billingComp);
-    renderParameterList(m);
+    groupCardPages(cardGroups);
     renderExtraComponents();
-    window.regNavSelect('general');
+    renderParameterList(m, selection);
     queueMicrotask(catalogPriceRender);
     if (!m) return;
 
