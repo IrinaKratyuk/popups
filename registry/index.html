@@ -16,6 +16,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.css">
 <link rel="stylesheet" href="../page-editor.css">
 <link rel="stylesheet" href="../component-list.css">
+<link rel="stylesheet" href="../site-personal-data.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.21.0/components/close-button/close-button.css">
+<script src="../site-personal-data.js" defer></script>
 <script src="../extra-components.js"></script>
 <script src="../page-groups.js"></script>
 <script>
@@ -522,7 +525,7 @@ html, body{
   padding-right: var(--o-2xs);
 }
 
-.btn:not(:where(.btn--translucent, .btn--news-add)){
+.btn:not(:where(.btn--translucent, .btn--news-add, .personal-offers__header > .btn)){
   appearance: none;
   font: inherit;
   letter-spacing: inherit;
@@ -1675,7 +1678,7 @@ html, body{
 #regDeliverySettings .reg-delivery-card .switch{ font-size: inherit; }
 .reg-delivery-card__properties{
   display: grid;
-  grid-template-columns: fit-content(50%) minmax(0, 1fr);
+  grid-template-columns: fit-content(40%) minmax(0, 1fr);
   width: 100%;
   gap: 8px;
 }
@@ -1684,6 +1687,13 @@ html, body{
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
   justify-items: start;
+}
+.reg-delivery-card__properties > .reg-delivery-card__row > .reg-delivery-card__muted{
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .reg-delivery-card__prepayment{ display: flex; align-items: center; gap: 8px; }
 #regDeliverySettings .reg-delivery-card__row > .switch:not(:has(> .switch__input:checked)) ~ *{ display: none; }
@@ -4052,6 +4062,21 @@ button.tpl-cat{ cursor: pointer; }
                   <span class="rs-site__label">Владелец</span><span class="rs-site__owner"><span class="rs-site__val">Тензор, ООО</span><i class="icon rs-site__clear" aria-hidden="true">&#xE66C;</i></span>
                   <span class="rs-site__label">Иконка сайта (favicon)</span><button class="rs-site__favicon" type="button" aria-label="Иконка сайта (favicon)"><img src="../assets/img/favicon.png" width="26" height="26" alt=""></button>
                 </div>
+                <section class="site-personal-data" aria-labelledby="sitePersonalDataTitle">
+                  <h3 class="sales-settings__sub" id="sitePersonalDataTitle">Персональные данные</h3>
+                  <div class="rs-site__props">
+                    <span class="rs-site__label">Согласие</span>
+                    <div class="site-personal-data__editor" data-personal-document="consent">
+                      <button class="btn btn--link btn--style-link btn--size-m" type="button"><span class="btn__caption">Согласие на обработку ПДн</span></button>
+                      <button class="btn btn--link btn--style-unaccented btn--size-m btn--icon" type="button" data-clear-personal-document aria-label="Убрать согласие"><span class="btn__icon" aria-hidden="true">&#xE66C;</span></button>
+                    </div>
+                    <span class="rs-site__label">Политика</span>
+                    <div class="site-personal-data__editor" data-personal-document="policy">
+                      <button class="btn btn--link btn--style-link btn--size-m" type="button"><span class="btn__caption">Политика конфиденциальности приложения Saby Admin (ru)</span></button>
+                      <button class="btn btn--link btn--style-unaccented btn--size-m btn--icon" type="button" data-clear-personal-document aria-label="Убрать политику"><span class="btn__icon" aria-hidden="true">&#xE66C;</span></button>
+                    </div>
+                  </div>
+                </section>
                 <div class="rs-site__chips">
                   <button class="chips chips--size-m" type="button"><span class="chips__caption">HTML - код</span></button>
                   <button class="chips chips--size-m" type="button"><span class="chips__caption">Яндекс.Вебмастер</span></button>
@@ -7062,6 +7087,8 @@ button.tpl-cat{ cursor: pointer; }
     });
     renderExtraComponents();
     renderParameterList(m, selection);
+    document.body.dataset.personalDocumentSite = current;
+    document.dispatchEvent(new Event('personal-document-site-change'));
     queueMicrotask(catalogPriceRender);
     if (!m) return;
 

@@ -1,0 +1,284 @@
+.site-personal-data {
+  align-self: stretch;
+  min-width: 0;
+  margin-block-start: 16px;
+}
+
+.site-personal-data > .sales-settings__sub {
+  margin: 0 0 4px;
+  padding: 0;
+}
+
+.site-personal-data > .rs-site__props {
+  align-items: baseline;
+}
+
+.site-personal-data__editor {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+}
+
+.site-personal-data__editor > .btn {
+  padding-inline: 0;
+}
+
+.site-personal-data__editor > .btn--style-link {
+  min-width: 0;
+  min-height: 24px;
+  height: auto;
+  text-align: start;
+}
+
+.site-personal-data__editor .btn__caption {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  padding-block-end: 1px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-personal-data__editor > .btn--icon {
+  flex: none;
+  width: var(--icon-icon_size-icon-size_s, 16px);
+  height: 24px;
+}
+
+.site-personal-data__editor > .btn[hidden] {
+  display: none;
+}
+
+.personal-offers {
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: 36;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px;
+  width: min(778px, 100%);
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  color: var(--text-text-color, #000);
+  background: var(--background-unaccented_background-color, #f8f8f8);
+  box-shadow: -6px 0 22px rgb(0 0 0 / 11%), -2px 0 8px rgb(0 0 0 / 2%);
+  font-family: Inter, sans-serif;
+}
+
+.personal-offers:not([open]) {
+  display: none;
+}
+
+.personal-offers__content {
+  overflow: auto;
+  padding: 6px 10px 24px 16px;
+}
+
+.personal-offers__header,
+.personal-offers__group h3 {
+  display: flex;
+}
+
+.personal-offers__header {
+  align-items: baseline;
+  align-content: center;
+  gap: 12px;
+  min-height: 32px;
+  flex-wrap: wrap;
+}
+
+.personal-offers__header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.personal-offers__header h2:focus {
+  outline: none;
+}
+
+.personal-offers__header > .personal-offers__add {
+  --btn-px: var(--offset-offset_st);
+  align-self: center;
+}
+
+.personal-offers__add > .btn__icon {
+  box-sizing: border-box;
+  padding-block-end: 1px;
+}
+
+.personal-offers__group {
+  margin-top: 12px;
+}
+
+.personal-offers__group h3 {
+  align-items: center;
+  min-height: 20px;
+  gap: 4px;
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.personal-offers__group h3 .btn__icon {
+  font: 16px/1 var(--icon-font-family-s_icon_font-family, "cbuc-icons");
+  color: var(--icon-label_icon-color, #8991a9);
+}
+
+.personal-offers__group h3:hover .btn__icon {
+  color: var(--icon-icon-color, #333);
+}
+
+.personal-offers__group h3::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--extra-separator_color, rgb(0 0 0 / 4%));
+}
+
+.personal-offers__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr));
+  gap: 10px;
+}
+
+.personal-offers__card {
+  position: relative;
+  width: 100%;
+  height: 230px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--border-radius-border-radius_s, 8px);
+  overflow: hidden;
+  color: inherit;
+  background: #fff;
+  box-shadow: 0 0 8px rgb(0 0 0 / 6%);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.personal-offers__card:hover,
+.personal-offers__card:focus-visible {
+  box-shadow: 0 0 8px rgb(0 0 0 / 14%);
+}
+
+.personal-offers__preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.personal-offers__name {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 2px 12px 12px 16px;
+  background: #fff;
+  font-size: 15px;
+  line-height: 18px;
+  letter-spacing: -.21px;
+}
+
+.personal-offers__name::before {
+  content: "";
+  position: absolute;
+  inset: -12px 0 auto;
+  height: 12px;
+  background: linear-gradient(transparent, #fff);
+}
+
+.personal-offers__name > span,
+.personal-offers__description > span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.personal-offers__folder {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.personal-offers__folder-icon {
+  position: absolute;
+  inset: var(--offset-offset_m, 12px) var(--offset-offset_m, 12px) auto auto;
+  color: var(--icon-icon-color, #333);
+  font: var(--icon-icon_size-icon-size_s, 16px)/1 var(--icon-font-family-s_icon_font-family, "cbuc-icons");
+  letter-spacing: 0;
+  transform: translateY(-0.5px);
+}
+
+.personal-offers__description {
+  padding: var(--offset-offset_2xs, 4px) var(--offset-offset_m, 12px) var(--offset-offset_xs, 6px) var(--offset-offset_l, 16px);
+  color: var(--text-label_text-color, #8991a9);
+  font-size: 14px;
+  line-height: normal;
+  letter-spacing: -0.1974px;
+  overflow-wrap: break-word;
+}
+
+.personal-offers__card > .personal-offers__menu {
+  position: absolute;
+  inset: 0 0 auto auto;
+  z-index: 1;
+  width: calc(var(--icon-icon_size-icon-size_m, 24px) + 4px);
+  height: calc(var(--icon-icon_size-icon-size_m, 24px) + 4px);
+  border-radius: 0 0 0 var(--border-radius-border-radius_s, 8px);
+  background: #f2f2f2;
+  box-shadow:
+    0 0 var(--blur-shadow-blur_a2, 46px) var(--color-shadow-color_a, rgb(0 0 0 / 12%)),
+    0 0 var(--blur-shadow-blur_a, 15px) var(--color-shadow-color_a, rgb(0 0 0 / 12%));
+  visibility: hidden;
+}
+
+.personal-offers__card:hover .personal-offers__menu,
+.personal-offers__card:focus-visible .personal-offers__menu {
+  visibility: visible;
+}
+
+.personal-offers__rail,
+.personal-offers__informers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.personal-offers__rail {
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0 6px;
+  overflow: auto;
+}
+
+.personal-offers__informers {
+  gap: 16px;
+}
+
+.personal-offers__informers .btn--icon,
+.personal-offers .close-button {
+  width: 32px;
+  height: 32px;
+}
+
+.personal-offers__date {
+  text-align: center;
+  line-height: 11px;
+}
+
+.personal-offers__help {
+  --btn-bg-r: #eeebff;
+  --btn-bg-h: #d4ccff;
+  border: 1px solid #d4ccff;
+}
+

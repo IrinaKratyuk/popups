@@ -544,9 +544,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* виджет магазина — заголовок, описание и превью вместе: ховер и клик на всём виджете */
 .rs-w { display: flex; flex-direction: column; gap: 8px; min-width: 120px; cursor: pointer; }
 .rs-w__name { font-size: 14px; letter-spacing: -.1974px; }
-/* пин подсказки у заголовка: сразу после текста, по центру строки */
-.rs-w__name--pin { position: relative; width: fit-content; }
-.rs-w__name--pin > .pin { top: calc(50% - 12px); }
 .rs-w__desc { margin-top: 4px; font-size: 12px; letter-spacing: -.1692px; color: #999; }
 .rs-w__pv { flex: 1 0 0; min-height: 0; position: relative; overflow: hidden; border-radius: 8px; }
 .rs-w__pv--white { padding: 0 12px; background: #fff; }
@@ -1127,7 +1124,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 .ch-publish { --btn-h: 26px; display: none; }
 /* шаблон взят в работу («Использовать») и сайт «В конструкторе» */
 .stage:is(.is-tpl, [data-scenario="catalog-setup"]):not(.is-tpl-view) .ch-publish { display: inline-flex; }
-.stage.is-tpl .rs-w__name--pin > .pin { display: none; } /* в шаблоне каталог уже на сайте — подсказки клика на «Меню ресторана» нет */
 .stage.is-tpl-view :is(.ch-done, .ch-view, .ch-cmd:not([aria-label="Предпросмотр"])) { display: none; }
 .stage.is-tpl-view :is(.rs-panel, .rs-params, .right-panel, #lsAdd, .lsb__cmds, .component-group__remove, .site-plus, .content .wg__toolbar) { display: none; }
 .stage.is-tpl-view { background: var(--background-unaccented_background-color); } /* фон просмотра: шапка и поля вокруг сайта */

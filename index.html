@@ -22,6 +22,9 @@
   <link rel="stylesheet" href="page-editor.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="component-list.css">
+  <link rel="stylesheet" href="site-personal-data.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.21.0/components/close-button/close-button.css">
+  <script src="site-personal-data.js" defer></script>
   <link rel="stylesheet" href="domain.css">
   <!-- arrow-button появился в ките позже 1.13.0 (стрелки «Стиль» и шевроны цветов в окне QR-кода) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/arrow-button/arrow-button.css">
@@ -426,6 +429,21 @@
               <span class="rs-site__label">Владелец</span><span class="rs-site__owner"><span class="rs-site__val">Тензор, ООО</span><span class="ico rs-site__clear" aria-hidden="true">&#xE66C;</span></span>
               <span class="rs-site__label">Иконка сайта (favicon)</span><button class="rs-site__favicon" type="button" aria-label="Иконка сайта (favicon)"><img src="assets/img/favicon.png" width="26" height="26" alt=""></button>
             </div>
+            <section class="site-personal-data" aria-labelledby="sitePersonalDataTitle">
+              <h3 class="sales-settings__sub" id="sitePersonalDataTitle">Персональные данные</h3>
+              <div class="rs-site__props">
+                <span class="rs-site__label">Согласие</span>
+                <div class="site-personal-data__editor" data-personal-document="consent">
+                  <button class="btn btn--link btn--style-link btn--size-m" type="button"><span class="btn__caption">Согласие на обработку ПДн</span></button>
+                  <button class="btn btn--link btn--style-unaccented btn--size-m btn--icon" type="button" data-clear-personal-document aria-label="Убрать согласие"><span class="btn__icon" aria-hidden="true">&#xE66C;</span></button>
+                </div>
+                <span class="rs-site__label">Политика</span>
+                <div class="site-personal-data__editor" data-personal-document="policy">
+                  <button class="btn btn--link btn--style-link btn--size-m" type="button"><span class="btn__caption">Политика конфиденциальности приложения Saby Admin (ru)</span></button>
+                  <button class="btn btn--link btn--style-unaccented btn--size-m btn--icon" type="button" data-clear-personal-document aria-label="Убрать политику"><span class="btn__icon" aria-hidden="true">&#xE66C;</span></button>
+                </div>
+              </div>
+            </section>
             <div class="rs-site__chips">
             <button class="chips chips--size-m" type="button"><span class="chips__caption">HTML - код</span></button>
             <button class="chips chips--size-m" type="button"><span class="chips__caption">Яндекс.Вебмастер</span></button>

@@ -278,6 +278,8 @@
     }, '*');
   }
   function showConstructorParams() {
+    document.body.dataset.personalDocumentSite = extraComponentSite();
+    document.dispatchEvent(new Event('personal-document-site-change'));
     if (rsParamsFrame.hasAttribute('src')) sendConstructorParams();
     else rsParamsFrame.src = rsParamsFrame.dataset.src;
   }
@@ -346,7 +348,7 @@
   }
   $('#rsParamsClose').addEventListener('click', rsCloseParams);
   stage.addEventListener('mousedown', (e) => {
-    if (rsParamsOpen && !e.target.closest('#rsParams, #salesPicker, #salesPopup, #confirm, #qrDlg, #qrPrint, #qrAlert, .rp-btn')) rsCloseParams();
+    if (rsParamsOpen && !e.target.closest('#rsParams, #salesPicker, #salesPopup, #confirm, #qrDlg, #qrPrint, #qrAlert, .rp-btn, .personal-offers')) rsCloseParams();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && salesPicker.hidden) rsCloseParams(); });
 
@@ -538,14 +540,8 @@
       root.append(item);
     }
   }
-  // Виджеты из магазина не убираем: «Меню ресторана» там всегда. Когда его не добавить (уже на сайте или подключён другой компонент) — нет только подсказки клика
-  function shopMenuPinSync() {
-    const pin = $('#rsWidgets .rs-w__name--pin > .pin');
-    if (pin) pin.hidden = catalogAdded;
-  }
   function salesRender() {
     compChipsRender();
-    shopMenuPinSync();
     const base = $('#salesSettings');
     componentBlocks.set('restaurant', base);
     for (const [id, cfg] of Object.entries(COMP)) {
@@ -1146,17 +1142,11 @@
   new MutationObserver(scheduleWidgetToolbars).observe(stage, { subtree: true, attributes: true, attributeFilter: ['class', 'hidden'] });
   scheduleWidgetToolbars();
 
-  const shopCatalog = $('#rsWidgets [data-widget="catalog"]').closest('.rs-w');
   const shopProduct = $('#rsWidgets [data-widget="product"]').closest('.rs-w');
   // Подсказка клика: видна там, где карточку можно поставить — на новой странице или в окне без карточки
   const shopProductPin = el('span', 'pin', '<img src="assets/img/pin-cursor.svg" width="15" height="15" alt="">');
   shopProductPin.setAttribute('aria-hidden', 'true');
   $('.rs-w__pv', shopProduct).append(shopProductPin);
-  // Подсказка клика на «Меню ресторана»: видна, пока виджет в магазине. Стоит у заголовка, а не на превью
-  const shopCatalogPin = el('span', 'pin', '<img src="assets/img/pin-cursor.svg" width="15" height="15" alt="">');
-  shopCatalogPin.setAttribute('aria-hidden', 'true');
-  $('.rs-w__name', shopCatalog).classList.add('rs-w__name--pin');
-  $('.rs-w__name', shopCatalog).append(shopCatalogPin);
 
   function siteCatalogShow(on) {
     if (!on && siteCatalog.parentElement === siteBlankSection) { // каталог убрали из окна — в окне снова пустая ячейка
@@ -1181,7 +1171,6 @@
     if (lsActive !== home.id) lsSelect(home.id);
     catalogHomeSet(true);
     catalogAdded = true;
-    shopMenuPinSync();
     compConnect('restaurant');
     pagePickDefaults('restaurant');
     pagePickRender();
@@ -1205,7 +1194,6 @@
       catalogHomeSet(true);
     }
     salesRender();
-    shopMenuPinSync();
     siteCatalogShow(false);
     siteCatalog.classList.remove('is-active');
   }
@@ -1233,7 +1221,6 @@
     catalogHomeSet(false);
     catalogMenu = true;
     catalogAdded = true;
-    shopMenuPinSync();
     siteCatalogShow(true);
     siteCatalog.classList.remove('is-active');
   }
@@ -2763,7 +2750,6 @@
     catalogHomeSet(false);
     catalogMenu = false;
     catalogAdded = true;
-    shopMenuPinSync();
     siteCatalogShow(true);
     siteCatalog.classList.remove('is-active');
   }
@@ -3282,7 +3268,6 @@
         catalogHomeSet(true);
         catalogAdded = false;
         salesSaved = [];
-        shopMenuPinSync();
         siteCatalogShow(false);
       }
       salesRender();
