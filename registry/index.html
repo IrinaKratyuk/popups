@@ -1675,7 +1675,7 @@ html, body{
 }
 .reg-delivery-card{ gap: 8px; padding: 10px var(--o-m); font-size: var(--fs-l); }
 .reg-delivery-card__row{ display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 24px; }
-.reg-delivery-card__row > .btn[data-catalog-price]{ padding-inline: var(--btn-px, 0px); }
+.reg-price > .btn{ padding-inline: var(--btn-px, 0px); }
 .reg-delivery-card__link{ color: var(--c-text-link); }
 .reg-delivery-card__muted{ color: var(--c-text-label); }
 .reg-delivery-card__amount{ width: 50px; border-bottom: 1px solid var(--border-unaccented_border-color); }
@@ -1881,10 +1881,8 @@ html, body{
 .detail.is-sales-catalog > :not(#regSalesCatalog){ display: none; }
 .reg-cat{ align-self: stretch; flex: 1 1 0; min-height: 0; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: var(--o-2xs); padding: var(--o-s) var(--o-m); border-radius: var(--r-s) var(--r-s) 0 0; background: #fff; box-shadow: var(--shadow-c); }
 .reg-cat[hidden]{ display: none; }
-.reg-cat__price{ display: flex; align-items: center; gap: var(--o-s); height: 24px; font-size: var(--fs-m); letter-spacing: -.1974px; }
-.reg-cat__label{ line-height: 1.4; color: var(--c-text-label); }
-.reg-cat__link{ padding: 0; border: 0; background: none; font: inherit; color: var(--c-text-link); cursor: pointer; }
-.reg-cat__link:hover{ text-decoration: underline; text-underline-position: from-font; }
+.reg-price{ display: flex; align-items: center; gap: var(--o-s); min-height: 24px; font-size: var(--fs-m); letter-spacing: -.1974px; }
+.reg-price__label{ line-height: 1.4; color: var(--c-text-label); }
 /* Каталог — как виджет каталога на странице сайта в конструкторе (.site-catalog в ../styles.css):
    «Найти» справа, плашки категорий 148×148 с названием сверху, под ними разделы с карточками на всю ширину */
 .reg-cat__price{ margin-bottom: 8px; }
@@ -4168,7 +4166,7 @@ button.tpl-cat{ cursor: pointer; }
                   </div>
                 </section>
                 <section class="params reg-delivery-card" aria-label="Каталог и предоплата">
-                  <div class="reg-delivery-card__row">Выбор товаров из <button class="btn btn--link btn--style-link btn--size-m" data-catalog-price="delivery" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"><span class="btn__caption">Каталога</span></button></div>
+                  <div class="reg-price"><span class="reg-price__label">Прайс</span><button class="btn btn--link btn--style-link btn--size-m" data-catalog-price="delivery" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"><span class="btn__caption">Выбрать прайс</span></button></div>
                   <div class="reg-delivery-card__row">Предоплата <span class="reg-delivery-card__amount">0</span><span class="reg-delivery-card__muted">%</span><span class="reg-delivery-card__muted">＋ Порог</span></div>
                   <div class="reg-delivery-card__row">Тип чека при онлайн-оплате <span class="reg-delivery-card__link">предоплата</span></div>
                 </section>
@@ -4226,7 +4224,7 @@ button.tpl-cat{ cursor: pointer; }
               <div id="regCompGroups"></div>
               <!-- Подключение через блок «Компоненты» в мастере (#regAddable), в конструкторе — #compChipsBlock -->
               <section class="reg-cat" id="regSalesCatalog" aria-label="Каталог сайта" hidden>
-                <div class="reg-cat__price"><span class="reg-cat__label">Прайс</span><button class="reg-cat__link" data-catalog-price="restaurant" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"></button></div>
+                <div class="reg-price reg-cat__price"><span class="reg-price__label">Прайс</span><button class="btn btn--link btn--style-link btn--size-m" data-catalog-price="restaurant" type="button" aria-haspopup="dialog" aria-controls="regSalesPicker"><span class="btn__caption">Выбрать прайс</span></button></div>
                 <!-- Плашки категорий и разделы с блюдами — по прайсу компонента (CATALOGS в скрипте ниже), вид — как каталог на сайте в конструкторе (#siteCatalog в ../index.html) -->
                 <div class="reg-cat__body" id="regCatBody"></div>
               </section>
@@ -4244,9 +4242,9 @@ button.tpl-cat{ cursor: pointer; }
                   detail.classList.toggle('is-sales-catalog', !!component);
                   if (!component) return;
                   var price = window.CompCatalog?.getPrice(window.regCatalogSite(), component) || '';
-                  var button = cat.querySelector('.reg-cat__link');
+                  var button = cat.querySelector('[data-catalog-price]');
                   button.dataset.catalogPrice = component;
-                  button.textContent = price || 'Выбрать прайс';
+                  button.querySelector('.btn__caption').textContent = price || 'Выбрать прайс';
                   if (cat.dataset.price === price) return;
                   cat.dataset.price = price;
                   renderCatalog(price);
@@ -6588,7 +6586,7 @@ button.tpl-cat{ cursor: pointer; }
     var props = $('#regSales .comp-cat__price');
     if (props) props.textContent = CompCatalog.getPrice(current, props.dataset.catalogPrice) || 'Выбрать прайс';
     var deliveryPrice = $('#regDeliverySettings [data-catalog-price="delivery"] .btn__caption');
-    if (deliveryPrice) deliveryPrice.textContent = CompCatalog.getPrice(current, 'delivery') || 'Каталога';
+    if (deliveryPrice) deliveryPrice.textContent = CompCatalog.getPrice(current, 'delivery') || 'Выбрать прайс';
     var catalog = $('#regSalesCatalog');
     if (catalog && !catalog.hidden) window.regCatalogSelect($('[data-catalog-price]', catalog).dataset.catalogPrice);
   }
