@@ -521,7 +521,7 @@ html, body{
   padding-right: var(--o-2xs);
 }
 
-.btn:not(:where(.btn--translucent)){
+.btn:not(:where(.btn--translucent, .btn--news-add)){
   appearance: none;
   font: inherit;
   letter-spacing: inherit;
@@ -1272,6 +1272,15 @@ html, body{
 .btn--outlined:hover{ border-color: var(--c-brand); }
 /* «Опубликовать» — у сайта, снятого с публикации: рядом с «Оформлением», рамка и иконка primary (как .ch-publish конструктора) */
 .topbar--site .topbar__mid{ gap: 12px; }
+.topbar--site .topbar__mid > [hidden]{ display: none; }
+.topbar--site .btn--news-add{
+  --btn-h: var(--inline_height-inline_height_mt);
+  --btn-bg-a: var(--extra-brand_hover_color);
+  --btn-sh-h: 0 0 calc(var(--blur-shadow-blur_d) / 2) var(--components-button-outlined-same-border-secondary_outlined-same_border-color_button);
+  width: 40px;
+  height: var(--btn-h);
+}
+.btn--news-add .btn__icon{ transform: translateY(-1px); }
 .btn--outlined.btn--publish{ border-color: #f88f62; }        /* border/primary_border-color */
 .btn--outlined.btn--publish .icon{ color: #f55714; }
 .btn--outlined.btn--publish:hover{ border-color: #f55714; }  /* border/primary_hover_border-color */
@@ -1694,17 +1703,32 @@ html, body{
 /* Верхнее поле сохраняет тень карточки без зазора под вкладками. */
 #screen-3 .tabs{ position: relative; z-index: 1; }
 .reg-nav-detail{ overflow-y: auto; scrollbar-width: none; }
+.is-params-embed, .is-params-embed body{ background: transparent; }
 .is-params-embed #canvas{ width: 100%; height: 100%; border-radius: 0; }
+.is-params-embed.is-overlay-open #canvas{
+  left: var(--params-left);
+  top: var(--params-top);
+  width: var(--params-width);
+  height: var(--params-height);
+}
 .is-params-embed :is(.accordion, .rail),
 .is-params-embed #screen-3 > .workspace > :not(.content){ display: none; }
 .is-params-embed #screen-3{ display: flex; }
 .is-params-embed:not(.is-params-ready) #screen-3{ visibility: hidden; }
-.is-params-embed #screen-3 .content{ gap: var(--o-s); padding: var(--o-s); }
+.is-params-embed #screen-3 .content{ gap: var(--o-s); padding: var(--o-s) var(--o-s) var(--o-s) 4px; }
 .is-params-embed .master--data{ width: 180px; max-height: 100%; }
 .is-params-embed #regDetail{ margin-top: 0; padding-top: 0; overflow-wrap: anywhere; }
 .is-params-embed :is(.rs-site__props, .comp-props){ white-space: normal; grid-auto-rows: minmax(24px, auto); }
-.is-params-embed .dom__form, .is-params-embed .dom__btns{ flex-wrap: wrap; max-width: 100%; }
-.is-params-embed .dom__input{ flex: 1 1 132px; }
+.is-params-embed #regSite .dom__form{ flex-wrap: wrap; }
+/* 440 px минус две кнопки по 124 px и зазоры 10 и 8 px. */
+.is-params-embed #regSite .dom__input{ flex: 0 0 174px; max-width: 100%; }
+.is-params-embed #regSite .dom__btns{ flex-wrap: wrap; max-width: 100%; }
+.is-params-embed #regSite .rs-site__props{ container: site-properties / inline-size; }
+/* Около 150 px на метку с зазором и 440 px на редактор. */
+@container site-properties (width < 590px){
+  .is-params-embed #regSite .rs-site__props > :is(.rs-site__label:has(+ .dom), .dom){ grid-column: 1 / -1; }
+  .is-params-embed #regSite .rs-site__props > .dom{ align-self: start; margin-block-start: -8px; }
+}
 .is-params-embed .reg-cat__tiles{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
 .is-params-embed .reg-cat__tile{ width: 100%; height: auto; aspect-ratio: 1; }
 .is-params-embed .reg-cat__cards{ flex-wrap: wrap; }
@@ -1721,6 +1745,68 @@ html, body{
 .reg-nav-detail:has(> .reg-news:not([hidden]))::before,
 .reg-nav-detail:has(> .reg-news:not([hidden]))::after{ display: none; }
 .reg-news{ display: grid; gap: var(--o-s); width: 100%; }
+.reg-products:not([hidden]){
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  padding-block: 6px;
+}
+.reg-products__tile{
+  position: relative;
+  aspect-ratio: 174.67 / 233.269;
+  border-radius: var(--border-radius-border-radius_xs, 6px);
+  box-shadow: 0 0 8px rgba(0,0,0,.06), 0 0 3px rgba(0,0,0,.1);
+}
+.reg-products__tile > img{
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.reg-products__overlay,
+.reg-products__check{ position: absolute; visibility: hidden; }
+.reg-products__tile:is(:hover, :focus-visible){
+  box-shadow: 0 0 8px rgba(0,0,0,.06), 0 0 4px rgba(0,0,0,.14);
+}
+.reg-products__tile:is(:hover, :focus-visible) > :is(.reg-products__overlay, .reg-products__check){
+  visibility: visible;
+}
+.reg-products__check{ top: .42px; left: 0; }
+.reg-products__overlay{
+  inset: auto 0 0;
+  display: grid;
+  gap: 6px;
+  padding: 12px 6px;
+  border-radius: 0 0 var(--border-radius-border-radius_xs, 6px) var(--border-radius-border-radius_xs, 6px);
+  background: linear-gradient(to bottom, transparent, rgba(0,0,0,.4) 14%);
+  color: var(--text-contrast_text-color, white);
+}
+.reg-products__name{
+  padding-inline: 6px;
+  overflow: hidden;
+  font-size: 14px;
+  letter-spacing: -.1974px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reg-products__commands{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: 12px;
+  font: 24px/24px var(--font-icon-m);
+  text-align: center;
+}
+.reg-products__commands > span{ position: relative; }
+.reg-products__commands > span + span::before{
+  position: absolute;
+  inset: 0 auto 0 -6px;
+  width: 1px;
+  background: currentColor;
+  content: "";
+}
 .reg-news__card{ position: relative; gap: 6px; margin: 0; padding: var(--o-m); }
 .reg-news__meta{ display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; width: 100%; font-size: 12px; color: #626d89; }
 .reg-news__title{ margin: 0; font-size: 18px; font-weight: 600; }
@@ -1738,9 +1824,9 @@ html, body{
 .reg-nav-component > .params.sales-settings{ margin-top: 0; }
 /* Встроенная форма использует редакторы окна внутри одной карточки. */
 .reg-page{ position: relative; }
-.reg-page .pe__body{ display: grid; gap: 8px; padding: 0; }
+.reg-page .pe__body{ display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; gap: 8px; padding: 0; }
 .reg-page .pe__card, .reg-page .pe__rows{ display: grid; gap: 8px; }
-.reg-page .pe__card{ padding: 0; background: transparent; box-shadow: none; }
+.reg-page .pe__card{ grid-template-columns: minmax(0, 1fr); padding: 0; background: transparent; box-shadow: none; }
 .reg-page .ls-new__main > .pe__rows{ grid-auto-rows: 24px; }
 .reg-page .pe__row:has(> .ls-new__addr) > *{ align-self: baseline; }
 .reg-page .ls-new__addr{ align-items: baseline; }
@@ -1755,8 +1841,10 @@ html, body{
 .reg-page .ls-new__addr .input__field{ width: 100%; }
 .reg-page .ls-new__addr :is(.input, .input__body, .input__field, .input__control),
 .reg-page .ls-new__access{ height: 24px; }
+.reg-page .ls-new__addr :is(.input, .input__body, .input__field, .input__control){ min-width: 0; }
 .reg-page .ls-new__addr .input__control{
   display: block;
+  width: 100%;
   padding-block: 0;
   font: 400 var(--fs-m)/var(--lh-m) var(--font-ui);
   letter-spacing: inherit;
@@ -3471,7 +3559,8 @@ button.tpl-cat{ cursor: pointer; }
       </button>
     </div>
     <div class="topbar__mid">
-      <button class="btn btn--outlined" type="button">Оформление<i class="icon icon--m" aria-hidden="true">&#xE747;</i></button>
+      <button class="btn btn--outlined" type="button" data-site-design>Оформление<i class="icon icon--m" aria-hidden="true">&#xE747;</i></button>
+      <button class="btn btn--icon btn--filled btn--style-brand btn--news-add" type="button" aria-label="Добавить новость" hidden><i class="btn__icon" aria-hidden="true">&#xEADD;</i></button>
     </div>
   </header>
 </template>
@@ -3892,8 +3981,8 @@ button.tpl-cat{ cursor: pointer; }
                 </li>
                 <li class="reg-component-pages" id="regGalleryNav" hidden>
                   <ul class="site-tree__pages" aria-label="Страницы галереи">
-                    <li class="master__item ml__item site-tree__page"><span class="master__name ml__caption">Товары</span></li>
-                    <li class="master__item ml__item site-tree__page"><span class="master__name ml__caption">Фотографии заведения</span></li>
+                    <li class="master__item ml__item site-tree__page" data-reg-nav="products" tabindex="0" role="button" aria-controls="regProducts" aria-pressed="false"><span class="master__name ml__caption">Товары</span></li>
+                    <li class="master__item ml__item site-tree__page" data-reg-nav="venue-photos" tabindex="0" role="button" aria-controls="regVenuePhotos" aria-pressed="false"><span class="master__name ml__caption">Фотографии заведений</span></li>
                   </ul>
                 </li>
               </ul>
@@ -3949,6 +4038,8 @@ button.tpl-cat{ cursor: pointer; }
               <!-- Точки продаж компонента «Электронное меню» — 1:1 из «Параметров сайта» конструктора
                    (Figma 2547:71389, .sales-settings в ../styles.css). Точки — первые две из ROOT_SALES
                    в ../app.js; первая — основная (корона). На ховере строки — команды. -->
+              <section class="reg-products" id="regProducts" aria-label="Фотографии товаров" hidden></section>
+              <section class="reg-products" id="regVenuePhotos" aria-label="Фотографии заведений" hidden></section>
               <section class="reg-news" id="regNews" aria-label="Лента новостей" hidden>
                 <article class="params reg-news__card">
                   <header class="reg-news__meta"><span>Новость группы</span><time datetime="2024-04-08T10:33">8 апр 10:33</time></header>
@@ -6601,6 +6692,7 @@ button.tpl-cat{ cursor: pointer; }
     var galleryNav = $('#regGalleryNav');
     galleryNav.hidden = !gallery;
     if (gallery) gallery.after(galleryNav);
+    else if ($('.master__item--selected', galleryNav)) window.regNavSelect('general');
     var addable = $('#regAddable');
     ExtraComponents.renderChips($('.addable__list', addable), site);
     addable.hidden = !addable.querySelector('button:not([hidden])');
@@ -6650,6 +6742,49 @@ button.tpl-cat{ cursor: pointer; }
     $('#lsSeoDescriptionAdd').setAttribute('aria-expanded', show);
     $('#lsSeoDescriptionField').hidden = !show;
   }
+  var productPhotos = [
+    ['demo/salmon-asparagus.jpg', 'Лосось со спаржей'],
+    ['demo/dish-2.jpg', 'Паста с овощами'],
+    ['catalog/tuna.png', 'Севиче из тунца'],
+    ['catalog/pepperoni.png', 'Пицца пепперони'],
+    ['catalog/cat-1.png', 'Утка с картофельным пюре'],
+    ['demo/langoustine-ceviche.jpg', 'Севиче из лангустинов'],
+    ['demo/scallop-ceviche.jpg', 'Севиче из гребешка'],
+    ['demo/dish-4.jpg', 'Панна-котта с клубникой'],
+    ['demo/dish-6.jpg', 'Клубничный капкейк'],
+    ['demo/dish-1.jpg', 'Матча-латте'],
+    ['demo/dish-3.jpg', 'Двойной эспрессо'],
+    ['demo/dish-5.jpg', 'Цитрусовый лимонад'],
+    ['demo/salad.jpg', 'Салат с томатами и зеленью']
+  ];
+  var venuePhotos = [
+    ['about.png', 'Основной зал ресторана'],
+    ['venues/kalina.jpg', 'Зал ресторана «Калина»'],
+    ['venues/entrance.jpg', 'Вход в ресторан'],
+    ['venues/terrace.jpg', 'Летняя терраса'],
+    ['venues/private-room.jpg', 'Камерный зал']
+  ];
+  function showPhotoGrid(id, photos, show){
+    var grid = $(id);
+    grid.hidden = !show;
+    if (!show || grid.firstElementChild) return;
+    grid.innerHTML = photos.map(function(photo){
+      var path = photo[0], name = photo[1];
+      return `<div class="reg-products__tile" tabindex="0">
+        <img src="../assets/img/site/${path}" alt="${name}" loading="lazy">
+        <span class="checkbox checkbox--outlined reg-products__check" inert aria-hidden="true">
+          <input class="checkbox__input" type="checkbox">
+          <span class="checkbox__box"></span>
+        </span>
+        <div class="reg-products__overlay" aria-hidden="true">
+          <span class="reg-products__name">${name}</span>
+          <span class="reg-products__commands">
+            <span>&#xE68A;</span><span>&#xE633;</span><span>&#xE6A7;</span><span>&#xE9D9;</span>
+          </span>
+        </div>
+      </div>`;
+    }).join('');
+  }
   window.regNavSelect = function(key){
     var rows = $$('#screen-3 [data-reg-nav]');
     var row = rows.find(function(item){ return item.dataset.regNav === key; });
@@ -6661,8 +6796,18 @@ button.tpl-cat{ cursor: pointer; }
       item.setAttribute('aria-pressed', item === row);
     });
     selectedProperties = parameterPages[row.dataset.pageIndex];
+    var designButton = $('#screen-3 [data-site-design]');
+    var addButton = $('#screen-3 .btn--news-add');
+    if (designButton) designButton.hidden = key !== 'general' && !(selectedProperties && !selectedProperties.group);
+    if (addButton) {
+      var addLabel = { news: 'Добавить новость', products: 'Добавить товар', 'venue-photos': 'Добавить фотографию' }[key];
+      addButton.hidden = !addLabel;
+      if (addLabel) addButton.setAttribute('aria-label', addLabel);
+    }
     $('#regSite').hidden = key !== 'general';
     $('#regNews').hidden = key !== 'news';
+    showPhotoGrid('#regProducts', productPhotos, key === 'products');
+    showPhotoGrid('#regVenuePhotos', venuePhotos, key === 'venue-photos');
     var component = $('#regDetail .reg-nav-component');
     var componentId = row.dataset.componentRow;
     if (componentId) window.regCompShow(componentId);
@@ -6870,7 +7015,7 @@ button.tpl-cat{ cursor: pointer; }
      (../app.js, reg:open-constructor с site): галочка и крестик возвращают на его карточку. */
   var CONSTRUCTOR_SITE = 'mili-yar.saby.ws';
   document.addEventListener('click', function(e){
-    if (!e.target.closest('.topbar--site .topbar__mid .btn:not([data-site-publish])') || window.parent === window) return;
+    if (!e.target.closest('.topbar--site [data-site-design]') || window.parent === window) return;
     var t = SITE_TPL[current];
     if (t || current === CONSTRUCTOR_SITE){
       var message = { type: 'reg:open-constructor', components: window.regCompSave() };
@@ -6900,6 +7045,26 @@ button.tpl-cat{ cursor: pointer; }
   });
 
   if (paramsEmbedded){
+    var embeddedOverlay = '#regSalesPicker, #comp-switch, #domain-info, #unpublish, #qrDlg, #qrPrint, #qrAlert';
+    var embeddedPicker = $('#regSalesPicker');
+    var embeddedCanvas = $('#canvas');
+    var embeddedStage = $('#stage');
+    var embeddedPanelBounds;
+    function visibleEmbeddedOverlay(){
+      return [...document.querySelectorAll(embeddedOverlay)].some(function(panel){ return !panel.hidden; });
+    }
+    function syncEmbeddedOverlay(){
+      var root = document.documentElement;
+      var open = Boolean(embeddedPanelBounds) && visibleEmbeddedOverlay();
+      if (open === root.classList.contains('is-overlay-open')) return;
+      if (open) embeddedStage.append(embeddedPicker);
+      else embeddedCanvas.append(embeddedPicker);
+      root.classList.toggle('is-overlay-open', open);
+      window.parent.postMessage({ type: 'reg:embed-overlay', site: current, open: open }, '*');
+    }
+    new MutationObserver(syncEmbeddedOverlay).observe(document.body, {
+      subtree: true, childList: true, attributes: true, attributeFilter: ['hidden']
+    });
     function embeddedSettings(){
       return {
         domain: window.domainState($('#regSite [data-domain]')),
@@ -6926,6 +7091,12 @@ button.tpl-cat{ cursor: pointer; }
       embedSnapshot = Object.fromEntries(Object.entries(embeddedSettings()).map(function([key, value]){
         return [key, JSON.stringify(value)];
       }));
+      embeddedPanelBounds = e.data.panelBounds;
+      Object.entries(embeddedPanelBounds ?? {}).forEach(function([edge, value]){
+        document.documentElement.style.setProperty('--params-' + edge, value + 'px');
+      });
+      document.querySelectorAll(embeddedOverlay).forEach(function(panel){ panel.hidden = true; });
+      syncEmbeddedOverlay();
     });
     function sendEmbeddedChanges(){
       if (!embedImported) return;
@@ -6945,7 +7116,7 @@ button.tpl-cat{ cursor: pointer; }
     });
     document.addEventListener('keydown', function(e){
       if (e.key !== 'Escape' || e.target.closest('input:not([readonly]), textarea, [role="menu"]')) return;
-      if (document.querySelector('#regSalesPicker:not([hidden]), #regPagePickMenu:not([hidden]), #comp-switch:not([hidden]), #qrDlg:not([hidden]), #qrPrint:not([hidden]), #qrAlert:not([hidden]), #regPage .ls-access:not([hidden])')) return;
+      if (visibleEmbeddedOverlay() || document.querySelector('#regPagePickMenu:not([hidden]), #regPage .ls-access:not([hidden])')) return;
       window.parent.postMessage({ type: 'reg:embed-close', site: current }, '*');
     }, true);
     new MutationObserver(sendEmbeddedChanges).observe($('#screen-3'), {

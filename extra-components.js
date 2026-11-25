@@ -11,7 +11,7 @@ window.ExtraComponents = (() => {
       return {};
     }
   }
-  const enabled = (site, id) => read(site)[id] !== false;
+  const enabled = (site, id) => read(site)[id] ?? (id !== 'gallery' || site === 'mili-yar.saby.ws');
   const active = (site) => Object.entries(names)
     .filter(([id]) => enabled(site, id))
     .map(([id, name]) => ({ id, name, icon: new URL(id + '.svg', assets) }));

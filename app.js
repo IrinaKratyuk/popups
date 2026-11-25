@@ -259,10 +259,17 @@
   const rsParams = $('#rsParams');
   const rsParamsFrame = $('#rsParamsFrame');
   function sendConstructorParams() {
+    const top = rsParams.offsetTop + $('.rs-params__head', rsParams).offsetHeight;
     rsParamsFrame.contentWindow.postMessage({
       type: 'reg:embed-params',
       site: extraComponentSite(),
       params: regParams(false),
+      panelBounds: {
+        left: rsParams.offsetLeft,
+        top,
+        width: rsParams.offsetWidth,
+        height: rsParams.offsetTop + rsParams.offsetHeight - top,
+      },
     }, '*');
   }
   rsParamsFrame.addEventListener('load', () => {
@@ -270,6 +277,10 @@
   });
   window.addEventListener('message', (e) => {
     if (e.source !== rsParamsFrame.contentWindow || e.data?.site !== extraComponentSite()) return;
+    if (e.data.type === 'reg:embed-overlay') {
+      rsParams.classList.toggle('is-overlay-open', rsParamsOpen && e.data.open === true);
+      return;
+    }
     if (e.data.type === 'reg:embed-close') rsCloseParams();
     if (e.data.type !== 'reg:embed-change') return;
     const { domain, components, pages } = e.data;
@@ -307,6 +318,7 @@
     if (!rsParamsOpen) return;
     salesPickerCancel();
     rsParamsOpen = false;
+    rsParams.classList.remove('is-overlay-open');
     rsRender();
   }
 

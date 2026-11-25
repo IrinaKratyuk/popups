@@ -49,7 +49,8 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* ---------- Сцена 1600×900, масштабируется под окно ---------- */
 .viewport { position: fixed; inset: 0; overflow: hidden; } /* сцену вместе с шапкой демо и панелью справа расставляет и масштабирует demo-frame */
 .stage {
-  position: absolute; left: 0; top: 0; width: 1600px; height: 900px;
+  --stage-width: 1600px; --stage-height: 900px;
+  position: absolute; left: 0; top: 0; width: var(--stage-width); height: var(--stage-height);
   background: var(--ctor-bg); overflow: hidden; border-radius: 8px; /* скругление окна конструктора; у области под шапкой — свои верхние углы (.content) */
   transform-origin: 0 0;
 }
@@ -614,10 +615,15 @@ ul { list-style: none; margin: 0; padding: 0; }
 .rs-sub__value { padding-bottom: 4px; font-size: 14px; letter-spacing: -.1974px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* text/unaccented_text-color */
 
 /* окно «Параметры сайта» */
-.rs-params { position: absolute; z-index: 15; left: 946px; top: 44px; bottom: 8px; width: 600px; display: flex; flex-direction: column; background: #f8f8f8; border-radius: 8px; box-shadow: var(--win-shadow); }
+.rs-params { --params-left: 946px; --params-top: 44px; --params-head-height: 44px; position: absolute; z-index: 15; left: var(--params-left); top: var(--params-top); bottom: 8px; width: 600px; display: flex; flex-direction: column; background: #f8f8f8; border-radius: 8px; box-shadow: var(--win-shadow); }
 .rs-params[hidden], .rs-params__body[hidden] { display: none; }
 .rs-params__frame { flex: 1; min-height: 0; width: 100%; border: 0; }
-.rs-params__head { flex: none; height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 16px; }
+.rs-params.is-overlay-open { z-index: 35; }
+.rs-params.is-overlay-open .rs-params__frame {
+  position: absolute; left: calc(-1 * var(--params-left)); top: calc(-1 * var(--params-top));
+  width: var(--stage-width); height: var(--stage-height);
+}
+.rs-params__head { flex: none; height: var(--params-head-height); display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 16px; }
 .rs-params__title { font-size: 18px; font-weight: 600; letter-spacing: -.2538px; }
 .rs-params__body { flex: 1; min-height: 0; padding: 0 4px; overflow: hidden auto; }
 .rs-site__chips .chips__caption { padding-bottom: 2px; } /* подъём текста на 1px: Inter в браузере садится ниже, чем в макете (web/chips 20059:4385) */
