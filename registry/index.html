@@ -1713,7 +1713,7 @@ html, body{
 .is-params-embed #screen-3{ display: flex; }
 .is-params-embed:not(.is-params-ready) #screen-3{ visibility: hidden; }
 .is-params-embed #screen-3 .content{ gap: var(--o-s); padding: var(--o-s) var(--o-s) var(--o-s) 4px; }
-.is-params-embed .master--data{ width: 180px; max-height: 100%; }
+.is-params-embed .master--data{ width: 200px; max-height: 100%; }
 .is-params-embed #regDetail{ margin-top: 0; padding-top: 0; overflow-wrap: anywhere; }
 .is-params-embed :is(.rs-site__props, .comp-props){ white-space: normal; grid-auto-rows: minmax(24px, auto); }
 .is-params-embed #regSite .dom__form{ flex-wrap: wrap; }
@@ -3949,20 +3949,20 @@ button.tpl-cat{ cursor: pointer; }
           <div class="content">
 
             <aside class="master master--data" data-no-options>
-              <ul class="master__list site-tree">
+              <ul class="master__list site-tree site-tree--params">
                 <li>
                   <div class="site-tree__heading">
                     <div class="master__item master__item--selected site-tree__site" data-reg-nav="general" tabindex="0" role="button">
                       <span class="master__name ml__caption" id="regSiteLabel">Сайт</span>
                     </div>
-                    <button class="site-tree__expander ml__arrow ml__arrow--down" id="regSiteToggle" type="button" aria-label="Страницы сайта" aria-expanded="true" aria-controls="regSitePages"></button>
+                    <button class="site-tree__expander" id="regSiteToggle" type="button" aria-label="Страницы сайта" aria-expanded="true" aria-controls="regSitePages"><img class="site-tree__icon" src="../assets/img/comp/site.svg" alt=""></button>
                   </div>
                   <ul class="site-tree__pages" id="regSitePages" aria-labelledby="regSiteLabel"></ul>
                 </li>
                 <!-- Подключённый компонент — пункт навигации: клик открывает его настройки (#regSales); название и видимость задаёт render() скрипта компонентов -->
                 <li class="master__item component-group" data-reg-nav="comp" tabindex="0" role="button" id="regMasterComp">
-                  <span class="site-tree__expander ml__arrow" aria-hidden="true"></span>
-                  <button class="site-tree__expander ml__arrow" type="button" hidden></button>
+                  <img class="site-tree__expander site-tree__icon" alt="">
+                  <button class="site-tree__expander" type="button" hidden></button>
                   <span class="master__name ml__caption">Электронное меню</span>
                   <!-- Команда по ховеру — как у точки продаж в мастере; ✕ работает как крестик блока компонента: окно подтверждения -->
                   <button class="component-group__remove" type="button" data-comp-off="restaurant" aria-label="Отключить компонент «Электронное меню»"></button>
@@ -4397,15 +4397,17 @@ button.tpl-cat{ cursor: pointer; }
                     row.dataset.componentRow = id;
                     row.dataset.regNav = 'comp-' + id;
                     row.querySelector('.master__name').textContent = COMP[id].name;
+                    var icon = row.querySelector('.site-tree__icon');
+                    icon.src = '../assets/img/comp/' + id + '.svg';
                     var sub = id === 'restaurant' ? restaurant : id === 'delivery' ? delivery : null;
                     if (sub){
-                      row.firstElementChild.hidden = true;
                       var toggle = row.querySelector('button.site-tree__expander');
+                      icon.classList.remove('site-tree__expander');
+                      toggle.append(icon);
                       toggle.hidden = false;
                       toggle.setAttribute('aria-controls', sub.id);
                       toggle.setAttribute('aria-label', 'Страницы компонента «' + COMP[id].name + '»');
                       toggle.setAttribute('aria-expanded', String(!sub.hidden));
-                      toggle.classList.toggle('ml__arrow--down', !sub.hidden);
                     }
                     var off = row.querySelector('[data-comp-off]');
                     off.dataset.compOff = id;
@@ -6692,7 +6694,7 @@ button.tpl-cat{ cursor: pointer; }
     var site = current;
     var list = $('#regMasterComp').parentNode;
     ExtraComponents.renderRows(list, site, {
-      tag: 'li', rowClass: 'master__item',
+      tag: 'li', rowClass: 'master__item', iconClass: 'site-tree__expander site-tree__icon',
       nameClass: 'master__name ml__caption', remove: function(id, name){
         window.regExtraOffAsk(name, function(){ ExtraComponents.set(site, id, false); });
       }
@@ -6713,8 +6715,10 @@ button.tpl-cat{ cursor: pointer; }
     if (gallery){
       var toggle = document.createElement('button');
       toggle.type = 'button';
-      toggle.className = 'site-tree__expander ml__arrow';
-      toggle.classList.toggle('ml__arrow--down', !galleryNav.hidden);
+      toggle.className = 'site-tree__expander';
+      var icon = $('.site-tree__icon', gallery);
+      icon.classList.remove('site-tree__expander');
+      toggle.append(icon);
       toggle.setAttribute('aria-controls', galleryNav.id);
       toggle.setAttribute('aria-expanded', String(!galleryNav.hidden));
       toggle.setAttribute('aria-label', 'Страницы галереи');
@@ -6917,7 +6921,6 @@ button.tpl-cat{ cursor: pointer; }
       pages.hidden = !open;
       pages.toggleAttribute('data-collapsed', !open);
       siteToggle.setAttribute('aria-expanded', String(open));
-      siteToggle.classList.toggle('ml__arrow--down', open);
     } else if (expander){
       var expand = expander.getAttribute('aria-expanded') === 'false';
       expander.setAttribute('aria-expanded', String(expand));

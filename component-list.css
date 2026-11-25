@@ -6,6 +6,21 @@
 }
 
 .site-tree__heading { position: relative; }
+.site-tree--params {
+  --site-tree-params-icon-size: 20px;
+  --site-tree-label-inset: calc(var(--page-list-inset) + var(--site-tree-params-icon-size) + var(--page-list-icon-gap));
+}
+.site-tree--params .site-tree__expander {
+  width: var(--site-tree-params-icon-size);
+}
+.site-tree--params .site-tree__icon {
+  display: block;
+  width: var(--site-tree-params-icon-size);
+  height: var(--site-tree-params-icon-size);
+}
+.site-tree--params img.site-tree__expander {
+  pointer-events: none;
+}
 .site-tree :is(.site-tree__site, .site-tree__page) {
   height: var(--site-tree-row-height);
   min-height: var(--site-tree-row-height);
