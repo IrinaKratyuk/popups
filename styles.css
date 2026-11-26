@@ -354,7 +354,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* окно настроек кнопки (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2863:49501) */
 .btnset { position: absolute; z-index: 46; width: 350px; } /* открывается и поверх панели обратной связи */
 .footer-link-settings { position: absolute; z-index: 46; border-radius: var(--border-radius-border-radius_m, 12px); }
-.footer-link-settings .pe__head { padding-left: 16px; }
+.footer-link-settings .pe__head { padding-inline-start: var(--offset-offset_m, 12px); }
 .footer-link-settings .pe__name { font-size: 16px; }
 .footer-link-settings .pe__reset { cursor: default; }
 .footer-link-settings__data { gap: 8px; }
