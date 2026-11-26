@@ -1742,7 +1742,7 @@ html, body{
   width: var(--params-width);
   height: var(--params-height);
 }
-.is-params-embed :is(.accordion, .rail),
+.is-params-embed :is(.accordion, .rail, .screen:not(#screen-3)),
 .is-params-embed #screen-3 > .workspace > :not(.content){ display: none; }
 .is-params-embed #screen-3{ display: flex; }
 .is-params-embed:not(.is-params-ready) #screen-3{ visibility: hidden; }
@@ -4030,8 +4030,8 @@ button.tpl-cat{ cursor: pointer; }
               </ul>
               <!-- «Компоненты»: все компоненты чипсами, как #compChipsBlock конструктора.
                    Клик подключает компонент и скрывает его чипсу -->
-              <section class="component-list addable" id="regAddable" aria-label="Компоненты">
-                <h3 class="addable__caption">Компоненты</h3>
+              <section class="component-list addable" id="regAddable" aria-label="Добавить">
+                <h3 class="addable__caption">Добавить</h3>
                 <div class="addable__list">
                   <button class="chips chips--optional" type="button" data-comp-add="restaurant" title="Меню и карточки блюд на сайте, цены и наличие из точек продаж" aria-label="Подключить компонент: Электронное меню"><span class="chips__icon"><img src="../assets/img/comp/restaurant.svg" alt=""></span><span class="chips__caption">Электронное меню</span></button>
                   <button class="chips chips--optional" type="button" data-comp-add="delivery" hidden title="Корзина, оформление и оплата заказа с доставкой, история заказов покупателя" aria-label="Подключить компонент: Доставка"><span class="chips__icon"><img src="../assets/img/comp/delivery.svg" alt=""></span><span class="chips__caption">Доставка</span></button>

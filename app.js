@@ -259,6 +259,11 @@
   const rsParams = $('#rsParams');
   const rsParamsFrame = $('#rsParamsFrame');
   const pub = $('#pub'), pubBody = $('#pubBody');
+  function moveParamsFrame(parent, before = null) {
+    // Обычная вставка перезагружает документ iframe при переносе между панелями.
+    if (parent.moveBefore) parent.moveBefore(rsParamsFrame, before);
+    else parent.insertBefore(rsParamsFrame, before);
+  }
   function paramsHost() {
     if (!pub.hidden) return pub;
     return rsParamsOpen ? rsParams : null;
@@ -3417,14 +3422,14 @@
     const addr = $('.rs-site .dom__text', rsParams);
     if (addr && !addr.value) { addr.value = pubRand(); addr.dispatchEvent(new Event('input', { bubbles: true })); }
     pub.hidden = false;
-    pubBody.append(rsParamsFrame);
+    moveParamsFrame(pubBody);
     showConstructorParams();
   }
   function pubClose() {
     if (pub.hidden) return;
     pub.hidden = true;
     pub.classList.remove('is-overlay-open');
-    rsParams.insertBefore(rsParamsFrame, $('.rs-params__body', rsParams));
+    moveParamsFrame(rsParams, $('.rs-params__body', rsParams));
   }
   $('#chPublish').addEventListener('click', () => (pub.hidden ? pubOpen() : pubClose()));
   $('#pubClose').addEventListener('click', pubClose);
