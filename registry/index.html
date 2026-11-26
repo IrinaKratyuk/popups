@@ -525,7 +525,7 @@ html, body{
   padding-right: var(--o-2xs);
 }
 
-.btn:not(:where(.btn--translucent, .btn--news-add, .personal-offers__header > .btn)){
+.btn:not(:where(.btn--translucent, .btn--news-add, .personal-offers__header > .btn, .personal-offers__informers > .btn)){
   appearance: none;
   font: inherit;
   letter-spacing: inherit;
@@ -7135,7 +7135,7 @@ button.tpl-cat{ cursor: pointer; }
     if (!e.target.closest('.topbar--site [data-site-design]') || window.parent === window) return;
     var t = SITE_TPL[current];
     if (t || current === CONSTRUCTOR_SITE){
-      var message = { type: 'reg:open-constructor', components: window.regCompSave() };
+      var message = { type: 'reg:open-constructor', components: window.regCompSave(), documents: window.getSitePersonalDocuments(current) };
       if (t) Object.assign(message, { site: current, tpl: t.tpl, kind: t.kind, title: t.title });
       window.parent.postMessage(message, '*');
     }
@@ -7154,6 +7154,7 @@ button.tpl-cat{ cursor: pointer; }
     if (p && p.domain){ DOMAIN[current] = p.domain; UNPUBLISHED[current] = p.domain.state !== 'Connected'; }
     if (p && p.points) SITE_SALES[current] = p.points;
     if (p && p.pages) PAGES[current] = p.pages;
+    if (p && p.documents) window.setSitePersonalDocuments(current, p.documents);
     if (p && p.components) importComponents(current, p);
     if (p && p.list){ PAGE_LIST[current] = p.list; rebuild(current); } // страницы — как в списке конструктора
     try { sessionStorage.setItem('reg-site', JSON.stringify({ site: current, origin: origin })); } catch (err) {}
@@ -7168,7 +7169,8 @@ button.tpl-cat{ cursor: pointer; }
     var embeddedStage = $('#stage');
     var embeddedPanelBounds;
     function visibleEmbeddedOverlay(){
-      return [...document.querySelectorAll(embeddedOverlay)].some(function(panel){ return !panel.hidden; });
+      return !!$('.personal-offers[open]', embeddedStage) ||
+        [...document.querySelectorAll(embeddedOverlay)].some(function(panel){ return !panel.hidden; });
     }
     function syncEmbeddedOverlay(){
       var root = document.documentElement;
@@ -7180,12 +7182,13 @@ button.tpl-cat{ cursor: pointer; }
       window.parent.postMessage({ type: 'reg:embed-overlay', site: current, open: open }, '*');
     }
     new MutationObserver(syncEmbeddedOverlay).observe(document.body, {
-      subtree: true, childList: true, attributes: true, attributeFilter: ['hidden']
+      subtree: true, childList: true, attributes: true, attributeFilter: ['hidden', 'open']
     });
     function embeddedSettings(){
       return {
         domain: window.domainState($('#regSite [data-domain]')),
         components: window.regCompSave(),
+        documents: window.getSitePersonalDocuments(current),
         pages: parameterPages.filter(function(page){
           return Object.keys(page.edits).length;
         }).map(function(page){
@@ -7194,13 +7197,21 @@ button.tpl-cat{ cursor: pointer; }
       };
     }
     window.addEventListener('message', function(e){
-      if (e.source !== window.parent || e.data?.type !== 'reg:embed-params') return;
+      if (e.source !== window.parent) return;
+      if (e.data?.type === 'reg:embed-validate-publication' && embedImported && e.data.site === current){
+        window.regNavSelect('general');
+        var documents = window.validatePersonalDocuments({ focus: true });
+        if (documents) window.parent.postMessage({ type: 'reg:embed-publication-validated', site: current, documents: documents }, '*');
+        return;
+      }
+      if (e.data?.type !== 'reg:embed-params') return;
       document.documentElement.classList.toggle('is-publish-params', e.data.inPublishDialog === true);
       current = e.data.site;
       var params = e.data.params;
       DOMAIN[current] = params.domain;
       UNPUBLISHED[current] = params.domain && params.domain.state !== 'Connected';
       PAGE_LIST[current] = params.list;
+      if (params.documents) window.setSitePersonalDocuments(current, params.documents);
       propertyEdits.clear();
       importComponents(current, params);
       apply(false, true);
@@ -7214,7 +7225,9 @@ button.tpl-cat{ cursor: pointer; }
         document.documentElement.style.setProperty('--params-' + edge, value + 'px');
       });
       document.querySelectorAll(embeddedOverlay).forEach(function(panel){ panel.hidden = true; });
+      $('.personal-offers[open]', embeddedStage)?.close();
       syncEmbeddedOverlay();
+      if (e.data.inPublishDialog) window.validatePersonalDocuments();
     });
     function sendEmbeddedChanges(){
       if (!embedImported) return;
@@ -7278,6 +7291,7 @@ button.tpl-cat{ cursor: pointer; }
     var p = d.params;
     if (p && p.domain){ DOMAIN[link] = p.domain; UNPUBLISHED[link] = p.domain.state !== 'Connected'; }
     if (p && p.pages) PAGES[link] = p.pages;
+    if (p && p.documents) window.setSitePersonalDocuments(link, p.documents);
     try { sessionStorage.setItem('reg-site', JSON.stringify({ site: current, origin: origin })); } catch (err) {}
     apply(false, true);
     // галочка конструктора — карточка на «Страницах», как у «Мили»; «Опубликовать» — «Параметры» и окно про домен
@@ -7291,11 +7305,30 @@ button.tpl-cat{ cursor: pointer; }
   /* «Снять с публикации» (кнопка правой панели) — окно подтверждения */
   var unpublish = document.getElementById('unpublish');
   document.addEventListener('click', function(e){
+    if (paramsEmbedded || !UNPUBLISHED[current]) return;
+    if (e.target.closest('#regSite [data-dom-act="connect"], #regSite [data-dom-act="check"]') &&
+        !window.validatePersonalDocuments({ focus: true })) e.stopImmediatePropagation();
+  }, true);
+  document.addEventListener('click', function(e){
     if (e.target.closest('.rail__btn[aria-label="Снять с публикации"]')) unpublish.hidden = false;
     else if (e.target.closest('[data-unpublish-answer]')){
       unpublish.hidden = true;
       if (e.target.closest('[data-unpublish-answer]').dataset.unpublishAnswer === 'yes'){ UNPUBLISHED[current] = true; domainTo('Default'); apply(); }
-    } else if (e.target.closest('[data-site-publish]')){ UNPUBLISHED[current] = false; domainTo('Connected'); apply(); } // снова опубликован
+    } else if (e.target.closest('[data-site-publish]')){
+      if (!window.validatePersonalDocuments()){
+        if (location.hash === '#/screen-3'){
+          window.regNavSelect('general');
+          window.validatePersonalDocuments({ focus: true });
+        } else {
+          window.addEventListener('hashchange', function(){ window.validatePersonalDocuments({ focus: true }); }, { once: true });
+          location.hash = '#/screen-3';
+        }
+        return;
+      }
+      UNPUBLISHED[current] = false;
+      domainTo('Connected');
+      apply();
+    }
   });
   // домен из конструктора — тот же адрес, меняется только подключение
   function domainTo(state){ if (DOMAIN[current]) DOMAIN[current].state = state; }

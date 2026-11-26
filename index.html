@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.css">
   <!-- left-sidebar появился в ките позже 1.13.0; его CSS берёт только токены, которые есть и в 1.13.0 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/left-sidebar/left-sidebar.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.21.0/components/right-sidebar/right-sidebar.css">
   <!-- шрифт сайта в макете -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap">
   <link rel="stylesheet" href="page-editor.css">
@@ -35,6 +36,7 @@
   <link rel="stylesheet" href="comp-catalog.css">
   <!-- master-list — мастер групп расширенного магазина и экспандеры групп страниц -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.21.0/components/master-list/master-list.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/scroll-shadow/scroll-shadow.css">
 </head>
 <body>
   <div class="viewport">
@@ -160,7 +162,14 @@
             <span class="site-footer__item site-footer__item--fixed"><span class="site-footer__ico" aria-hidden="true">&#xe68d;</span>с 10:00 до 01:00</span>
             <span class="site-footer__item"><span class="site-footer__ico" aria-hidden="true">&#xe636;</span>+7 (4852) 12-13-14</span>
           </div>
-          <div class="site-footer__terms">Пользовательское соглашение</div>
+          <div class="wg wg--style-success site-footer__terms" tabindex="0" role="group" aria-label="Стек ссылок">
+            <div class="wg wg--style-success site-footer__link" data-footer-link="consent">
+              <button type="button" class="site-footer__link-label">Согласие на обработку персональных данных</button>
+            </div>
+            <div class="wg wg--style-success site-footer__link" data-footer-link="policy">
+              <button type="button" class="site-footer__link-label">Политика конфиденциальности</button>
+            </div>
+          </div>
         </template>
         <div class="site" id="site">
           <header class="wg wg--style-success site-header">
@@ -393,8 +402,11 @@
           <div class="rs-head__title rs-head__title--data">Данные<button class="btn btn--filled btn--style-pale btn--size-m rs-plus" type="button" aria-label="Добавить"><span class="btn__icon">&#xEADD;</span></button></div>
           <div class="rs-find rs-find--data">Найти<span class="rs-find__filter">Все</span></div>
         </div>
-        <div class="rs-fields">
-          <div class="rs-field"><span class="ico rs-field__arrow">&#xEB89;</span><span class="rs-field__name">Владелец</span><span class="rs-field__val rs-field__val--link">Арсенал, ООО</span></div>
+        <div class="rs-fields scroll-shadow">
+          <details class="rs-variable rs-owner">
+            <summary class="rs-field"><span class="ico rs-field__arrow" aria-hidden="true">&#xEB89;</span><span class="rs-field__name">Владелец</span><span class="rs-field__val rs-field__val--link">Арсенал, ООО</span></summary>
+            <ul class="rs-owner__fields rsb" id="ownerFields" aria-label="Поля владельца"></ul>
+          </details>
           <div class="rs-field"><span class="ico rs-field__arrow">&#xEB89;</span><span class="rs-field__name">Пользователь</span><span class="rs-field__val">Пользователь</span></div>
           <div id="salesData" hidden>
             <details class="rs-variable"><summary class="rs-field"><span class="ico rs-field__arrow">&#xEB89;</span><span class="rs-field__name">Текущая точка</span><span class="rs-field__val">Точка продаж</span></summary><div class="rs-variable__children" id="salesDataCurrent"></div></details>
@@ -775,6 +787,61 @@
               </div>
       </template>
 
+      <section class="pe footer-link-settings" id="footerLinkSettings" role="dialog" aria-labelledby="footerLinkSettingsTitle" hidden>
+        <header class="pe__head">
+          <span class="pe__name pe__name--static" id="footerLinkSettingsTitle">Ссылка</span>
+          <div class="pe__cmds">
+            <span class="pe__reset" aria-hidden="true">&#xE629;</span>
+            <button type="button" class="pe__done" aria-label="Готово" data-footer-settings-close>&#xE75E;</button>
+            <button type="button" class="close-button close-button--link-button pe__close" aria-label="Закрыть" data-footer-settings-close></button>
+          </div>
+        </header>
+        <div class="pe__body">
+          <div class="pe__card footer-link-settings__data">
+            <div class="footer-link-settings__row">
+              <span class="footer-link-settings__binding"><span id="footerLinkBinding"></span><span class="ico" aria-hidden="true">&#xE66C;</span></span>
+              <button type="button" class="btn btn--link btn--style-label btn--size-m btn--icon footer-link-settings__bind-icon" data-footer-data-toggle aria-label="Открыть панель данных" aria-haspopup="dialog" aria-controls="footerLinkData" aria-expanded="false"><span class="btn__icon" aria-hidden="true">&#xEA6E;</span></button>
+            </div>
+            <div class="footer-link-settings__row">
+              <span class="pe__label">Скрывать без данных</span>
+              <span class="switch" aria-hidden="true"><input type="checkbox" class="switch__input" checked tabindex="-1"><span class="switch__button"></span></span>
+            </div>
+          </div>
+          <div class="pe__card footer-link-settings__row">
+            <span class="pe__label">Шрифт</span>
+            <span class="btn btn--link btn--style-link btn--size-m">Основной текст</span>
+            <span class="footer-link-settings__color" aria-hidden="true"></span>
+            <span class="pe__spacer"></span>
+            <span class="arrow-button arrow-button--size-m" aria-hidden="true"></span>
+          </div>
+          <div class="pe__card footer-link-settings__row">
+            <span class="pe__label">Ширина</span>
+            <span class="pe__dim pe__dim--auto"><span class="pe__dim-value">267</span><span class="pe__dim-unit">по контенту</span></span>
+            <span class="pe__spacer"></span>
+            <span class="arrow-button arrow-button--size-m" aria-hidden="true"></span>
+          </div>
+          <div class="pe__chips footer-link-settings__chips">
+            <span class="chips chips--add chips--add-contrast"><span class="chips__icon" aria-hidden="true">&#xEC12;</span><span class="chips__caption">Количество строк</span></span>
+            <span class="chips chips--add chips--add-contrast"><span class="chips__icon" aria-hidden="true">&#xEACA;</span><span class="chips__caption">Обрезать пробелы</span></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="footer-link-data" id="footerLinkData" role="dialog" aria-label="Данные" hidden>
+        <div class="footer-link-data__content">
+          <div class="footer-link-data__head"><div class="rs-find rs-find--data">Данные</div></div>
+        </div>
+        <aside class="footer-link-data__rail">
+          <button type="button" class="close-button close-button--functional-button close-button--size-l" aria-label="Закрыть панель данных" data-footer-data-close></button>
+          <div class="footer-link-data__informers" aria-hidden="true">
+            <span class="btn btn--filled btn--style-pale btn--size-xl btn--icon footer-link-data__date"><span>16<br><small>чт</small></span></span>
+            <span class="btn btn--filled btn--style-pale btn--size-xl btn--icon"><span class="ico">&#xE636;</span></span>
+            <span class="btn btn--filled btn--style-pale btn--size-xl btn--icon"><span class="ico">&#xE65D;</span></span>
+            <span class="btn btn--filled btn--style-pale btn--size-xl btn--icon footer-link-data__help"><img src="assets/img/footer-link-data-help.svg" width="12" height="16" alt=""></span>
+          </div>
+        </aside>
+      </section>
+
       <!-- Настройки кнопки (Figma WHZ4ZSm4wRMrxQPWqEk5Wk 2863:49501): окно — .pe, поля и кнопки — .input и .btn из ui-kit. Меняется только текст, остальное пока с ховером -->
       <section class="pe btnset" id="btnSet" aria-label="Настройки кнопки" hidden>
         <header class="pe__head">
@@ -977,6 +1044,7 @@
 
   <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/demo-frame/demo-frame.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.13.0/components/property-editor/property-editor.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/MarieSmi/ui-kit@1.20.1/components/scroll-shadow/scroll-shadow.js"></script>
   <script src="domain.js"></script>
   <script src="qr.js"></script>
   <script src="comp-catalog.js"></script>

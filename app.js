@@ -160,9 +160,11 @@
       stage.classList.remove('is-tpl-view');
       tplSite = e.data.site;
       restoreComponents(e.data.components);
+      PersonalDocuments.setSite(extraComponentSite(), e.data.documents);
     } else if (e.data?.type === 'reg:open-constructor') {
       frame.select('catalog-setup');
       restoreComponents(e.data.components);
+      PersonalDocuments.setSite(extraComponentSite(), e.data.documents);
     }
     else if (e.data?.type === 'reg:open-template') tplOpen(e.data.tpl, e.data.name, e.data.kind);
   });
@@ -198,7 +200,8 @@
       points: exportPoints(id),
       pages: Object.fromEntries(Object.entries(picksFor(id)).map(([kind, page]) => [kind, lsPage(page)?.name ?? null])),
     }));
-    return { domain, points, pages, list, components };
+    const documents = PersonalDocuments.getSite(extraComponentSite());
+    return { domain, points, pages, list, components, documents };
   }
 
 
@@ -249,6 +252,7 @@
     wsClose();
     secClose();
     btnSetClose();
+    footerLinkSettingsClose();
     fbClose();
   }
 
@@ -301,10 +305,15 @@
       if (pub.hidden) rsCloseParams();
       else pubClose();
     }
+    if (e.data.type === 'reg:embed-publication-validated' && !pub.hidden && e.data.documents) {
+      publishFromConstructor(e.data.documents);
+      return;
+    }
     if (e.data.type !== 'reg:embed-change') return;
-    const { domain, components, pages } = e.data;
+    const { domain, components, pages, documents } = e.data;
     if (domain) window.domainSetState($('.rs-site [data-domain]'), domain);
     if (components) restoreComponents(components);
+    if (documents) PersonalDocuments.setSite(e.data.site, documents);
     for (const { id, name, group, edits } of pages ?? []) {
       const page = lsPage(id) ?? lsPages.find((item) => item.name === name && (lsGroupOf(item) ?? null) === (group ?? null));
       if (page) Object.assign(page, edits);
@@ -313,6 +322,49 @@
   });
   let rsPanel = 'shop';    // открытая панель или null
   let rsParamsOpen = false;
+
+  const ownerFields = [
+    ['Название', 'Строка'],
+    ['НазваниеПолное', 'Строка'],
+    ['НазваниеКратакое', 'Строка'],
+    ['Бренд', 'Строка'],
+    ['ИдНалогоплательщика', 'Строка'],
+    ['ПубличныеСведенияКонтрагента', 'Строка', true],
+    ['Лого', 'СабиИзображения', true],
+    ['Баннер', 'Баннер', true],
+    ['Описание', 'Форматированный...'],
+    ['Руководитель', 'Строка'],
+    ['ВидДетяльностиКонтрагента', 'ВидДеятельности...', true],
+    ['АдресЮридический', 'Адрес', true],
+    ['АдресФактический', 'Адрес', true],
+    ['Страна', 'Страна', true],
+    ['ДатаРегистрации', 'Дата'],
+    ['Статус', 'СтатусКонтрагента'],
+    ['Дата Ликвидации', 'Дата'],
+    ['РежимРаботы', 'Дата', true],
+    ['ВнешнийИд', 'РежимРаботы'],
+    ['КодПодразделения', 'Строка'],
+    ['GLN', 'Строка'],
+    ['Филиал', 'Логическое'],
+    ['Примечание', 'Строка'],
+    ['УпБ', 'Логическое'],
+    ['ДатаПоследнегоВзаимодействия', 'Дата'],
+    ['Ссылка', 'Гиперссылка'],
+    ['ПодТип', 'Контрагент России, ...'],
+    ['Контакты', 'Контакт', true],
+    ['Ответственный', 'Ответственный', true],
+    ['Продажи', 'Статистика Продаж'],
+    ['Склады', 'Склады'],
+    ['РасчетныеСчета', 'РасчетныеСчета'],
+    ['СсылкаНаСогласие', 'Ссылка'],
+    ['СсылкаНаПолитику', 'Ссылка'],
+  ];
+  $('#ownerFields').append(...ownerFields.map(([name, type, hasArrow]) =>
+    el('li', 'rsb__field', `
+      <span class="rsb__arrow${hasArrow ? '' : ' rsb__arrow--empty'}" aria-hidden="true"></span>
+      <span class="rsb__row-name" title="${name}">${name}</span>
+      <span class="rsb__type" title="${type}">${type}</span>`)
+  ));
 
   function rsRender() {
     stage.classList.toggle('is-rs-closed', !rsPanel);
@@ -1120,6 +1172,156 @@
   const siteExt = $('#siteExt');
   const siteExtWidget = $('#siteExtWidget');
 
+  const footerStacks = [...siteContent.querySelectorAll('.site-footer__terms')];
+  const footerLinkSettings = $('#footerLinkSettings');
+  const footerLinkData = $('#footerLinkData');
+  const footerDataToggle = $('[data-footer-data-toggle]', footerLinkSettings);
+  const dataSidebar = $('#rs-data');
+  const dataFields = $('.rs-fields', dataSidebar);
+  const dataScrollShadow = window.ScrollShadow?.mount(dataFields);
+  const footerBindings = {
+    consent: 'Владелец.СсылкаНаСогласие',
+    policy: 'Владелец.СсылкаНаПолитику',
+  };
+  let footerLinkGear = null;
+  let footerLinkSettingsMoved = false;
+  dataFields.addEventListener('toggle', () => dataScrollShadow?.refresh(), true);
+
+  function footerToolbar(widget, commands) {
+    const toolbar = el('div', 'tb tb--style-success wg__toolbar site-footer__toolbar');
+    for (const [label, glyph, kind] of commands) {
+      const interactive = kind === 'settings' || kind === 'back';
+      const command = el(interactive ? 'button' : 'span', 'tb__btn');
+      command.title = label;
+      if (interactive) {
+        command.type = 'button';
+        command.setAttribute('aria-label', label);
+      } else {
+        command.setAttribute('aria-hidden', 'true');
+      }
+      if (kind === 'settings') {
+        command.dataset.footerSettings = '';
+        command.setAttribute('aria-haspopup', 'dialog');
+        command.setAttribute('aria-controls', footerLinkSettings.id);
+        command.setAttribute('aria-expanded', 'false');
+      }
+      if (kind === 'back') command.dataset.footerBack = '';
+      if (kind === 'delete') command.classList.add('tb__btn--delete');
+      if (glyph) command.append(el('span', 'tb__icon', glyph));
+      else if (kind === 'color') command.append(el('span', 'tb__icon site-footer__toolbar-color'));
+      else command.append(el('span', 'tb__caption', label));
+      if (kind === 'font') command.append(el('span', 'tb__arrow'));
+      toolbar.append(command);
+    }
+    widget.append(toolbar);
+  }
+
+  for (const stack of footerStacks) {
+    footerToolbar(stack, [
+      ['Назад', '&#xE9A9;'], ['Столбцы', '&#xEAEE;'], ['Расположение', '&#xEBC2;'],
+      ['Выравнивание', '&#xEBC6;'], ['Настройки стека', '&#xE75D;'],
+      ['Удалить', '&#xEB72;', 'delete'], ['Ещё', '&#xEAB4;'],
+    ]);
+    for (const link of stack.querySelectorAll('[data-footer-link]')) {
+      footerToolbar(link, [
+        ['Назад', '&#xE9A9;', 'back'], [footerBindings[link.dataset.footerLink]],
+        ['Основной текст', null, 'font'], ['Шрифт', '&#xE764;'], ['Цвет', null, 'color'],
+        ['Выравнивание', '&#xE6C0;'], ['Настройки ссылки', '&#xE75D;', 'settings'],
+        ['Переместить', '&#xE63E;'], ['Удалить', '&#xEB72;', 'delete'], ['Ещё', '&#xEAB4;'],
+      ]);
+    }
+  }
+
+  function footerLinkDataClose(restoreFocus = false) {
+    if (footerLinkData.hidden) return;
+    const scrollTop = dataFields.scrollTop;
+    dataSidebar.append(dataFields);
+    dataFields.scrollTop = scrollTop;
+    footerLinkData.hidden = true;
+    footerDataToggle.setAttribute('aria-expanded', 'false');
+    dataScrollShadow?.refresh();
+    if (restoreFocus) footerDataToggle.focus({ preventScroll: true });
+  }
+
+  footerDataToggle.addEventListener('click', () => {
+    if (!footerLinkData.hidden) {
+      footerLinkDataClose(true);
+      return;
+    }
+    const scrollTop = dataFields.scrollTop;
+    $('.footer-link-data__content', footerLinkData).append(dataFields);
+    footerLinkData.hidden = false;
+    dataFields.scrollTop = scrollTop;
+    dataScrollShadow?.refresh();
+    footerDataToggle.setAttribute('aria-expanded', 'true');
+    $('[data-footer-data-close]', footerLinkData).focus({ preventScroll: true });
+  });
+  $('[data-footer-data-close]', footerLinkData).addEventListener('click', () => footerLinkDataClose(true));
+
+  function footerLinkSettingsClose(restoreFocus = false) {
+    if (!footerLinkGear) return;
+    footerLinkDataClose();
+    footerLinkSettings.hidden = true;
+    footerLinkGear.classList.remove('is-selected');
+    footerLinkGear.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) footerLinkGear.focus();
+    footerLinkGear = null;
+  }
+
+  function positionFooterLinkSettings() {
+    if (!footerLinkGear || footerLinkSettingsMoved) return;
+    const toolbar = stageRect(footerLinkGear.closest('.site-footer__toolbar'));
+    peMoveTo(footerLinkSettings, toolbar.left, toolbar.top - footerLinkSettings.offsetHeight - 12);
+  }
+
+  peDraggable(footerLinkSettings, () => { footerLinkSettingsMoved = true; });
+  footerLinkSettings.addEventListener('click', (e) => {
+    if (e.target.closest('[data-footer-settings-close]')) footerLinkSettingsClose(true);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || footerLinkSettings.hidden) return;
+    e.stopImmediatePropagation();
+    if (footerLinkData.hidden) footerLinkSettingsClose(true);
+    else footerLinkDataClose(true);
+  }, true);
+  stage.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.site-footer__terms, #footerLinkSettings, #footerLinkData')) return;
+    footerLinkSettingsClose();
+    siteContent.querySelector('.site-footer__terms.is-active, .site-footer__link.is-active')?.classList.remove('is-active');
+  });
+  siteContent.addEventListener('keydown', (e) => {
+    if (!e.target.matches('.site-footer__terms') || !['Enter', ' '].includes(e.key)) return;
+    e.preventDefault();
+    e.target.click();
+  });
+  siteContent.addEventListener('click', (e) => {
+    const back = e.target.closest('[data-footer-back]');
+    const widget = e.target.closest(back ? '.site-footer__terms' : '.site-footer__link, .site-footer__terms');
+    if (!widget) return;
+    const gear = e.target.closest('[data-footer-settings]');
+    if (gear && gear === footerLinkGear) {
+      footerLinkSettingsClose(true);
+      return;
+    }
+    if (!gear && !back && e.target.closest('.site-footer__toolbar')) return;
+    const active = siteContent.querySelector('.site-footer__terms.is-active, .site-footer__link.is-active');
+    if (active !== widget) {
+      siteClearSelection();
+      widget.classList.add('is-active');
+    }
+    if (back) widget.focus({ preventScroll: true });
+    if (!gear) return;
+    popupsClose();
+    footerLinkGear = gear;
+    footerLinkSettingsMoved = false;
+    $('#footerLinkBinding').textContent = footerBindings[widget.dataset.footerLink];
+    gear.classList.add('is-selected');
+    gear.setAttribute('aria-expanded', 'true');
+    footerLinkSettings.hidden = false;
+    positionFooterLinkSettings();
+    $('[data-footer-settings-close]', footerLinkSettings).focus({ preventScroll: true });
+  });
+
   // Fixed привязан к масштабируемой сцене и выходит из overflow прокручиваемого контента.
   // Оставляем настоящий тулбар внутри виджета: выделение, ховер и обработчики кнопок сохраняются.
   const widgetToolbars = [...siteContent.querySelectorAll('.wg__toolbar')];
@@ -1130,13 +1332,14 @@
       const widget = toolbar.parentElement;
       if (!widget.getClientRects().length) continue;
       const r = stageRect(widget);
-      const h = toolbar.getBoundingClientRect().height / scale;
       // Целые пиксели: дробные координаты при каждом пересчёте дают субпиксельный сдвиг — текст «прыгает».
       const left = Math.round(r.left) + 'px';
-      const top = Math.round(Math.max(6, r.top - h - 8)) + 'px';
       if (toolbar.style.getPropertyValue('--widget-toolbar-left') !== left) toolbar.style.setProperty('--widget-toolbar-left', left);
+      const h = toolbar.getBoundingClientRect().height / scale;
+      const top = Math.round(Math.max(6, r.top - h - 8)) + 'px';
       if (toolbar.style.getPropertyValue('--widget-toolbar-top') !== top) toolbar.style.setProperty('--widget-toolbar-top', top);
     }
+    positionFooterLinkSettings();
   }
   function scheduleWidgetToolbars() {
     if (!toolbarFrame) toolbarFrame = requestAnimationFrame(positionWidgetToolbars);
@@ -1364,6 +1567,8 @@
   let siteShown = null;
   // На открытой странице ничего не выделено: выделение появляется только кликом
   function siteClearSelection() {
+    footerLinkSettingsClose();
+    siteContent.querySelector('.site-footer__terms.is-active, .site-footer__link.is-active')?.classList.remove('is-active');
     for (const widget of [siteCatalog, siteFloat, siteLinkWidget, siteProduct, siteSection, siteLink, siteBlankSection, siteExt, siteExtWidget]) widget.classList.remove('is-active');
   }
   function siteShowPage(page) {
@@ -1664,7 +1869,7 @@
     siteLink.classList.add('is-active');
   });
   // Родитель выделенного виджета — .wg--level-2 из кита: только пунктир, кнопки «+ секция» есть лишь у активной секции. Общее правило для всех секций, как бы ни поставилось выделение
-  const SITE_PARENTS = [siteSection, siteLink, siteBlankSection, siteExt];
+  const SITE_PARENTS = [siteSection, siteLink, siteBlankSection, siteExt, ...footerStacks];
   function siteParentsSync() {
     for (const parent of SITE_PARENTS) {
       const on = !!parent.querySelector('.wg.is-active');
@@ -3433,9 +3638,11 @@
   }
   $('#chPublish').addEventListener('click', () => (pub.hidden ? pubOpen() : pubClose()));
   $('#pubClose').addEventListener('click', pubClose);
-  // «Опубликовать» в окне: конструктор закрывается, в реестре — карточка созданного сайта (вкладка «Параметры»)
-  // и окно «Домен будет создан…» (registry/index.html, reg:publish-site). Адрес — из поля окна, проверки нет
   $('.pub__publish', pub).addEventListener('click', () => {
+    rsParamsFrame.contentWindow.postMessage({ type: 'reg:embed-validate-publication', site: extraComponentSite() }, '*');
+  });
+  function publishFromConstructor(documents) {
+    PersonalDocuments.setSite(extraComponentSite(), documents);
     // «Мили» уже в реестре: публикуются правки — назад на её карточку, как по галочке
     // домен на карточке — из окна, сайт опубликован
     if (!stage.classList.contains('is-tpl')) {
@@ -3446,7 +3653,7 @@
       return;
     }
     tplToRegistry(true);
-  });
+  }
   /* Сайт из шаблона — в реестр: плитка и карточка нового сайта (registry/index.html, reg:publish-site).
      publish — «Опубликовать» в окне: карточка на «Параметрах» и окно «Домен будет создан…»;
      иначе галочка: карточка на «Страницах», домен и всё остальное — как в «Параметрах сайта» (не подключён — сайт не опубликован).
@@ -3455,11 +3662,12 @@
     const dom = $('.rs-site [data-domain]');
     const name = $('.dom__text', dom).value.trim() || pubRand();
     const link = dom.classList.contains('dom--saby') ? name + $('.dom__zone', dom).textContent : name;
+    const params = regParams(publish);
+    PersonalDocuments.setSite(link, params.documents);
     ExtraComponents.copy(extraComponentSite(), link);
     for (const component of ['restaurant', 'services']) {
       CompCatalog.setPrice(link, component, CompCatalog.getPrice(extraComponentSite(), component));
     }
-    const params = regParams(publish);
     if (params.domain) params.domain.value = name;
     // точки продаж — те, что настроены в «Параметрах сайта» конструктора (в шаблоне их нет)
     regPublish = { link, title: chTitle.textContent, tpl: Number(stage.dataset.tpl) || 1, kind: stage.dataset.tplKind || 'menu',
